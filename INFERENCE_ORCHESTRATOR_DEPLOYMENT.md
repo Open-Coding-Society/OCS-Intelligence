@@ -5,7 +5,7 @@
 This runbook describes how to turn the current single-path deployment into a topology-aware inference service using:
 
 - the existing Ubuntu EC2 instance as the public TLS gateway and inference orchestrator;
-- the existing eight-GPU GTX 1070 rig as two isolated four-GPU inference workers;
+- the existing seven-GPU GTX 1070 rig as two isolated inference workers, split 4 GPUs and 3 GPUs;
 - Open WebUI as the user-facing interface;
 - `llama-server` as the inference runtime; and
 - an OpenAI-compatible API for Open WebUI and external clients.
@@ -23,12 +23,12 @@ EC2 Nginx (TLS, request limits)
   v                           v
 FastAPI orchestrator       Open WebUI
   |
-  | Tailscale only
+  | NetBird only
   +----------------------+----------------------+
   |                                             |
   v                                             v
 Group A: pinned worker                    Group B: flexible worker
-4 topology-selected GPUs                 4 topology-selected GPUs
+4 topology-selected GPUs                 3 topology-selected GPUs
 default model always warm                one allow-listed model at a time
 ```
 
@@ -45,16 +45,16 @@ The current issue baseline reports approximately:
 | Warm time to first token | about 2 seconds |
 | Cold time to first token | about 2 minutes 27 seconds |
 
-The current eight-GPU model split makes every request depend on all eight GPUs and their motherboard/riser paths. Two independent four-GPU workers remove all inference traffic **between the two groups** and permit two requests to execute concurrently. They do not eliminate transfers **within** each four-GPU group. A PCIe x1 riser remains a physical bandwidth ceiling; software cannot turn it into an x8 or x16 link.
+The current seven-GPU model split makes every request depend on all seven GPUs and their motherboard/riser paths. Two independent workers using four GPUs and three GPUs remove all inference traffic **between the two groups** and permit two requests to execute concurrently. They do not eliminate transfers **within** each group. A PCIe x1 riser remains a physical bandwidth ceiling; software cannot turn it into an x8 or x16 link.
 
-The initial runtime must use llama.cpp's `layer` split. Row and tensor splitting exchange more data across GPUs and are poor defaults for slow riser links. The production topology will be accepted only after comparison with the existing eight-GPU baseline.
+The initial runtime must use llama.cpp's `layer` split. Row and tensor splitting exchange more data across GPUs and are poor defaults for slow riser links. The production topology will be accepted only after comparison with the existing seven-GPU baseline.
 
 ## Scope and safety rules
 
 - Perform the audit first. Audit commands are read-only and may run while the service is live.
 - Do not stop Ollama, Open WebUI, Nginx, or a model process until an announced maintenance window begins.
-- Never put SSH keys, API keys, Tailnet authentication tokens, public IP addresses, or passwords in this repository.
-- Use Tailnet DNS names or private addresses in deployed configuration, but write placeholders in committed examples.
+- Never put SSH keys, API keys, NetBird authentication tokens, public IP addresses, or passwords in this repository.
+- Use NetBird DNS names or private addresses in deployed configuration, but write placeholders in committed examples.
 - Back up every active configuration before changing it.
 - Do not expose either `llama-server` worker to the public Internet.
 - Do not enable `GGML_CUDA_P2P=1` unless the CUDA peer-to-peer tests pass for every pair in that group and a correctness soak test passes. Some motherboard/IOMMU combinations fail or corrupt output with forced P2P.
@@ -65,20 +65,20 @@ The initial runtime must use llama.cpp's `layer` split. Row and tensor splitting
 Record these values in an operator-only worksheet before making changes. Values ending in `_SECRET` belong in root-readable environment files, not in Git.
 
 ```text
-EC2_TAILNET_NAME=
-EC2_TAILNET_IP=
-RIG_TAILNET_NAME=
-RIG_TAILNET_IP=
+EC2_NETBIRD_NAME=
+EC2_NETBIRD_IP=
+RIG_NETBIRD_NAME=
+RIG_NETBIRD_IP=
 
 GROUP_A_GPU_UUIDS=GPU-...,GPU-...,GPU-...,GPU-...
-GROUP_B_GPU_UUIDS=GPU-...,GPU-...,GPU-...,GPU-...
+GROUP_B_GPU_UUIDS=GPU-...,GPU-...,GPU-...
 
 DEFAULT_MODEL_ID=
 DEFAULT_MODEL_GGUF=/srv/ocs-intelligence/models/<file>.gguf
 MODELS_PRESET=/etc/ocs-intelligence/models.ini
 
 GROUP_A_TENSOR_SPLIT=1,1,1,1
-GROUP_B_TENSOR_SPLIT=1,1,1,1
+GROUP_B_TENSOR_SPLIT=1,1,1
 CONTEXT_SIZE=
 
 WORKER_API_KEY_SECRET=
@@ -110,7 +110,7 @@ hostnamectl
 uname -a
 cat /etc/os-release
 ip -brief address
-tailscale status
+netbird status
 timedatectl status
 systemctl --failed
 sudo ss -lntup
@@ -166,7 +166,7 @@ du -h /absolute/path/to/the/current/model.gguf
 
 Also record the model architecture, quantization, chat template, configured context, batch size, and existing Ollama parameters. A 27B Q4 model may fit in 32 GB while the same model at Q8 plus a large KV cache may not. Admission is based on measured peak VRAM, not only model-file size.
 
-The four-GPU design has a hard feasibility gate: the complete default model, runtime buffers, configured KV cache, and safety margin must fit within the four selected 8 GB cards without CPU offload. Prove this with a clean load and peak-VRAM measurement before continuing. If it does not fit, stop the deployment and either approve a smaller context/quantization as a separately re-baselined configuration or retain the previous topology. Do not hide a failed fit by offloading layers to system RAM; that would move the bottleneck to the same motherboard path this design is intended to avoid.
+The split design has a hard feasibility gate: the complete default model, runtime buffers, configured KV cache, and safety margin must fit within the four selected 8 GB cards without CPU offload, and every allow-listed flexible-worker model must fit within the three selected 8 GB cards. Prove each configuration with a clean load and peak-VRAM measurement before continuing. If a configuration does not fit, stop the deployment and either approve a smaller context/quantization as a separately re-baselined configuration or retain the previous topology. Do not hide a failed fit by offloading layers to system RAM; that would move the bottleneck to the same motherboard path this design is intended to avoid.
 
 ### 1.4 PCIe and NUMA topology
 
@@ -185,7 +185,7 @@ For every GPU bus ID returned by `nvidia-smi`, inspect the negotiated link:
 sudo lspci -s 03:00.0 -vv | rg 'LnkCap|LnkSta'
 ```
 
-Repeat with the actual bus ID for all eight GPUs. Record both link width and speed. `LnkCap` is the device capability; `LnkSta` is the negotiated reality. A card capable of x16 but reporting `Width x1` is operating through an x1 path.
+Repeat with the actual bus ID for all seven GPUs. Record both link width and speed. `LnkCap` is the device capability; `LnkSta` is the negotiated reality. A card capable of x16 but reporting `Width x1` is operating through an x1 path.
 
 Run NVIDIA's `p2pBandwidthLatencyTest` if the CUDA samples are already installed:
 
@@ -208,15 +208,15 @@ sudo cmake --build \
 /opt/cuda-samples/cpp/5_Domain_Specific/p2pBandwidthLatencyTest/build/p2pBandwidthLatencyTest
 ```
 
-### 1.5 Select the two four-GPU groups
+### 1.5 Select the four-GPU and three-GPU groups
 
 Do not automatically choose indices `0,1,2,3` and `4,5,6,7`.
 
 1. Prefer GPUs sharing the closest PCIe switch/root complex.
 2. Maximize measured within-group peer bandwidth and minimize within-group latency.
 3. Avoid placing a group across CPU sockets or NUMA nodes when a same-node partition exists.
-4. Keep both groups balanced in GPU health, temperature, VRAM, and compute capability.
-5. If all links traverse the same root complex, choose the partition with the best measured four-card concurrency and document the shared bottleneck.
+4. Assign the four most suitable cards to Group A and the remaining three to Group B, balancing GPU health, temperature, VRAM, and compute capability.
+5. If all links traverse the same root complex, choose the partition with the best measured four-card and three-card concurrency and document the shared bottleneck.
 
 Record the result by UUID:
 
@@ -226,7 +226,6 @@ Record the result by UUID:
 | A | | | | | |
 | A | | | | | |
 | A | | | | | |
-| B | | | | | |
 | B | | | | | |
 | B | | | | | |
 | B | | | | | |
@@ -307,7 +306,7 @@ Create `/etc/ocs-intelligence/worker-a.env` on the rig:
 ```ini
 CUDA_VISIBLE_DEVICES=GPU-AAAA,GPU-BBBB,GPU-CCCC,GPU-DDDD
 CUDA_SCALE_LAUNCH_QUEUES=4x
-RIG_TAILNET_IP=<RIG_TAILNET_IP>
+RIG_NETBIRD_IP=<RIG_NETBIRD_IP>
 DEFAULT_MODEL_GGUF=/srv/ocs-intelligence/models/<default-model>.gguf
 DEFAULT_MODEL_ID=<stable-public-model-id>
 CONTEXT_SIZE=<validated-context-size>
@@ -327,7 +326,7 @@ Create `/etc/systemd/system/ocs-llama-a.service`:
 ```ini
 [Unit]
 Description=OCS llama.cpp pinned worker A
-After=network-online.target tailscaled.service
+After=network-online.target netbird.service
 Wants=network-online.target
 
 [Service]
@@ -335,7 +334,7 @@ Type=simple
 EnvironmentFile=/etc/ocs-intelligence/worker-a.env
 UnsetEnvironment=GGML_CUDA_P2P
 ExecStart=/opt/llama.cpp/bin/llama-server \
-  --host ${RIG_TAILNET_IP} \
+  --host ${RIG_NETBIRD_IP} \
   --port 8081 \
   --model ${DEFAULT_MODEL_GGUF} \
   --alias ${DEFAULT_MODEL_ID} \
@@ -373,14 +372,14 @@ Do not configure sleep-on-idle for Group A. Its purpose is to remove the reporte
 Create `/etc/ocs-intelligence/worker-b.env` with the second four UUIDs, port-independent shared settings, and the same private worker key:
 
 ```ini
-CUDA_VISIBLE_DEVICES=GPU-EEEE,GPU-FFFF,GPU-GGGG,GPU-HHHH
+CUDA_VISIBLE_DEVICES=GPU-EEEE,GPU-FFFF,GPU-GGGG
 CUDA_SCALE_LAUNCH_QUEUES=4x
-RIG_TAILSCALE_IP=<RIG_TAILSCALE_IP>
+RIG_NETBIRD_IP=<RIG_NETBIRD_IP>
 MODELS_PRESET=/etc/ocs-intelligence/models.ini
 WORKER_API_KEY=<same-random-worker-only-secret>
 ```
 
-Create `/etc/ocs-intelligence/models.ini`. Only models proven to fit four GPUs may be listed:
+Create `/etc/ocs-intelligence/models.ini`. Only models proven to fit the three Group B GPUs may be listed:
 
 ```ini
 version = 1
@@ -388,7 +387,7 @@ version = 1
 [*]
 n-gpu-layers = all
 split-mode = layer
-tensor-split = 1,1,1,1
+tensor-split = 1,1,1
 ctx-size = <validated-context-size>
 parallel = 1
 cont-batching = true
@@ -411,7 +410,7 @@ Create `/etc/systemd/system/ocs-llama-b.service`:
 ```ini
 [Unit]
 Description=OCS llama.cpp flexible worker B
-After=network-online.target tailscaled.service
+After=network-online.target netbird.service
 Wants=network-online.target
 
 [Service]
@@ -419,7 +418,7 @@ Type=simple
 EnvironmentFile=/etc/ocs-intelligence/worker-b.env
 UnsetEnvironment=GGML_CUDA_P2P
 ExecStart=/opt/llama.cpp/bin/llama-server \
-  --host ${RIG_TAILSCALE_IP} \
+  --host ${RIG_NETBIRD_IP} \
   --port 8082 \
   --api-key ${WORKER_API_KEY} \
   --models-preset ${MODELS_PRESET} \
@@ -467,9 +466,9 @@ In another session, confirm exactly four intended UUIDs have allocations and Gro
 ```bash
 nvidia-smi --query-compute-apps=gpu_uuid,pid,used_memory --format=csv
 curl -fsS -H 'Authorization: Bearer <WORKER_API_KEY>' \
-  http://<RIG_TAILNET_IP>:8081/health
+  http://<RIG_NETBIRD_IP>:8081/health
 curl -fsS -H 'Authorization: Bearer <WORKER_API_KEY>' \
-  http://<RIG_TAILNET_IP>:8081/v1/models
+  http://<RIG_NETBIRD_IP>:8081/v1/models
 ```
 
 Run the fixed prompt corpus against Group A. Only after it passes should Group B start:
@@ -477,9 +476,9 @@ Run the fixed prompt corpus against Group A. Only after it passes should Group B
 ```bash
 sudo systemctl start ocs-llama-b.service
 curl -fsS -H 'Authorization: Bearer <WORKER_API_KEY>' \
-  http://<RIG_TAILNET_IP>:8082/health
+  http://<RIG_NETBIRD_IP>:8082/health
 curl -fsS -H 'Authorization: Bearer <WORKER_API_KEY>' \
-  http://<RIG_TAILNET_IP>:8082/models
+  http://<RIG_NETBIRD_IP>:8082/models
 ```
 
 Confirm the two processes have disjoint UUID sets. Stop deployment if either process sees or allocates memory on a GPU assigned to the other group.
@@ -488,7 +487,7 @@ Confirm the two processes have disjoint UUID sets. Stop deployment if either pro
 
 ## Phase 5: EC2 orchestrator contract
 
-Install the orchestrator under `/opt/ocs-orchestrator` in its own Python virtual environment and run it as an unprivileged `ocs-orchestrator` system user. Bind it to `127.0.0.1:9000` for public Nginx traffic. If Open WebUI connects through the EC2 Tailnet address, additionally bind through a firewall-restricted private listener or have Nginx expose a Tailnet-only internal server block.
+Install the orchestrator under `/opt/ocs-orchestrator` in its own Python virtual environment and run it as an unprivileged `ocs-orchestrator` system user. Bind it to `127.0.0.1:9000` for public Nginx traffic. If Open WebUI connects through the EC2 NetBird address, additionally bind through a firewall-restricted private listener or have Nginx expose a NetBird-only internal server block.
 
 ### 5.1 Public API
 
@@ -510,8 +509,8 @@ All `/v1/*` calls require `Authorization: Bearer <PUBLIC_API_KEY>`. The orchestr
 Use an environment file at `/etc/ocs-orchestrator/orchestrator.env`, owned by root with mode `0600`:
 
 ```ini
-GROUP_A_URL=http://<RIG_TAILNET_IP>:8081
-GROUP_B_URL=http://<RIG_TAILNET_IP>:8082
+GROUP_A_URL=http://<RIG_NETBIRD_IP>:8081
+GROUP_B_URL=http://<RIG_NETBIRD_IP>:8082
 DEFAULT_MODEL_ID=<stable-public-model-id>
 WORKER_API_KEY=<private-worker-secret>
 PUBLIC_API_KEYS=<comma-separated-public-keys>
@@ -582,7 +581,7 @@ Create `/etc/systemd/system/ocs-orchestrator.service`:
 ```ini
 [Unit]
 Description=OCS inference orchestrator
-After=network-online.target tailscaled.service
+After=network-online.target netbird.service
 Wants=network-online.target
 
 [Service]
@@ -615,13 +614,13 @@ Use one Uvicorn process because queue and worker state are in memory. Horizontal
 
 ### 6.1 Rig firewall
 
-Allow worker ports only from the EC2 Tailnet address. Adapt commands to the firewall already in use; do not introduce a second firewall manager.
+Allow worker ports only from the EC2 NetBird address. Adapt commands to the firewall already in use; do not introduce a second firewall manager.
 
 For UFW:
 
 ```bash
-sudo ufw allow in on tailscale0 from <EC2_TAILNET_IP> to any port 8081 proto tcp
-sudo ufw allow in on tailscale0 from <EC2_TAILNET_IP> to any port 8082 proto tcp
+sudo ufw allow in on wt0 from <EC2_NETBIRD_IP> to any port 8081 proto tcp
+sudo ufw allow in on wt0 from <EC2_NETBIRD_IP> to any port 8082 proto tcp
 sudo ufw deny 8081/tcp
 sudo ufw deny 8082/tcp
 sudo ufw status numbered
@@ -662,7 +661,7 @@ location = /healthz {
 }
 
 location / {
-    proxy_pass http://<RIG_TAILNET_IP>:3000;
+    proxy_pass http://<RIG_NETBIRD_IP>:3000;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -739,7 +738,7 @@ Run the same corpus and parameters for every row:
 
 | Configuration | Concurrency | Runs | Required comparison |
 |---|---:|---:|---|
-| Existing Ollama across eight GPUs | 1, 2, 4 | 30 each | Baseline |
+| Existing Ollama across seven GPUs | 1, 2, 4 | 30 each | Baseline |
 | Group A only | 1 | 30 | Decode rate no worse than 95% of baseline |
 | Group B only, default resident | 1 | 30 | Decode rate no worse than 95% of baseline |
 | Groups A and B concurrently | 2, 4 | 30 each | At least 1.6x baseline aggregate throughput |
@@ -772,7 +771,7 @@ Begin with `1,1,1,1` because the cards are nominally identical. If telemetry sho
 
 Speculative decoding is a second-stage experiment, not part of the initial cutover.
 
-1. Establish the accepted non-speculative four-GPU result.
+1. Establish the accepted non-speculative Group A 4-GPU and Group B 3-GPU results.
 2. Select a compatible draft model and record its additional VRAM/CPU cost.
 3. Run the identical corpus and concurrency matrix.
 4. Record proposed, accepted, and rejected draft tokens from llama.cpp metrics.
@@ -784,7 +783,7 @@ The aspirational 60 tokens/s figure from the issue is not a release requirement.
 
 Stop software tuning and recommend a hardware change when all are true:
 
-- the four-GPU layer split and balanced model placement have been tested;
+- the four-GPU and three-GPU layer splits and balanced model placement have been tested;
 - GPU compute remains underutilized while PCIe links remain saturated;
 - negotiated widths are x1 or peer bandwidth remains materially below the cards' useful transfer rate; and
 - moving GPUs among available slots does not improve the result.
@@ -792,7 +791,7 @@ Stop software tuning and recommend a hardware change when all are true:
 Evaluate hardware changes in this order:
 
 1. reseat and validate risers, cables, power, and BIOS PCIe generation;
-2. move the four-card groups onto the best available root complexes/slots;
+2. move the four-card and three-card groups onto the best available root complexes/slots;
 3. replace x1 USB-style risers with direct-lane cabling where the motherboard exposes lanes;
 4. use a suitable PCIe switch/backplane; or
 5. replace the mining-style motherboard/platform with one providing sufficient CPU PCIe lanes.
@@ -843,7 +842,7 @@ Back up Open WebUI according to its actual deployment method: named Docker volum
 | Client disconnects | Cancel queued work or close the active upstream stream immediately |
 | EC2 restarts | Uvicorn/Nginx restart through systemd; in-flight requests fail visibly; readiness waits for Group A |
 | Rig is unavailable | `/readyz` fails and inference returns 503; Open WebUI itself may remain reachable |
-| Tailnet link fails | Treat both workers as unhealthy; never fall back to a public worker port |
+| NetBird link fails | Treat both workers as unhealthy; never fall back to a public worker port |
 
 ---
 
@@ -881,7 +880,7 @@ Do not delete the new model files, services, or benchmark records during rollbac
 
 ## Adding a second rig later
 
-A second rig should use the same worker contract: stable worker ID, Tailnet-only URL, health endpoint, model list/status, slot status, and OpenAI-compatible inference routes. Add its topology-selected groups to the orchestrator registry and extend scheduling by model residency, health, queue depth, and measured capacity. Do not shard a single request across rigs over Tailscale; route complete requests to one four-GPU worker.
+A second rig should use the same worker contract: stable worker ID, NetBird-only URL, health endpoint, model list/status, slot status, and OpenAI-compatible inference routes. Add its topology-selected groups to the orchestrator registry and extend scheduling by model residency, health, queue depth, and measured capacity. Do not shard a single request across rigs over NetBird; route complete requests to one worker.
 
 ## Definition of done
 
