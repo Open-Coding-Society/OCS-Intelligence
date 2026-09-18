@@ -1,0 +1,39 @@
+[Unit]
+Description=OCS llama.cpp worker A — qwen3.8:27b on 5 GPUs
+After=network-online.target netbird.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/ocs-intelligence/worker-a.env
+UnsetEnvironment=GGML_CUDA_P2P
+ExecStart=/opt/llama.cpp/bin/llama-server \
+  --host 127.0.0.1 \
+  --port 8081 \
+  --model ${DEFAULT_MODEL_GGUF} \
+  --alias ${DEFAULT_MODEL_ID} \
+  --api-key ${WORKER_API_KEY} \
+  --n-gpu-layers 999 \
+  --split-mode layer \
+  --tensor-split ${TENSOR_SPLIT} \
+  --ctx-size ${CONTEXT_SIZE} \
+  --parallel 2 \
+  --cont-batching \
+  --flash-attn on \
+  --metrics \
+  --slots \
+  --warmup
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=600
+TimeoutStopSec=90
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/srv/ocs-intelligence/models
+ReadWritePaths=/var/lib/ocs-intelligence
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
