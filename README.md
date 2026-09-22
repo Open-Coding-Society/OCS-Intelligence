@@ -33,9 +33,18 @@ curl -sS "$OCS_BASE_URL/models" \
 
 Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality).
 
+Benchmark output speed, time to first token, and inter-token latency, then plot the Pareto chart:
+
+```bash
+python3 -m pip install -r benchmark/requirements.txt
+python3 -m benchmark run --out benchmark/results/latest.json
+python3 -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
+```
+
 ## Repo layout
 
 - [`scripts/demo.py`](./scripts/demo.py) — live demo / test walkthrough against the public API.
+- [`benchmark/`](./benchmark/) — GPU speed benchmark and Pareto chart.
 - [`orchestrator/`](./orchestrator/) — FastAPI router (deployed on the GPU rig).
 - [`systemd/`](./systemd/) — worker, orchestrator, and gateway units.
 - [`llm-relay-nginx.conf`](./llm-relay-nginx.conf) — live EC2 Nginx site (`/v1/` → localhost:9100).
