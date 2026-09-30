@@ -49,6 +49,17 @@ def pareto_frontier(points: list[Point]) -> list[Point]:
     return kept
 
 
+def _measured_1k_speed(row: dict) -> float | None:
+    for workload in row.get("workloads", []):
+        if workload.get("name") != "1k" or workload.get("status") != "measured":
+            continue
+        speed = (workload.get("median") or {}).get("output_tokens_per_second")
+        if speed is None:
+            return None
+        return float(speed)
+    return None
+
+
 def points_from_results(
     results: dict,
     models: tuple[ModelSpec, ...] = MODELS,
@@ -60,17 +71,40 @@ def points_from_results(
         score = intelligence.get(row.get("model"))
         if score is None:
             continue
-        for workload in row.get("workloads", []):
-            if workload.get("name") != "1k" or workload.get("status") != "measured":
-                continue
-            speed = (workload.get("median") or {}).get("output_tokens_per_second")
-            if speed is None:
-                continue
-            points.append(Point(row["model"], float(speed), float(score)))
+        speed = _measured_1k_speed(row)
+        if speed is None:
+            continue
+        points.append(Point(row["model"], speed, float(score)))
     return points
 
 
-def render(points: list[Point], out_path: Path) -> list[Point]:
+def unscored_speeds(
+    results: dict,
+    models: tuple[ModelSpec, ...] = MODELS,
+) -> list[tuple[str, float]]:
+    """1k speeds for models with no published Intelligence Index.
+
+    These stay off the Y axis. The chart marks their speed so the fast model
+    is visible beside the scored point.
+    """
+    intelligence = {spec.model_id: spec.intelligence for spec in models}
+    marks: list[tuple[str, float]] = []
+    for row in results.get("models", []):
+        model_id = row.get("model")
+        if intelligence.get(model_id) is not None:
+            continue
+        speed = _measured_1k_speed(row)
+        if model_id is None or speed is None:
+            continue
+        marks.append((str(model_id), speed))
+    return marks
+
+
+def render(
+    points: list[Point],
+    out_path: Path,
+    speed_marks: list[tuple[str, float]] | None = None,
+) -> list[Point]:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -100,6 +134,26 @@ def render(points: list[Point], out_path: Path) -> list[Point]:
             label="Pareto line",
         )
         ax.legend(loc="best", frameon=False)
+    marks = speed_marks or []
+    if marks:
+        scored_speeds = [point.speed for point in points]
+        scored_scores = [point.intelligence for point in points]
+        xmax = max([mark_speed for _, mark_speed in marks] + scored_speeds + [1.0])
+        ymax = max(scored_scores + [1.0])
+        ax.set_xlim(0, xmax * 1.12)
+        ax.set_ylim(0, ymax * 1.28)
+        for model_id, mark_speed in marks:
+            ax.axvline(mark_speed, color="0.45", linestyle="--", linewidth=1, zorder=1)
+            ax.annotate(
+                f"{model_id}\nno published index",
+                (mark_speed, ymax * 0.72),
+                xytext=(-8, 0),
+                textcoords="offset points",
+                ha="right",
+                va="center",
+                fontsize=8,
+                color="0.25",
+            )
     ax.set_xlabel("Output speed (tokens/s)")
     ax.set_ylabel("Artificial Analysis Intelligence Index")
     ax.set_title("Intelligence vs output speed")

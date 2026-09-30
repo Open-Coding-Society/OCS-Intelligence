@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from benchmark.models import MODELS, model_by_id
-from benchmark.pareto import points_from_results, render
+from benchmark.pareto import points_from_results, render, unscored_speeds
 from benchmark.runner import default_encode, load_dotenv, openai_stream, run_benchmark, write_results
 
 REPO = Path(__file__).resolve().parents[1]
@@ -67,7 +67,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
 def _cmd_plot(args: argparse.Namespace) -> int:
     results = json.loads(args.results.read_text(encoding="utf-8"))
     points = points_from_results(results)
-    frontier = render(points, args.out)
+    frontier = render(points, args.out, speed_marks=unscored_speeds(results))
     print(
         f"{args.out}  points={len(points)}  frontier={len(frontier)}"
     )

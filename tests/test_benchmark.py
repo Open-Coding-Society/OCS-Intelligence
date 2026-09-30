@@ -113,14 +113,18 @@ def test_single_chunk_has_no_output_speed():
     assert sample.tokens_after_first_chunk == 0
 
 
-def test_context_skip_for_both_workers():
-    for spec in MODELS:
-        assert skip_reason(WORKLOADS[0], spec, 1000) is None
-        reason_10 = skip_reason(WORKLOADS[1], spec, 1500)
-        reason_100 = skip_reason(WORKLOADS[2], spec, 2000)
-        assert reason_10 is not None and "exceeds context" in reason_10
-        assert reason_100 is not None and "exceeds context" in reason_100
-        assert str(spec.context) in reason_10
+def test_context_skip_follows_each_workers_window():
+    small = model_by_id("qwen2.5:0.5b")
+    large = model_by_id("qwen3.8:27b")
+    assert skip_reason(WORKLOADS[0], small, 1000) is None
+    assert skip_reason(WORKLOADS[0], large, 1000) is None
+    reason_10 = skip_reason(WORKLOADS[1], small, 1500)
+    reason_100 = skip_reason(WORKLOADS[2], small, 2000)
+    assert reason_10 is not None and "exceeds context" in reason_10
+    assert reason_100 is not None and "exceeds context" in reason_100
+    assert str(small.context) in reason_10
+    assert skip_reason(WORKLOADS[1], large, 1500) is None
+    assert skip_reason(WORKLOADS[2], large, 2000) is None
 
 
 def test_runner_skips_long_workloads_and_medians_without_queue():
@@ -181,14 +185,24 @@ def test_runner_does_not_call_the_model_for_skipped_shapes():
         encode=encode_words,
         workloads=WORKLOADS,
     )
-    assert calls == ["qwen2.5:0.5b:1000", "qwen3.8:27b:1000"]
-    for row in payload["models"]:
-        by_name = {item["name"]: item for item in row["workloads"]}
-        assert by_name["1k"]["status"] == "measured"
-        assert by_name["10k"]["status"] == "skipped"
-        assert by_name["100k"]["status"] == "skipped"
-        assert "exceeds context" in by_name["10k"]["skipped_reason"]
-        assert "skipped_reason" not in by_name["1k"]
+    assert calls == [
+        "qwen2.5:0.5b:1000",
+        "qwen3.8:27b:1000",
+        "qwen3.8:27b:1500",
+        "qwen3.8:27b:2000",
+    ]
+    by_model = {row["model"]: {item["name"]: item for item in row["workloads"]} for row in payload["models"]}
+    small = by_model["qwen2.5:0.5b"]
+    assert small["1k"]["status"] == "measured"
+    assert small["10k"]["status"] == "skipped"
+    assert small["100k"]["status"] == "skipped"
+    assert "exceeds context" in small["10k"]["skipped_reason"]
+    assert "skipped_reason" not in small["1k"]
+    large = by_model["qwen3.8:27b"]
+    assert large["1k"]["status"] == "measured"
+    assert large["10k"]["status"] == "measured"
+    assert large["100k"]["status"] == "measured"
+    assert "skipped_reason" not in large["1k"]
 
 
 def test_prompts_hit_the_token_target_and_differ_per_repeat():

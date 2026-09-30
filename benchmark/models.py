@@ -45,7 +45,7 @@ MODELS: tuple[ModelSpec, ...] = (
     ),
     ModelSpec(
         model_id="qwen3.8:27b",
-        context=4096,
+        context=262144,
         temperature=0.6,
         reasoning=True,
         intelligence=QWEN38_MEDIUM_INTELLIGENCE,

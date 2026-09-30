@@ -17,7 +17,7 @@ ExecStart=/opt/llama.cpp/bin/llama-server \
   --split-mode layer \
   --tensor-split ${TENSOR_SPLIT} \
   --ctx-size ${CONTEXT_SIZE} \
-  --parallel 2 \
+  --parallel 1 \
   --cont-batching \
   --flash-attn on \
   --metrics \
