@@ -1,51 +1,45 @@
 # OCS-Intelligence
 
-Inference infrastructure for the Open Coding Society at `https://ai.opencodingsociety.com`.
+Free, student-built AI coding help for the Open Coding Society, served from donated GTX 1070 GPUs at `https://ai.opencodingsociety.com`.
 
-Seven GTX 1070s cannot run a classroom of Copilot tabs at once. An admission gateway on EC2 holds extra students in a fair wait line and only forwards as many inferences as the rig can actually serve. GitHub Copilot still uses a normal OpenAI `/v1/` API. Open WebUI stays at `/`.
+Students point GitHub Copilot (or any OpenAI client) at `/v1`. An admission gateway on EC2 holds extra requests in a fair wait line, so the GPUs only run what they can actually serve. Open WebUI stays at `/`.
 
-**How the wait line works, and why it is there:** [`docs/architecture/gateway.md`](./docs/architecture/gateway.md)
+```text
+Copilot / curl ─HTTPS─▶ EC2 Nginx ─▶ admission gateway ─NetBird─▶ rig orchestrator ─▶ llama.cpp workers (GTX 1070s)
+```
 
-## Docs
+## Documentation
 
-- **[`docs/architecture/gateway.md`](./docs/architecture/gateway.md)** — inner workings of the EC2 admission queue.
-- **[`docs/guides/using-the-api.md`](./docs/guides/using-the-api.md)** — how to call the API, Copilot setup, and **real captured responses**.
-- **[`docs/status.md`](./docs/status.md)** — live architecture, deployed configs, open issues.
-- **[`docs/archive/cursor-handoff.md`](./docs/archive/cursor-handoff.md)** — original execution plan.
+**Start at [`docs/docs.md`](./docs/docs.md).** Common entry points:
+
+- [Getting started](./docs/guides/getting-started.md): for new team members
+- [Using the API](./docs/guides/using-the-api.md): curl, Python, Copilot
+- [Architecture overview](./docs/architecture/overview.md): how it all fits together
+- [Status](./docs/status.md): what's running right now
+- [Decisions](./docs/decisions/decisions.md): why it's built this way
+- [Conventions](./docs/conventions.md): how to write and add docs
+
+Coding agents: read [`AGENTS.md`](./AGENTS.md).
 
 ## Quick start
 
 ```bash
-cp .env.example .env   # set OCS_API_KEY (file is gitignored)
-python3 scripts/demo.py --pause          # live walkthrough
-python3 scripts/demo.py                  # health, auth, 0.5b, 7-way queue
-python3 scripts/demo.py --quality        # also hit the 27B model
+cp .env.example .env                 # set OCS_API_KEY (ask an operator; .env is gitignored)
+python3 scripts/demo.py --pause      # live walkthrough: health, auth, a completion, the wait line
+./scripts/request.sh "Explain recursion in one sentence."
 ```
 
-Or a single curl:
-
-```bash
-set -a && source .env && set +a
-
-curl -sS "$OCS_BASE_URL/models" \
-  -H "Authorization: Bearer $OCS_API_KEY"
-```
-
-Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality).
-
-Benchmark output speed, time to first token, and inter-token latency, then plot the Pareto chart:
-
-```bash
-python3 -m pip install -r benchmark/requirements.txt
-python3 -m benchmark run --out benchmark/results/latest.json
-python3 -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
-```
+Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality, reasoning, slower).
 
 ## Repo layout
 
-- [`scripts/demo.py`](./scripts/demo.py) — live demo / test walkthrough against the public API.
-- [`benchmark/`](./benchmark/) — GPU speed benchmark and Pareto chart.
-- [`orchestrator/`](./orchestrator/) — FastAPI router (deployed on the GPU rig).
-- [`infra/`](./infra/) — worker, orchestrator, and gateway units.
-- [`infra/ec2/llm-relay-nginx.conf`](./infra/ec2/llm-relay-nginx.conf) — live EC2 Nginx site (`/v1/` → localhost:9100).
-- [`docs/archive/`](./docs/archive/) — superseded planning docs.
+| Path | What |
+|---|---|
+| [`gateway/`](./gateway/) | EC2 admission gateway (FastAPI) |
+| [`orchestrator/`](./orchestrator/) | Rig-side model router (FastAPI) |
+| [`infra/`](./infra/) | systemd units, env templates, and the Nginx site for [`ec2/`](./infra/ec2/) and [`rig/`](./infra/rig/) |
+| [`benchmark/`](./benchmark/) | Speed benchmark and Pareto chart ([guide](./docs/testing/benchmarks.md)) |
+| [`scripts/`](./scripts/) | `demo.py`, `request.sh`, `check_docs.py` |
+| [`tests/`](./tests/) | Offline tests: `python3 -m pytest -q` |
+| [`docs/`](./docs/docs.md) | Documentation |
+| [`evidence/`](./evidence/evidence.md) | Dated, append-only proof: captures, benchmark runs, weekly reports |
