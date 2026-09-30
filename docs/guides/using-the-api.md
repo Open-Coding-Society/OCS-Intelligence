@@ -4,7 +4,7 @@ Live endpoint: `https://ai.opencodingsociety.com/v1`
 
 This is an OpenAI-compatible Chat Completions API in front of two `llama.cpp` workers on the GPU rig. An admission gateway on EC2 holds extra clients in a wait line so the GPUs are not flooded. Captured **2026-09-17** from real public `curl` calls (API path) and **2026-09-18** for the queue (7/7 sync checks plus concurrency).
 
-The student API key is **not committed**. Copy [`.env.example`](./.env.example) to `.env` (gitignored) on your machine. Operators already have a local `.env` in this checkout.
+The student API key is **not committed**. Copy [`.env.example`](../../.env.example) to `.env` (gitignored) on your machine. Operators already have a local `.env` in this checkout.
 
 ```bash
 cp .env.example .env   # then set OCS_API_KEY
@@ -77,7 +77,7 @@ python3 scripts/demo.py --quality     # also the 27B model
 
 ### 2.4 Wait line (classroom concurrency)
 
-Full design: **[`GATEWAY.md`](./GATEWAY.md)**. Short version:
+Full design: **[`GATEWAY.md`](../architecture/gateway.md)**. Short version:
 
 The GPUs cannot run a whole class at once. Extra `/v1/chat/completions` requests wait on EC2 until a slot is free. `/v1/models` and `/healthz` skip the line.
 
@@ -355,4 +355,4 @@ Assembled visible answer: **Quick sort and merge sort.** ~**8.8 tokens/s**.
 
 Rig units `ocs-llama-a`, `ocs-llama-b`, and `ocs-orchestrator` were all `active`. EC2 `ocs-gateway` is `active` on `127.0.0.1:9100`. Nginx `/` still serves Open WebUI.
 
-Known limitation: 27B generation is slower than the old 7-GPU Ollama baseline (~12.5 tok/s). NCCL is deferred. See [`STATUS.md`](./STATUS.md).
+Known limitation: 27B generation is slower than the old 7-GPU Ollama baseline (~12.5 tok/s). NCCL is deferred. See [`STATUS.md`](../status.md).

@@ -103,7 +103,7 @@ Nginx binds the public name and TLS. The gateway binds **localhost only**, so th
 
 ### Decision order
 
-Code: [`gateway/main.py`](./gateway/main.py), [`gateway/lanes.py`](./gateway/lanes.py), [`gateway/auth.py`](./gateway/auth.py).
+Code: [`gateway/main.py`](../../gateway/main.py), [`gateway/lanes.py`](../../gateway/lanes.py), [`gateway/auth.py`](../../gateway/auth.py).
 
 ```mermaid
 flowchart TD
@@ -206,15 +206,15 @@ That is the whole product: a slow, honest GPU cluster that **fails in a language
 
 | File | Role |
 |---|---|
-| [`gateway/main.py`](./gateway/main.py) | FastAPI: auth, 404/429, streaming vs blocking |
-| [`gateway/lanes.py`](./gateway/lanes.py) | Per-model FIFO semaphore, occupancy, keepalives, cancel |
-| [`gateway/auth.py`](./gateway/auth.py) | Bearer check against `PUBLIC_API_KEYS` |
-| [`gateway/proxy.py`](./gateway/proxy.py) | httpx to `http://100.75.123.203:9000` |
-| [`gateway/config.py`](./gateway/config.py) | Caps and timeouts from env |
-| [`systemd/ocs-gateway.service`](./systemd/ocs-gateway.service) | `127.0.0.1:9100`, `--workers 1` |
-| [`llm-relay-nginx.conf`](./llm-relay-nginx.conf) | `/v1/` → localhost:9100, 3600s read/send |
+| [`gateway/main.py`](../../gateway/main.py) | FastAPI: auth, 404/429, streaming vs blocking |
+| [`gateway/lanes.py`](../../gateway/lanes.py) | Per-model FIFO semaphore, occupancy, keepalives, cancel |
+| [`gateway/auth.py`](../../gateway/auth.py) | Bearer check against `PUBLIC_API_KEYS` |
+| [`gateway/proxy.py`](../../gateway/proxy.py) | httpx to `http://100.75.123.203:9000` |
+| [`gateway/config.py`](../../gateway/config.py) | Caps and timeouts from env |
+| [`infra/ec2/ocs-gateway.service`](../../infra/ec2/ocs-gateway.service) | `127.0.0.1:9100`, `--workers 1` |
+| [`infra/ec2/llm-relay-nginx.conf`](../../infra/ec2/llm-relay-nginx.conf) | `/v1/` → localhost:9100, 3600s read/send |
 
-Deployed on EC2 as `/opt/ocs-gateway` with `/etc/ocs-gateway/gateway.env` (mode `0600`, not in git). How to call the API, including Copilot and verbatim responses: [`USAGE.md`](./USAGE.md). Live demo script: [`scripts/demo.py`](./scripts/demo.py). What is running tonight: [`STATUS.md`](./STATUS.md).
+Deployed on EC2 as `/opt/ocs-gateway` with `/etc/ocs-gateway/gateway.env` (mode `0600`, not in git). How to call the API, including Copilot and verbatim responses: [`USAGE.md`](../guides/using-the-api.md). Live demo script: [`scripts/demo.py`](../../scripts/demo.py). What is running tonight: [`STATUS.md`](../status.md).
 
 ---
 

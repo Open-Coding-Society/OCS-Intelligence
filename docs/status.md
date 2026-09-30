@@ -2,7 +2,7 @@
 
 _Last updated: 2026-09-18 (EC2 admission gateway live), based on live verification over NetBird SSH._
 
-This document describes what is **actually running right now**, how it works end to end, and what's left to do. How the EC2 wait line works: [`GATEWAY.md`](./GATEWAY.md). Original execution plan: [`CURSOR_HANDOFF.md`](./CURSOR_HANDOFF.md). Superseded planning docs live in [`archive/`](./archive/).
+This document describes what is **actually running right now**, how it works end to end, and what's left to do. How the EC2 wait line works: [`GATEWAY.md`](./architecture/gateway.md). Original execution plan: [`CURSOR_HANDOFF.md`](./archive/cursor-handoff.md). Superseded planning docs live in [`archive/`](./archive/).
 
 ---
 
@@ -22,7 +22,7 @@ This document describes what is **actually running right now**, how it works end
 | Open WebUI | ✅ Still running (port 3000, untouched) |
 | **Open issue:** Worker A throughput | ⚠️ 8.7 tok/s, *slower* than the 12.5 tok/s baseline — NCCL deferred; see [§6](#6-open-issue-worker-a-is-slower-than-baseline) |
 
-**In short:** workers, orchestrator, public `/v1/` path, and the EC2 wait line are live. **Why the wait line exists and how it is implemented:** [`GATEWAY.md`](./GATEWAY.md). Student API calls and **verbatim captures** are in [`USAGE.md`](./USAGE.md). Open WebUI at `/` still reports 0.11.3. Worker A vs the old Ollama baseline is still open; NCCL is deferred.
+**In short:** workers, orchestrator, public `/v1/` path, and the EC2 wait line are live. **Why the wait line exists and how it is implemented:** [`GATEWAY.md`](./architecture/gateway.md). Student API calls and **verbatim captures** are in [`USAGE.md`](./guides/using-the-api.md). Open WebUI at `/` still reports 0.11.3. Worker A vs the old Ollama baseline is still open; NCCL is deferred.
 
 ---
 
@@ -226,7 +226,7 @@ LimitNOFILE=1048576
 WantedBy=multi-user.target
 ```
 
-`ocs-llama-b.service` is identical except `port 8082`, `worker-b.env`, and `TimeoutStartSec=300` (smaller model, faster startup). Both files live in [`systemd/`](./systemd/) in this repo, kept in sync with what's on the rig.
+`ocs-llama-b.service` is identical except `port 8082`, `worker-b.env`, and `TimeoutStartSec=300` (smaller model, faster startup). Both files live in [`infra/rig/`](../infra/rig/) in this repo, kept in sync with what's on the rig.
 
 ### 4.5 `llama-server` binary details
 
@@ -281,7 +281,7 @@ In rough priority order:
 1. **NCCL / Worker A throughput** — deferred.
 2. **Per-student API keys** — documented only; still one shared Bearer key. Needed so one laptop cannot fill the wait line.
 3. **Housekeeping**: `apt-get clean` on the rig. Optionally restrict rig port 9000 to the EC2 NetBird IP so the wait line cannot be bypassed.
-4. Copilot Chat from a student machine (API path is verified; see [`USAGE.md`](./USAGE.md)).
+4. Copilot Chat from a student machine (API path is verified; see [`USAGE.md`](./guides/using-the-api.md)).
 
 ---
 
