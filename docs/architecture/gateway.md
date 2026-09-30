@@ -1,3 +1,8 @@
+---
+status: current
+last_verified: 2026-09-18
+---
+
 # The admission gateway
 
 OCS Intelligence is a classroom API in front of seven GTX 1070s. Those cards can run **one** serious 27B completion at a time, or **two** tiny 0.5B ones. They cannot run a lab of Copilot tabs. The admission gateway is the piece that makes that hardware usable by many students anyway.
@@ -61,7 +66,7 @@ Two independent lanes, one per model. They do not steal slots from each other.
 | A | `qwen3.8:27b` | 5 | **1** | **4** | 5 | 6th → 429 |
 | B | `qwen2.5:0.5b` | 2 | **2** | **4** | 6 | 7th → 429 |
 
-Live check, same day:
+Live check, same day ([evidence](../../evidence/captures/2026-09-18-gateway-concurrency.md)):
 
 - Worker B, 7 parallel streams → **6 × HTTP 200, 1 × HTTP 429**
 - Worker A, 6 parallel streams → **5 × HTTP 200, 1 × HTTP 429**, keepalives observed on A
@@ -214,7 +219,7 @@ That is the whole product: a slow, honest GPU cluster that **fails in a language
 | [`infra/ec2/ocs-gateway.service`](../../infra/ec2/ocs-gateway.service) | `127.0.0.1:9100`, `--workers 1` |
 | [`infra/ec2/llm-relay-nginx.conf`](../../infra/ec2/llm-relay-nginx.conf) | `/v1/` → localhost:9100, 3600s read/send |
 
-Deployed on EC2 as `/opt/ocs-gateway` with `/etc/ocs-gateway/gateway.env` (mode `0600`, not in git). How to call the API, including Copilot and verbatim responses: [`USAGE.md`](../guides/using-the-api.md). Live demo script: [`scripts/demo.py`](../../scripts/demo.py). What is running tonight: [`STATUS.md`](../status.md).
+Deployed paths: [hosts](../reference/hosts.md#ec2). Every env var: [configuration](../reference/configuration.md#admission-gateway-ec2-etcocs-gatewaygatewayenv). How to call the API: [using the API](../guides/using-the-api.md). Live demo script: [`scripts/demo.py`](../../scripts/demo.py). Whether it's running right now: [status](../status.md). Why the queue is on EC2 at all: [decision 0005](../decisions/0005-admission-queue-on-ec2.md).
 
 ---
 
