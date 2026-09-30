@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: ../decisions/0003-5-plus-2-gpu-split.md
+last_verified: 2026-09-17
+---
+
 # OCS Intelligence Inference Orchestrator Deployment Guide
 
 ## Purpose

@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: ../architecture/gateway.md
+last_verified: 2026-09-18
+---
+
 ## Target request path
 
 ```mermaid

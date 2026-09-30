@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: ../operations/deploy-rig.md
+last_verified: 2026-09-17
+---
+
 # Cursor Agent Handoff: OCS Intelligence Inference Orchestrator
 
 ## 1. Project Goal & Core Objective

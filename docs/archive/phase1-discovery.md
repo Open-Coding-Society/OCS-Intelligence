@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: ../status.md
+last_verified: 2026-09-16
+---
+
 # Phase 1 Discovery Record
 
 Status: Phase 1 discovery complete. Deployment is stopped pending hardware
