@@ -19,18 +19,20 @@ deciders: Requested by Yash Parikh. Not yet agreed by the team or the mentor.
 
 We'd track work as **sprints**, listed in the [roadmap](../project/roadmap.md#sprints):
 
-| Sprint | Goal |
-|---:|---|
-| 1 | Prove one lane end to end (the blueprint's Week 1) |
-| 2 | VR-related work (owner: yashpatil321) |
-| 3 | Resolve both rigs after they were rebuilt and rewired |
-| 4 | Get inference working on both rigs |
+| Sprint | Weeks | Goal |
+|---:|---|---|
+| 1 | 1 | Prove one lane end to end (the blueprint's Week 1) |
+| 2 | 2–3 | VR-related work (owner: yashpatil321) |
+| 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired |
+| 4 | 3–5 | Get inference working on both rigs |
+
+Sprints can overlap: in week 3, Sprints 2, 3 and 4 were all running.
 
 ## Consequences
 
-- Good: labels match what the team is actually doing, and a long piece of work doesn't throw off the numbering.
+- Good: labels match what the team is actually doing, and a long piece of work doesn't throw off the numbering. Parallel work streams each get their own sprint.
 - Bad / accepted trade-off: it's harder to see at a glance how far we are from the blueprint's six-week schedule. The roadmap keeps the blueprint's week table so the two can be compared.
-- The Friday one-page report continues unchanged (`evidence/weekly/YYYY-Www.md`). Its checkpoint line names the current sprint.
+- The Friday one-page report continues unchanged (`evidence/weekly/YYYY-Www.md`). Its checkpoint line names the sprints running that week.
 - Sprint material goes in `evidence/sprintN/`. `evidence/week1/` was renamed `evidence/sprint1/`. The files themselves weren't changed.
 - Follow-up work: give Sprints 2–4 exit criteria once their scope is written down.
 

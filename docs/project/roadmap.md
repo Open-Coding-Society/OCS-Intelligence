@@ -9,14 +9,14 @@ The plan, and what's planned but not built. Based on the 2026-09-28 mentor meeti
 
 ## Sprints
 
-We plan in sprints, not fixed weeks, because some pieces of work take longer than others. A sprint closes when its goal is met **and** there is evidence, however long that takes. Sprint material goes in `evidence/sprintN/`. Proposed in [0007](../decisions/0007-sprints-over-fixed-weeks.md).
+We plan in sprints, not fixed weeks, because some pieces of work take longer than others. A sprint closes when its goal is met **and** there is evidence, however long that takes. Sprints can overlap, so more than one can be running in the same week. Sprint material goes in `evidence/sprintN/`. Proposed in [0007](../decisions/0007-sprints-over-fixed-weeks.md).
 
-| Sprint | Goal | State |
-|---:|---|---|
-| 1 | Prove one lane end to end (blueprint Week 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
-| 2 | VR-related work (owner: yashpatil321). Scope to be added with their commit. | Not started in this repo |
-| 3 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
-| 4 | Get inference working on both rigs | Planned |
+| Sprint | Weeks | Goal | State |
+|---:|---|---|---|
+| 1 | 1 | Prove one lane end to end (blueprint Week 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
+| 2 | 2–3 | VR-related work (owner: yashpatil321) | Material not in this repo yet. yashpatil321 will commit it. |
+| 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
+| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14) |
 
 ## The blueprint's six-week campaign
 
