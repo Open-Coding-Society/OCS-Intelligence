@@ -15,7 +15,7 @@ Start here. Every doc in the repo is linked from this page, either directly or t
 | Doc | What it answers |
 |---|---|
 | [Charter](./project/charter.md) | Why the project exists, scope, non-goals, success targets, who's on the team |
-| [Roadmap](./project/roadmap.md) | The six-week campaign, phases, and what's planned but not built |
+| [Roadmap](./project/roadmap.md) | Sprints, the blueprint's six-week campaign, phases, and what's planned but not built |
 | [Glossary](./project/glossary.md) | Terms and abbreviations |
 
 ## Guides (how to do things)

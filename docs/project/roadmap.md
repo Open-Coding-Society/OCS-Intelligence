@@ -7,9 +7,20 @@ last_verified: 2026-09-29
 
 The plan, and what's planned but not built. Based on the 2026-09-28 mentor meeting, with backlog state updated 2026-09-29 ([deck](../sources/2026-09-28-week0-1-mentor-deck.md)). For what's live, see [status](../status.md).
 
-## The six-week campaign
+## Sprints
 
-From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). Each week closes only when its exit criteria are true **and** there is evidence.
+We plan in sprints, not fixed weeks, because some pieces of work take longer than others. A sprint closes when its goal is met **and** there is evidence, however long that takes. Sprint material goes in `evidence/sprintN/`. Proposed in [0007](../decisions/0007-sprints-over-fixed-weeks.md).
+
+| Sprint | Goal | State |
+|---:|---|---|
+| 1 | Prove one lane end to end (blueprint Week 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
+| 2 | VR-related work (owner: yashpatil321). Scope to be added with their commit. | Not started in this repo |
+| 3 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
+| 4 | Get inference working on both rigs | Planned |
+
+## The blueprint's six-week campaign
+
+From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). This is the plan we're measured against. We now track work as [sprints](#sprints), and Sprint 1 corresponds to Week 1. Each week closes only when its exit criteria are true **and** there is evidence.
 
 | Week | Goal | Done when |
 |---:|---|---|
@@ -75,10 +86,10 @@ From blueprint §3. Verified against the code and [status](../status.md) as of 2
 | Monitoring: GPU exporter → Prometheus → Grafana | Blueprint §4, deck slide 35 | llama-server already exposes `/metrics` |
 | R&D: model warming, speculative decoding, quantization levels, YaRN | Deck slide 20 | Each needs a before/after measurement |
 | Label rigs and GPUs, physical subgroups | Deck slide 33 | Also settles the [7-vs-8 card question](../architecture/hardware.md) |
-| Week 0 and Week 1 playbooks | Deck slide 33 | In progress |
+| Week 0 and Week 1 (Sprint 1) playbooks | Deck slide 33 | In progress: two in [`evidence/sprint1/`](../../evidence/evidence.md) |
 | Self-healing agent loop (detect → diagnose → repair → verify → log) | Deck slide 34 | "Run" stage. Research question. |
 
-## Next-sprint backlog (as presented 2026-09-28)
+## Sprint 1 backlog (as presented 2026-09-28)
 
 From deck slide 32, with state as of 2026-09-29. Everything below refers to Rig 1. **Nothing is done on Rig 2 yet.**
 

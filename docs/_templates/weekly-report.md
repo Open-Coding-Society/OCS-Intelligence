@@ -9,7 +9,7 @@ The one-page Friday bundle from [Blueprint v2.2 §7](../../docs/sources/2026-09-
 
 | | |
 |---|---|
-| **Checkpoint** | Week N: <exit criteria from the roadmap> |
+| **Checkpoint** | Sprint N: <goal from the roadmap> |
 | **Checkpoint status** | open / closed / at risk |
 
 ## Decisions made

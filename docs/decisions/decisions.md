@@ -15,6 +15,7 @@ Architecture decision records (ADRs): why we chose X over Y, so nobody has to ar
 | [0004](./0004-netbird-over-cloudflare-ngrok.md) | NetBird + EC2 relay for connectivity | accepted | 2026-09-16 | no |
 | [0005](./0005-admission-queue-on-ec2.md) | The wait line lives on EC2, in process, with no Redis | accepted | 2026-09-18 | partly (§4 queue: yes; routing to replicas: n/a) |
 | [0006](./0006-public-endpoint.md) | Serve the API on the public internet | accepted ⚠️ blueprint review pending | 2026-09-17 | **yes** (§7 scope lock) |
+| [0007](./0007-sprints-over-fixed-weeks.md) | Track work in sprints, not fixed weeks | proposed | 2026-10-14 | **yes** (§7 schedule) |
 
 ## Statuses
 

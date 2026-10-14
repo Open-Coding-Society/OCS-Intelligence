@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 REPO = Path(__file__).resolve().parents[1]
 DOCS = REPO / "docs"
@@ -71,7 +72,7 @@ def links(path: Path) -> list[str]:
 def local_target(path: Path, link: str) -> Path | None:
     if re.match(r"^[a-z][a-z0-9+.-]*:", link) or link.startswith("#"):
         return None
-    target = link.split("#", 1)[0]
+    target = unquote(link.split("#", 1)[0])
     return (path.parent / target).resolve() if target else None
 
 

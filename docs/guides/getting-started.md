@@ -47,7 +47,7 @@ Everything should pass without network or GPU access.
 | find any doc | [docs index](../docs.md) |
 | know what's running now | [status](../status.md) |
 | know why something is built this way | [decisions](../decisions/decisions.md) |
-| know what we're doing this week | [roadmap](../project/roadmap.md) |
+| know what we're doing this sprint | [roadmap](../project/roadmap.md) |
 | get a shell on the machines (operators) | [NetBird access](./netbird-access.md) |
 | write or change a doc | [conventions](../conventions.md) |
 
