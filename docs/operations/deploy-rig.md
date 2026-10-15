@@ -11,6 +11,16 @@ Builds llama.cpp for Pascal and brings up Worker A, Worker B, and the orchestrat
 
 Paths, ports, and unit names: [hosts](../reference/hosts.md). Env vars: [configuration](../reference/configuration.md).
 
+## Rig 2: one script
+
+Rig 2 has a different layout: a single worker serves `qwen3.8:27b` across **every** GPU on `127.0.0.1:8081`, with no Worker B and no orchestrator yet. [`infra/rig2/setup.sh`](../../infra/rig2/setup.sh) automates steps 1–4 below for that layout. It installs CUDA 12.6, builds llama.cpp, pulls the model with `ollama pull`, writes `/etc/ocs-intelligence/worker.env` from `nvidia-smi`, and starts `ocs-llama.service`:
+
+```bash
+git pull && sudo ./infra/rig2/setup.sh
+```
+
+It is safe to re-run. Overrides (`CONTEXT_SIZE`, `LLAMA_CPP_REF`, `REBUILD`, `MODEL`) are listed at the top of the script. Until someone runs it on Rig 2, treat it as untested.
+
 ## Before you start
 
 - A root shell on the rig ([NetBird access](../guides/netbird-access.md)). Use one persistent session, because steps take over an hour.
