@@ -265,5 +265,5 @@ figcaption { color: var(--fg-muted); font-size: 7.6pt; margin-top: 1.8mm; text-a
 img { max-width: 100%; }
 
 /* ---------- Pandoc highlighting overrides ---------- */
-pre > code.sourceCode > span { text-indent: 0; padding-left: 0; }
+pre > code.sourceCode > span { text-indent: 0 !important; padding-left: 0 !important; }
 code span.co { font-style: italic; }
