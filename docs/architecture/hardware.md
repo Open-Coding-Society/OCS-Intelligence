@@ -11,10 +11,21 @@ The physical rigs and the single source for the GPU inventory. Rig 1 inventory v
 
 | Rig | Role | State | Cards |
 |---|---|---|---|
-| Rig 1 (`ocs-intelligence-rig`) | Production inference | Serving | 7 × GTX 1070 visible to `nvidia-smi` (table below) |
-| Rig 2 (`ocs-intelligence-rig2`) | Development and test; proposed to serve students through Open WebUI ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)) | Serving `qwen3.6:35b-a3b` on all cards (2026-10-15). Every card is on PCIe gen 1 ×1 | 8 visible to `nvidia-smi`: GPU 0 is a **GTX 1080 Ti** (11 GB), GPUs 1–7 are GTX 1070 (8 GB). Driver 550.163.01 |
+| Rig 1 (`ocs-intelligence-rig`) | Production inference | Serving | 8 × GTX 1070, as reported by the team on 2026-10-16 after the Sprint 3 rebuild. The 2026-09-18 inventory (table below) shows 7. The 8th card's UUID hasn't been recorded |
+| Rig 2 (`ocs-intelligence-rig2`) | Development and test; proposed to serve students through Open WebUI ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)) | Serving `qwen3.6:35b-a3b` on all cards (2026-10-15). Every card is on PCIe gen 1 ×1 | 8 visible to `nvidia-smi`: GPU 0 is a **GTX 1080 Ti** (11 GB, in place of a 1070 that shipped with a broken hybrid fan), GPUs 1–7 are GTX 1070 (8 GB). Driver 550.163.01 |
 
-> **Card count discrepancy.** The blueprint and deck describe 8 cards per rig. The 2026-09-18 inventory of Rig 1 shows 7. Why the 8th card doesn't appear hasn't been recorded. Settle it when labeling the rigs ([roadmap](../project/roadmap.md)).
+> **Card count, resolved.** The 2026-09-18 inventory of Rig 1 showed 7 cards. After the Sprint 3 rewire, the team reports all 8 working ([playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md)). The table below still needs a fresh `nvidia-smi` inventory with the 8th UUID.
+
+## Power, storage, and memory
+
+As reported by the team on 2026-10-16 ([Sprint 3](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md)). Not checked on the machines.
+
+| | Rig 1 | Rig 2 |
+|---|---|---|
+| Power supplies | 1800 W (5 GPUs + board and CPU), Antec 1300 W (3 GPUs) | 1800 W (5 GPUs + board and CPU), EVGA (2 GPUs), Antec 1300 W (1 GPU) |
+| SSDs | 2 | 1 |
+| RAM | Not recorded | 1 stick: with two, the board doesn't start |
+| BIOS | Not reflashed | Reflashed in Sprint 3 |
 
 ## Rig 1 platform
 

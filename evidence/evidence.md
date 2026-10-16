@@ -40,5 +40,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-15 | [Open WebUI admin password reset](./captures/2026-10-15-open-webui-admin-password-reset.md): admin password replaced in the `auth` table; sign-in checked. Password not recorded |
 | 2026-10-15 | [Playbook: locking down NetBird with one-way group policies](./sprint4/2026-10-15-netbird-one-way-access.md) ([PDF](./sprint4/2026-10-15-netbird-one-way-access.pdf)), Sprint 4, done |
 | 2026-10-15 | [Playbook: inference on both rigs, behind one chat](./sprint4/2026-10-15-inference-on-both-rigs.md) ([PDF](./sprint4/2026-10-15-inference-on-both-rigs.pdf)), Sprint 4, in progress. Includes the 2026-10-16 [model picker screenshot](./sprint4/2026-10-16-open-webui-model-picker.png) |
+| 2026-09-28 | [Playbook: resolving both rigs](./sprint3/2026-09-28-resolving-both-rigs.md) ([PDF](./sprint3/2026-09-28-resolving-both-rigs.pdf)), Sprint 3, done: rewire, power split, Rig 1 at 8 GPUs, Rig 2's RAM fault and BIOS reflash. Written 2026-10-16 from team reports |
 
 Add a row for each new record, newest last.
