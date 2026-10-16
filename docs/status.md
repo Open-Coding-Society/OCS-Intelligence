@@ -22,7 +22,7 @@ What is running **right now** and what's broken. This is the only page for time-
 | FastAPI orchestrator (on the rig, `:9000`) | ✅ Running, healthy; routes both models |
 | EC2 admission gateway (`127.0.0.1:9100`) | ✅ Running; auth + wait line, then proxy to the rig |
 | EC2 Nginx `/v1/` route | ✅ Live → localhost gateway; `/` still Open WebUI |
-| Open WebUI | ✅ Still running (port 3000, untouched); reports version 0.11.3 |
+| Open WebUI | ✅ Running (port 3000), version 0.11.3. Two model connections: Rig 1 via the gateway, Rig 2 direct (2026-10-15). Admin password reset 2026-10-15 ([evidence](../evidence/captures/2026-10-15-open-webui-admin-password-reset.md)) |
 | Rig 2 worker (`qwen3.6:35b-a3b` MoE, all 8 GPUs, port 8081) | ✅ Running, healthy (2026-10-15). ~27 tok/s generation, 2 slots × 262k context ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Rig 2 orchestrator (`:9000`, one model) | ✅ Running, healthy (2026-10-15). Accepts the Open WebUI key and a temporary operator key, not the student key |
 | Open WebUI → Rig 2 | ✅ Connected (2026-10-15): second OpenAI connection `http://100.75.127.192:9000/v1` with its own key ([evidence](../evidence/captures/2026-10-15-open-webui-rig2-connection.md)). The dropdown hasn't been checked in a browser yet |

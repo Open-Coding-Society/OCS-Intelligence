@@ -80,8 +80,9 @@ From blueprint §3. Verified against the code and [status](../status.md) as of 2
 |---|---|---|
 | Model bake-off | Blueprint §5, deck slide 18 | Frozen task set, blind grading. Would confirm or reverse [0002](../decisions/0002-sharded-27b-over-per-gpu-replicas.md). |
 | Per-student API keys, quotas, revocation | Blueprint §3, §10 | Needed so the line is fair per person |
+| Router that knows both rigs (Mac Mini; EC2 gateway in the meantime) | Team, 2026-10-15 | Would replace Open WebUI's direct connection to Rig 2 and the temporary rigs-to-rigs NetBird rule ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Broker: FastAPI + Redis (live state) + RDS (durable state) | Deck slides 07–08, 21, 32 | MVP policy: filter healthy → capable → prefer loaded → least busy → queue → log. Would revisit [0005](../decisions/0005-admission-queue-on-ec2.md). |
-| Rig 2 (dev and test) | Deck slides 16–17 | Being built |
+| Rig 2 (dev and test) | Deck slides 16–17 | Built and serving `qwen3.6:35b-a3b` through Open WebUI since 2026-10-15 ([status](../status.md), [0009](../decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Worker A throughput fix | [status](../status.md#open-issue-worker-a-is-slower-than-baseline) | `llama-bench`, then NCCL |
 | Monitoring: GPU exporter → Prometheus → Grafana | Blueprint §4, deck slide 35 | llama-server already exposes `/metrics` |
 | R&D: model warming, speculative decoding, quantization levels, YaRN | Deck slide 20 | Each needs a before/after measurement |
@@ -91,7 +92,7 @@ From blueprint §3. Verified against the code and [status](../status.md) as of 2
 
 ## Sprint 1 backlog (as presented 2026-09-28)
 
-From deck slide 32, with state as of 2026-09-29. Everything below refers to Rig 1. **Nothing is done on Rig 2 yet.**
+From deck slide 32, with state as of 2026-09-29. Everything below refers to Rig 1. Rig 2's state is in [status](../status.md).
 
 | # | Item | State |
 |---|---|---|

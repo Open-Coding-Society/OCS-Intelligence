@@ -17,7 +17,7 @@ The public API is an OpenAI-compatible subset. Checked against the code in `gate
 | `GET` | `/healthz` | no | no | Gateway liveness: `{"status":"ok"}`. Doesn't check the rig. |
 | `GET` | `/v1/models` | yes | no | Lists the models below. Skips the wait line. |
 | `POST` | `/v1/chat/completions` | yes | yes | Blocking or `"stream": true` (SSE). Goes through the [wait line](../architecture/gateway.md). |
-| `GET` | `/` and everything else | Open WebUI login | — | Open WebUI (browser chat). `/api/version` returns its version. Skips the wait line. |
+| `GET` | `/` and everything else | Open WebUI login | — | Open WebUI (browser chat). `/api/version` returns its version. Chats with Rig 1's models wait in the gateway line; chats with Rig 2's model don't. |
 
 Anything else OpenAI offers (embeddings, completions, images, tools, …) isn't implemented.
 

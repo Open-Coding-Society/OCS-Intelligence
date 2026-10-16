@@ -2,7 +2,7 @@
 
 Free, student-built AI coding help for the Open Coding Society, served from donated GTX 1070 GPUs at `https://ai.opencodingsociety.com`.
 
-Students point GitHub Copilot (or any OpenAI client) at `/v1`. An admission gateway on EC2 holds extra requests in a fair wait line, so the GPUs only run what they can actually serve. Open WebUI stays at `/`.
+Students point GitHub Copilot (or any OpenAI client) at `/v1`. An admission gateway on EC2 holds extra requests in a fair wait line, so the GPUs only run what they can actually serve. Open WebUI stays at `/`, with models from both rigs in one dropdown.
 
 ```text
 Copilot / curl ─HTTPS─▶ EC2 Nginx ─▶ admission gateway ─NetBird─▶ rig orchestrator ─▶ llama.cpp workers (GTX 1070s)

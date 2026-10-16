@@ -27,19 +27,20 @@ What we protect, from whom, what's in place, and what's missing. Built from the 
 | `https://ai.opencodingsociety.com/` (Open WebUI) | Public internet | Open WebUI accounts |
 | Rig `:9000` (orchestrator) | EC2 and `outbound-only` operator peers ([policies](../architecture/network.md#access-policies)) | Same shared key |
 | Rig `:3000` (Open WebUI) | EC2 and `outbound-only` operator peers | Open WebUI accounts |
+| Rig 2 `:9000` (orchestrator) | EC2, Rig 1 (Open WebUI), and `outbound-only` operator peers | Its own keys: one for Open WebUI, one temporary operator key. Not the student key |
 | SSH on both hosts | NetBird peers only | NetBird SSO |
 
 ## Controls vs blueprint §10
 
 | Risk | Blueprint control | In place today | Gap |
 |---|---|---|---|
-| Strangers getting in | Per-user keys, TLS, firewall allow-list | TLS (Certbot). One shared key. Bad keys get 401 before queueing. | **No per-user keys or revocation.** Leaking the one key exposes everyone. |
+| Strangers getting in | Per-user keys, TLS, firewall allow-list | TLS (Certbot). One shared key. Bad keys get 401 before queueing. | **No per-user keys or revocation.** Leaking the one key exposes everyone. The shared key is also a **guessable string**, and was printed in an operator session on 2026-10-15. Rotate it. The Open WebUI admin password set on 2026-10-15 is also simple. |
 | One user hogging everything | Limits on tokens, context, request rate, queue size | Per-model wait line: 1+4 (A), 2+4 (B), then 429 | **No `max_tokens` cap**: one long 27B job holds the only quality slot. **No per-user or per-IP rate limit.** The deck (slide 29) lists "per-IP rate limiting at NGINX", but the repo copy of the config has no `limit_req`. One retry loop can fill both lanes. |
-| Skipping the wait line | — | Gateway on `127.0.0.1` only | Since 2026-10-15, NetBird policies limit rig `:9000` to EC2 and `outbound-only` operator peers ([decision 0008](../decisions/0008-one-way-netbird-policies.md)), so only operators can bypass the line. **Open WebUI skips the line** entirely. |
+| Skipping the wait line | — | Gateway on `127.0.0.1` only | Since 2026-10-15, NetBird policies limit rig `:9000` to EC2 and `outbound-only` operator peers ([decision 0008](../decisions/0008-one-way-netbird-policies.md)), so only operators can bypass the line. Open WebUI's calls to Rig 1's models go through the line, but its **calls to Rig 2's model skip it**. Only Rig 2's 2 llama-server slots and the orchestrator's 16-request cap limit them. |
 | Misconfiguration opening access | — | Env templates use `CHANGE_ME` | **An empty `PUBLIC_API_KEYS` accepts any Bearer token**, in both the gateway and the orchestrator ([configuration](../reference/configuration.md)). |
 | Secrets leaking | No secrets in prompts; scan outputs; don't log prompts | Keys only in `0600` env files and gitignored `.env`. The orchestrator swaps in the worker key, so clients never see it. | No output scanning. Prompt logging not verified ([data policy](./data-policy.md)). |
 | Sneaky instructions (prompt injection) | Model has no tools or actions; fixed system rules | The model has no tools. Text in, text out. | No fixed system prompt. No jailbreak test suite. |
-| Poisoned software | File hashes, pinned versions, approved model sources | Models symlinked to known Ollama blob hashes ([hosts](../reference/hosts.md#model-files)). llama.cpp commit recorded. | Python deps use ranges, not pins. No release checklist. |
+| Poisoned software | File hashes, pinned versions, approved model sources | Models symlinked to known Ollama blob hashes ([hosts](../reference/hosts.md#model-files)). Rig 2's GGUF checked against Hugging Face's SHA-256. llama.cpp commit recorded. | Python deps use ranges, not pins. No release checklist. |
 | Data piling up | Metadata-only logs, short retention, deletion procedure | — | **No retention policy** |
 | Dangerous code suggestions | Warning labels; nowhere to run code | Nothing executes model output | No safe-use notice published |
 
@@ -52,4 +53,6 @@ Suggested order. Each needs an issue and evidence when it's done.
 3. Add a `max_tokens` cap at the gateway.
 4. Per-student keys with revocation. This also makes the line fair per person.
 5. Per-IP `limit_req` in Nginx, or confirm where the deck's rate limiting lives.
-6. Run the RED TEAM drill ([test plan](../testing/test-plan.md)).
+6. Rotate the shared student key and the Open WebUI admin password to strong values.
+7. Put a router with a wait line in front of Rig 2, so Open WebUI's Rig 2 chats are admission-controlled too.
+8. Run the RED TEAM drill ([test plan](../testing/test-plan.md)).
