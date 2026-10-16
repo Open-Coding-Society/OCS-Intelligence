@@ -34,6 +34,7 @@ Start here. Every doc in the repo is linked from this page, either directly or t
 | [Admission gateway](./architecture/gateway.md) | The EC2 wait line: why it exists and how it works |
 | [Orchestrator](./architecture/orchestrator.md) | The rig-side model router |
 | [Workers](./architecture/workers.md) | llama.cpp, the 5+2 GPU split, models |
+| [Prefill and TTFT](./architecture/prefill-and-ttft.md) | Practical ways to reduce prompt-processing time and first-token latency |
 | [Network](./architecture/network.md) | EC2, Nginx, NetBird, and the tunnels that didn't work |
 | [Hardware](./architecture/hardware.md) | The rigs, GPU inventory, PCIe topology |
 | [Decisions](./decisions/decisions.md) | Why we chose X over Y (decision records) |
