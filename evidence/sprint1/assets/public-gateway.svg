@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" font-family="Ubuntu Sans, Inter, DejaVu Sans, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#D97757"/>
+    </marker>
+  </defs>
+  <rect width="760" height="300" rx="8" fill="#191918" stroke="#2E2E2C"/>
+  <text x="24" y="36" fill="#F4F0E8" font-size="15" font-weight="700">Students reach the rig through a relay, never directly</text>
+
+  <!-- students -->
+  <rect x="24" y="118" width="140" height="64" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="94" y="146" fill="#F4F0E8" font-size="13.5" font-weight="700" text-anchor="middle">Students</text>
+  <text x="94" y="166" fill="#A8A6A0" font-size="11" text-anchor="middle">public internet</text>
+
+  <path d="M164,150 L228,150" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+  <text x="196" y="140" fill="#A8A6A0" font-size="11" text-anchor="middle">HTTPS</text>
+
+  <!-- relay -->
+  <rect x="232" y="70" width="190" height="170" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="327" y="96" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1.2" text-anchor="middle">AWS RELAY</text>
+  <text x="327" y="114" fill="#A8A6A0" font-size="11" text-anchor="middle">public IP</text>
+  <rect x="252" y="130" width="150" height="40" rx="5" fill="#2A2A28" stroke="#2E2E2C"/>
+  <text x="327" y="155" fill="#F4F0E8" font-size="12" text-anchor="middle">nginx, TLS</text>
+  <rect x="252" y="182" width="150" height="40" rx="5" fill="#2A2A28" stroke="#2E2E2C"/>
+  <text x="327" y="207" fill="#F4F0E8" font-size="12" text-anchor="middle">NetBird peer</text>
+
+  <path d="M422,150 L486,150" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+  <text x="454" y="140" fill="#A8A6A0" font-size="11" text-anchor="middle">private link</text>
+
+  <!-- rig -->
+  <rect x="490" y="56" width="246" height="208" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="613" y="82" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1.2" text-anchor="middle">GPU RIG</text>
+  <text x="613" y="100" fill="#A8A6A0" font-size="11" text-anchor="middle">no public IP</text>
+  <rect x="510" y="112" width="206" height="38" rx="5" fill="#2A2A28" stroke="#2E2E2C"/>
+  <text x="613" y="136" fill="#F4F0E8" font-size="12" text-anchor="middle">NetBird peer</text>
+  <rect x="510" y="160" width="206" height="38" rx="5" fill="#2A2A28" stroke="#2E2E2C"/>
+  <text x="613" y="184" fill="#F4F0E8" font-size="12" text-anchor="middle">Open WebUI, Docker</text>
+  <rect x="510" y="208" width="206" height="40" rx="5" fill="#2A2A28" stroke="#D97757" stroke-width="1.6"/>
+  <text x="613" y="233" fill="#F4F0E8" font-size="12.5" font-weight="700" text-anchor="middle">Model server + GPUs</text>
+
+  <text x="24" y="284" fill="#6E6E6C" font-size="11">The rig has no open inbound port; every request arrives over the NetBird link the rig itself initiated.</text>
+</svg>
