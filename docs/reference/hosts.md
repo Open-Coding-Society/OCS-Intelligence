@@ -26,7 +26,7 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 | Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)) |
 | Rig | `127.0.0.1` | 8081 | `ocs-llama-a` (Worker A, `qwen3.8:27b`) | Rig only |
 | Rig | `127.0.0.1` | 8082 | `ocs-llama-b` (Worker B, `qwen2.5:0.5b`) | Rig only |
-| Rig | — | 3000 | Open WebUI (Docker) | EC2 and `outbound-only` peers over NetBird (Nginx `/` proxies to it) |
+| Rig | — | 3000 | Open WebUI (Docker). Its OpenAI connections: `https://ai.opencodingsociety.com/v1` (Rig 1 via the gateway) and `http://100.75.127.192:9000/v1` (Rig 2) | EC2 and `outbound-only` peers over NetBird (Nginx `/` proxies to it) |
 | Rig 2 | `0.0.0.0` | 9000 | `ocs-orchestrator` (one model) | EC2, Rig 1, and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)) |
 | Rig 2 | `127.0.0.1` | 8081 | `ocs-llama` (`qwen3.6:35b-a3b`, all 8 GPUs) | Rig 2 only |
 
@@ -69,6 +69,7 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 | `/var/lib/ocs-intelligence/` | Worker state dir |
 | `/opt/ocs-orchestrator/` | Orchestrator code + `.venv` (`--system-site-packages`, Ubuntu packages) |
 | `/etc/ocs-orchestrator/orchestrator.env` | Orchestrator env, mode `0600` |
+| `/var/lib/docker/volumes/open-webui/_data/webui.db` | Open WebUI's database, including its connection settings (`config` table). Backup from before the Rig 2 connection: `webui.db.bak-20261015` next to it |
 | `/var/lib/ocs-orchestrator/` | Orchestrator state dir |
 
 ### Rig 2

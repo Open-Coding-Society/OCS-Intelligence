@@ -75,6 +75,6 @@ The [Week 0+1 deck](../sources/2026-09-28-week0-1-mentor-deck.md) shows a larger
 | Public `/v1` path, gateway, orchestrator, 2 workers | **Built** | this page |
 | Per-student API keys, quotas, revocation | Planned. One shared key today. | [roadmap](../project/roadmap.md), [threat model](../security/threat-model.md) |
 | FastAPI broker with Redis (live state) + RDS (durable state) | Planned (deck slides 07–08, 21) | [roadmap](../project/roadmap.md) |
-| Rig 2 (dev and test) | Worker (`qwen3.6:35b-a3b`) + orchestrator running; not in Open WebUI yet | [status](../status.md) |
+| Rig 2 (dev and test) | Worker (`qwen3.6:35b-a3b`) + orchestrator running; a second connection in Open WebUI | [status](../status.md) |
 | Monitoring (Prometheus, GPU exporter, Grafana) | Planned | [roadmap](../project/roadmap.md) |
 | Model bake-off | Not run | [roadmap](../project/roadmap.md) |

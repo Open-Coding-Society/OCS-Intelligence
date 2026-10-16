@@ -37,7 +37,7 @@ Qwen3-Coder-Next (80B/3B active, 49.6 GB) was the other candidate. It was set as
 - Good: the model names differ, so Open WebUI routes each chat to the right rig with no rig shown to users.
 - Bad / accepted trade-off: Rig 2 is no longer a pure dev/test rig while Open WebUI points at it.
 - Bad: Open WebUI → Rig 2 skips the EC2 wait line. Only the orchestrator's queue cap (16) and llama-server's 2 slots limit it.
-- Follow-up work: add the Open WebUI connection; benchmark this config against alternatives (fewer GPUs, `PARALLEL`, `-ub`) when there's time; replace the direct connection with a router that knows both rigs.
+- Follow-up work: ~~add the Open WebUI connection~~ (done 2026-10-15, [evidence](../../evidence/captures/2026-10-15-open-webui-rig2-connection.md)); benchmark this config against alternatives (fewer GPUs, `PARALLEL`, `-ub`) when there's time; replace the direct connection with a router that knows both rigs.
 
 ## Differs from the blueprint?
 
