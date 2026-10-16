@@ -35,5 +35,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-09-30 | [Multi-service llama.cpp API playbook](./sprint1/Multi-Service%20llama.cpp%20API%20Playbook.pdf): live gateway, orchestrator, and both llama-server workers, including the 262,144-token Worker A window measured 2026-09-23 |
 | 2026-09-30 | [Public gateway playbook](./sprint1/Public%20Gateway%20Playbook%20Exposing%20a%20GPU%20Rig%20Behind%20a%20Locked-Down%20Network.pdf): exposing a GPU rig behind a locked-down network |
 | 2026-10-15 | [NetBird access policies](./captures/2026-10-15-netbird-access-policies.md): `Default` disabled, one-way group policies; public API and operator access checked before and after |
+| 2026-10-15 | [Rig 2 inference fix](./captures/2026-10-15-rig2-inference-fix.md): a test `http.server` on port 8081 had the worker crash-looping; worker back up at 8.8 tok/s, orchestrator deployed with Worker B off, then switched to Qwen3.6-35B-A3B at 27 tok/s; Open WebUI connections inspected |
 
 Add a row for each new record, newest last.

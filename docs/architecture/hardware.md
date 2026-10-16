@@ -12,7 +12,7 @@ The physical rigs and the single source for the GPU inventory. Rig 1 inventory v
 | Rig | Role | State | Cards |
 |---|---|---|---|
 | Rig 1 (`ocs-intelligence-rig`) | Production inference | Serving | 7 × GTX 1070 visible to `nvidia-smi` (table below) |
-| Rig 2 | Development and test | **Being built** from secondhand parts ([deck](../sources/2026-09-28-week0-1-mentor-deck.md) slide 17) | planned 8 × GTX 1070 |
+| Rig 2 (`ocs-intelligence-rig2`) | Development and test; proposed to serve students through Open WebUI ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)) | Serving `qwen3.6:35b-a3b` on all cards (2026-10-15). Every card is on PCIe gen 1 ×1 | 8 visible to `nvidia-smi`: GPU 0 is a **GTX 1080 Ti** (11 GB), GPUs 1–7 are GTX 1070 (8 GB). Driver 550.163.01 |
 
 > **Card count discrepancy.** The blueprint and deck describe 8 cards per rig. The 2026-09-18 inventory of Rig 1 shows 7. Why the 8th card doesn't appear hasn't been recorded. Settle it when labeling the rigs ([roadmap](../project/roadmap.md)).
 

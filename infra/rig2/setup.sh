@@ -9,6 +9,7 @@
 # Overrides (env vars):
 #   MODEL=qwen3.8:27b       Ollama model to pull
 #   CONTEXT_SIZE=262144     llama-server --ctx-size; lower it if the worker runs out of VRAM
+#   PARALLEL=1              llama-server --parallel (concurrent requests; they share CONTEXT_SIZE)
 #   LLAMA_CPP_REF=<sha>     llama.cpp commit to build (default: latest master; Rig 1 runs 972d231)
 #   REBUILD=1               rebuild llama.cpp even if the binary exists
 
@@ -16,6 +17,7 @@ set -euo pipefail
 
 MODEL="${MODEL:-qwen3.8:27b}"
 CONTEXT_SIZE="${CONTEXT_SIZE:-262144}"
+PARALLEL="${PARALLEL:-1}"
 LLAMA_CPP_REF="${LLAMA_CPP_REF:-}"
 REBUILD="${REBUILD:-0}"
 
@@ -131,7 +133,10 @@ CUDA_VISIBLE_DEVICES=$UUIDS
 DEFAULT_MODEL_GGUF=$GGUF
 DEFAULT_MODEL_ID=$MODEL
 CONTEXT_SIZE=$CONTEXT_SIZE
+PARALLEL=$PARALLEL
 TENSOR_SPLIT=$SPLIT
+# Extra llama-server flags, split on spaces (e.g. -ub 1024)
+LLAMA_EXTRA_ARGS=
 WORKER_API_KEY=$KEY
 EOF
 chmod 0600 "$ENV_FILE"

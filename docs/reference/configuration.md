@@ -26,7 +26,7 @@ Template: [`infra/ec2/gateway.env.template`](../../infra/ec2/gateway.env.templat
 | `UPSTREAM_URL` | `http://100.75.123.203:9000` | Rig orchestrator |
 | `PUBLIC_API_KEYS` | empty | Comma-separated student keys. **If empty, any Bearer token is accepted.** Always set it. |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model name for lane A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model name for lane B |
+| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model name for lane B. Set it empty (`GROUP_B_MODEL_ALIAS=`) for no lane B (Rig 2) |
 | `GROUP_A_INFLIGHT` | `1` | Lane A requests running at once |
 | `GROUP_B_INFLIGHT` | `2` | Lane B requests running at once |
 | `MAX_WAITERS_PER_WORKER` | `4` | Waiting requests per lane before a 429 |
@@ -38,14 +38,14 @@ What the lane numbers mean in practice: [gateway capacity](../architecture/gatew
 
 ## Orchestrator (rig, `/etc/ocs-orchestrator/orchestrator.env`)
 
-Template: [`infra/rig/orchestrator.env.template`](../../infra/rig/orchestrator.env.template).
+Templates: [`infra/rig/orchestrator.env.template`](../../infra/rig/orchestrator.env.template) (Rig 1), [`infra/rig2/orchestrator.env.template`](../../infra/rig2/orchestrator.env.template) (Rig 2).
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `GROUP_A_URL` | `http://127.0.0.1:8081` | Worker A |
 | `GROUP_B_URL` | `http://127.0.0.1:8082` | Worker B |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model served by A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model served by B |
+| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model served by B. Set it empty to not register Worker B (Rig 2) |
 | `WORKER_API_KEY` | empty | Secret the orchestrator sends to the workers (same value as in the worker env) |
 | `PUBLIC_API_KEYS` | empty | Student keys accepted. **If empty, any Bearer token is accepted.** |
 | `QUEUE_CAPACITY_PER_WORKER` | `16` | In-flight count above which the orchestrator returns 429 |

@@ -20,29 +20,29 @@ logging.basicConfig(
 logger = logging.getLogger("orchestrator")
 
 
+def configured_workers() -> list[WorkerInfo]:
+    """Workers to register. An empty model alias (e.g. Rig 2 has no Worker B) skips that group."""
+    groups = [
+        ("group-a", settings.GROUP_A_URL, settings.GROUP_A_MODEL_ALIAS),
+        ("group-b", settings.GROUP_B_URL, settings.GROUP_B_MODEL_ALIAS),
+    ]
+    return [
+        WorkerInfo(name=name, base_url=url, model_alias=alias)
+        for name, url, alias in groups
+        if alias
+    ]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Register workers
-    worker_a = WorkerInfo(
-        name="group-a",
-        base_url=settings.GROUP_A_URL,
-        model_alias=settings.GROUP_A_MODEL_ALIAS,
-    )
-    worker_b = WorkerInfo(
-        name="group-b",
-        base_url=settings.GROUP_B_URL,
-        model_alias=settings.GROUP_B_MODEL_ALIAS,
-    )
-    health_checker.register(worker_a)
-    health_checker.register(worker_b)
-
-    logger.info(
-        "Orchestrator starting: A=%s (%s), B=%s (%s)",
-        worker_a.base_url,
-        worker_a.model_alias,
-        worker_b.base_url,
-        worker_b.model_alias,
-    )
+    for worker in configured_workers():
+        health_checker.register(worker)
+        logger.info(
+            "Orchestrator worker %s: %s (%s)",
+            worker.name,
+            worker.base_url,
+            worker.model_alias,
+        )
 
     await health_checker.start()
     yield

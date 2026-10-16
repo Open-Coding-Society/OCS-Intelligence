@@ -1,11 +1,11 @@
 ---
 status: current
-last_verified: 2026-09-18
+last_verified: 2026-10-15
 ---
 
 # Status
 
-What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. Rig 1 and EC2 were last verified live over NetBird SSH on **2026-09-18**. Rig 2 state is as reported by the team on 2026-09-29.
+What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. Rig 1 and EC2 were last verified live over NetBird SSH on **2026-09-18**. Rig 2 was checked and fixed live over NetBird SSH on **2026-10-15** ([evidence](../evidence/captures/2026-10-15-rig2-inference-fix.md)).
 
 **How it works:** [architecture overview](./architecture/overview.md) · **Where things are:** [hosts](./reference/hosts.md), [configuration](./reference/configuration.md), [hardware](./architecture/hardware.md) · **How we got here:** [deployment log](../evidence/captures/2026-09-18-rig1-deployment-log.md) · **What's next:** [roadmap](./project/roadmap.md)
 
@@ -23,7 +23,10 @@ What is running **right now** and what's broken. This is the only page for time-
 | EC2 admission gateway (`127.0.0.1:9100`) | ✅ Running; auth + wait line, then proxy to the rig |
 | EC2 Nginx `/v1/` route | ✅ Live → localhost gateway; `/` still Open WebUI |
 | Open WebUI | ✅ Still running (port 3000, untouched); reports version 0.11.3 |
-| Rig 2 | 🚧 Being built; nothing deployed (team, 2026-09-29) |
+| Rig 2 worker (`qwen3.6:35b-a3b` MoE, all 8 GPUs, port 8081) | ✅ Running, healthy (2026-10-15). ~27 tok/s generation, 2 slots × 262k context ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)) |
+| Rig 2 orchestrator (`:9000`, one model) | ✅ Running, healthy (2026-10-15). `PUBLIC_API_KEYS` is a temporary key, not the student key |
+| Open WebUI → Rig 2 | 🚧 Not connected yet. Plan: add `http://100.75.127.192:9000/v1` as a second OpenAI connection ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)) |
+| `ai2.opencodingsociety.com` | 🛑 Not pursued. A teammate's TLS cert and Nginx site exist on EC2 (answers `301` to itself). Left untouched |
 | **Open issue:** Worker A throughput | ⚠️ 8.7 tok/s, *slower* than the 12.5 tok/s baseline. NCCL deferred. See below. |
 
 ## Open issue: Worker A is slower than baseline
@@ -40,7 +43,7 @@ This is the one thing standing between "technically works" and "actually done." 
 - **Rig disk usage grew by ~4.3 GB.** That's `apt`'s package cache from the CUDA install (`/var/cache/apt/archives/`). It's safe to clear with `apt-get clean`. The rig has 151 GB free, so this isn't urgent.
 - **EC2 disk is about 61% used** (~19 GB free of 48 GB) after removing the unused Kasm 1.16.0.
 - **Ollama is stopped, not removed.** See [runbook: roll back](./operations/runbook.md#6-roll-back).
-- **Open WebUI was never touched.** Direct Ollama-backed chat in WebUI will fail while Ollama is stopped. WebUI traffic still bypasses the EC2 wait line.
+- **Open WebUI** (checked 2026-10-15) has one enabled OpenAI connection, `https://ai.opencodingsociety.com/v1`, so its chats go through the EC2 gateway and wait line to Rig 1. Its Ollama connections are disabled. Open WebUI 0.11.3 keeps only the **first** connection that offers a given model ID, so two rigs serving the same model name would never load-balance there.
 - Rig port 9000 is reachable over NetBird from EC2 and `outbound-only` operator peers only (NetBird policies applied 2026-10-15, [evidence](../evidence/captures/2026-10-15-netbird-access-policies.md)). Operators can still skip the wait line.
 - **Installed package versions:** the rig orchestrator runs on Ubuntu's `python3-fastapi` 0.101.0, `python3-uvicorn` 0.27.1, and `python3-httpx` 0.26.0 (PyPI is unreachable from the rig). The EC2 gateway venv came from PyPI (FastAPI 0.141.1).
 - **Copilot Chat** hasn't been signed in from a student machine yet. The API path is verified.
@@ -49,6 +52,8 @@ This is the one thing standing between "technically works" and "actually done." 
 
 In rough priority order. The full list is in the [roadmap](./project/roadmap.md#planned-not-built).
 
+1. **Open WebUI → Rig 2:** add Rig 2's orchestrator as a second OpenAI connection with its own key ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)).
+1. **Rotate the student key:** the current shared key is a guessable string.
 1. **NCCL / Worker A throughput:** deferred.
 2. **Per-student API keys:** still one shared Bearer key. Needed so one laptop can't fill the wait line.
 3. **Housekeeping:** `apt-get clean` on the rig.

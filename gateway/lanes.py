@@ -130,17 +130,15 @@ class Lane:
 
 
 def _lanes() -> dict[str, Lane]:
+    """One lane per configured model. An empty alias (e.g. Rig 2 has no Worker B) means no lane."""
+    groups = [
+        (settings.GROUP_A_MODEL_ALIAS, settings.GROUP_A_INFLIGHT),
+        (settings.GROUP_B_MODEL_ALIAS, settings.GROUP_B_INFLIGHT),
+    ]
     return {
-        settings.GROUP_A_MODEL_ALIAS: Lane(
-            settings.GROUP_A_MODEL_ALIAS,
-            settings.GROUP_A_INFLIGHT,
-            settings.MAX_WAITERS_PER_WORKER,
-        ),
-        settings.GROUP_B_MODEL_ALIAS: Lane(
-            settings.GROUP_B_MODEL_ALIAS,
-            settings.GROUP_B_INFLIGHT,
-            settings.MAX_WAITERS_PER_WORKER,
-        ),
+        alias: Lane(alias, inflight, settings.MAX_WAITERS_PER_WORKER)
+        for alias, inflight in groups
+        if alias
     }
 
 

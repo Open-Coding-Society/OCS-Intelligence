@@ -1,5 +1,5 @@
 [Unit]
-Description=OCS llama.cpp worker (Rig 2) — qwen3.8:27b on all GPUs
+Description=OCS llama.cpp worker (Rig 2) — one model on all GPUs
 After=network-online.target netbird.service
 Wants=network-online.target
 
@@ -17,12 +17,13 @@ ExecStart=/opt/llama.cpp/bin/llama-server \
   --split-mode layer \
   --tensor-split ${TENSOR_SPLIT} \
   --ctx-size ${CONTEXT_SIZE} \
-  --parallel 1 \
+  --parallel ${PARALLEL} \
   --cont-batching \
   --flash-attn on \
   --metrics \
   --slots \
-  --warmup
+  --warmup \
+  $LLAMA_EXTRA_ARGS
 Restart=on-failure
 RestartSec=5
 TimeoutStartSec=600

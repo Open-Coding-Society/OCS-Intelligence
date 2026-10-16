@@ -13,13 +13,44 @@ Paths, ports, and unit names: [hosts](../reference/hosts.md). Env vars: [configu
 
 ## Rig 2: one script
 
-Rig 2 has a different layout: a single worker serves `qwen3.8:27b` across **every** GPU on `127.0.0.1:8081`, with no Worker B and no orchestrator yet. [`infra/rig2/setup.sh`](../../infra/rig2/setup.sh) automates steps 1–4 below for that layout. It installs CUDA 12.6, builds llama.cpp, pulls the model with `ollama pull`, writes `/etc/ocs-intelligence/worker.env` from `nvidia-smi`, and starts `ocs-llama.service`:
+Rig 2 has a different layout: a single worker serves one model across **every** GPU on `127.0.0.1:8081`, with no Worker B. The orchestrator runs in front of it with Worker B turned off. `setup.sh` installs `qwen3.8:27b`. Rig 2 now runs `qwen3.6:35b-a3b` instead ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)); see [switching the model](#switching-rig-2s-model) below. [`infra/rig2/setup.sh`](../../infra/rig2/setup.sh) automates steps 1–4 below for that layout. It installs CUDA 12.6, builds llama.cpp, pulls the model with `ollama pull`, writes `/etc/ocs-intelligence/worker.env` from `nvidia-smi`, and starts `ocs-llama.service`:
 
 ```bash
 git pull && sudo ./infra/rig2/setup.sh
 ```
 
-It is safe to re-run. Overrides (`CONTEXT_SIZE`, `LLAMA_CPP_REF`, `REBUILD`, `MODEL`) are listed at the top of the script. Until someone runs it on Rig 2, treat it as untested.
+It is safe to re-run. Overrides (`CONTEXT_SIZE`, `LLAMA_CPP_REF`, `REBUILD`, `MODEL`) are listed at the top of the script. It was run on Rig 2 on 2026-10-15, and the default `CONTEXT_SIZE=262144` fits (about 5–6 GiB per card) ([evidence](../../evidence/captures/2026-10-15-rig2-inference-fix.md)).
+
+**Keep port 8081 free.** If anything else binds it, even `python3 -m http.server`, `ocs-llama` crash-loops with `couldn't bind HTTP server socket`. Check with `ss -ltnp | grep 8081`.
+
+Then the orchestrator. Rig 2 can reach PyPI, so a plain venv works:
+
+```bash
+mkdir -p /opt/ocs-orchestrator /etc/ocs-orchestrator /var/lib/ocs-orchestrator
+cp -r orchestrator /opt/ocs-orchestrator/
+python3 -m venv /opt/ocs-orchestrator/.venv
+/opt/ocs-orchestrator/.venv/bin/pip install -r /opt/ocs-orchestrator/orchestrator/requirements.txt
+install -m 0600 infra/rig2/orchestrator.env.template /etc/ocs-orchestrator/orchestrator.env
+# edit it: WORKER_API_KEY from /etc/ocs-intelligence/worker.env, PUBLIC_API_KEYS = the keys callers (Open WebUI) will send
+install -m 0644 infra/rig2/ocs-orchestrator.service /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now ocs-orchestrator
+curl -s localhost:9000/readyz      # {"status":"ready"}
+```
+
+### Switching Rig 2's model
+
+The unit reads everything model-specific from `/etc/ocs-intelligence/worker.env`. To serve another GGUF, download it into `/srv/ocs-intelligence/models/` (mode `0644`) and check its SHA-256 against Hugging Face. Then edit `DEFAULT_MODEL_GGUF`, `DEFAULT_MODEL_ID`, `CONTEXT_SIZE`, `TENSOR_SPLIT`, `PARALLEL` and `LLAMA_EXTRA_ARGS` in `worker.env`, set the same ID as `GROUP_A_MODEL_ALIAS` in the orchestrator env, and restart both services. What Rig 2 runs now:
+
+```bash
+DEFAULT_MODEL_GGUF=/srv/ocs-intelligence/models/qwen3.6-35b-a3b-ud-q4_k_xl.gguf
+DEFAULT_MODEL_ID=qwen3.6:35b-a3b
+CONTEXT_SIZE=524288          # shared by the slots: 2 x 262144, the model's maximum
+PARALLEL=2
+TENSOR_SPLIT=11,8,8,8,8,8,8,8   # GPU 0 is the 11 GB 1080 Ti
+LLAMA_EXTRA_ARGS=-ub 1024
+```
+
+`GROUP_B_MODEL_ALIAS=` is empty in the template on purpose. That drops Worker B, so `/v1/models` lists only `qwen3.8:27b`. Never leave `PUBLIC_API_KEYS` empty: empty means any Bearer token is accepted.
 
 ## Before you start
 
