@@ -9,7 +9,7 @@ Proof that something was measured, tested, or decided. The blueprint's rule: "If
 
 **Rules**
 
-- Files are **append-only**. Once committed, an evidence file isn't edited. Record a new run in a new file.
+- Files are **append-only**. Once committed, an evidence file isn't edited. Record a new run in a new file. The one exception: a [playbook](../docs/conventions.md#playbooks) with `state: in progress` may be updated until it's `done`.
 - Name files `YYYY-MM-DD-short-title.md`, dated by when the thing happened. Put `date:` in the header.
 - Record enough to reproduce the result: the command, the model, the llama.cpp commit, the config, and the raw output. Remove secrets.
 - Docs cite evidence. Evidence doesn't cite itself as current.
@@ -19,7 +19,7 @@ Proof that something was measured, tested, or decided. The blueprint's rule: "If
 | Folder | What goes in it | Template |
 |---|---|---|
 | `captures/` | Verbatim API responses, test runs, drill results | — |
-| `sprintN/` | Playbooks and other material for sprint N, e.g. `sprint1/` (see the [roadmap](../docs/project/roadmap.md#sprints)) | — |
+| `sprintN/` | Playbooks (`.md` source + rendered `.pdf`) and other material for sprint N (see the [roadmap](../docs/project/roadmap.md#sprints)) | [`playbook.md`](../docs/_templates/playbook.md) |
 | `benchmarks/` | Committed benchmark runs (`benchmark/results/` is gitignored; copy a run here to keep it) | — |
 | `weekly/` | The one-page Friday report, `YYYY-Www.md` | [`weekly-report.md`](../docs/_templates/weekly-report.md) |
 

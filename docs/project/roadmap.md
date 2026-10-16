@@ -13,14 +13,14 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 
 | Sprint | Weeks | Goal | State |
 |---:|---|---|---|
-| 1 | 1 | Prove one lane end to end (blueprint Week 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
+| 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
 | 2 | 2–3 | VR-related work (owner: yashpatil321) | Material not in this repo yet. yashpatil321 will commit it. |
 | 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
 | 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14) |
 
 ## The blueprint's six-week campaign
 
-From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). This is the plan we're measured against. We now track work as [sprints](#sprints), and Sprint 1 corresponds to Week 1. Each week closes only when its exit criteria are true **and** there is evidence.
+From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). This is the plan we're measured against. We now track work as [sprints](#sprints), and Sprint 1 corresponds to Weeks 0 and 1. Each week closes only when its exit criteria are true **and** there is evidence.
 
 | Week | Goal | Done when |
 |---:|---|---|

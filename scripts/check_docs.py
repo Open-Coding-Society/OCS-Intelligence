@@ -4,7 +4,7 @@
   python3 scripts/check_docs.py
 
 Checks:
-  - every doc under docs/ and evidence/ has the right header
+  - every doc under docs/ and evidence/ has the right header (playbooks: also a rendered PDF)
   - every relative Markdown link in the repo points at a file that exists
   - every doc is reachable from docs/docs.md by following links
 
@@ -27,6 +27,7 @@ SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__"}
 
 DOC_STATUSES = {"draft", "current", "superseded"}
 DECISION_STATUSES = {"proposed", "accepted", "rejected", "superseded"}
+PLAYBOOK_STATES = {"in progress", "done"}
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DECISION_FILE = re.compile(r"^\d{4}-.+\.md$")
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -87,6 +88,14 @@ def check_header(path: Path) -> list[str]:
     if is_evidence_record:
         if not DATE.match(fields.get("date", "")):
             errors.append(f"{rel}: evidence needs 'date: YYYY-MM-DD'")
+        if fields.get("type") == "playbook":
+            for key in ("title", "sprint", "state"):
+                if not fields.get(key):
+                    errors.append(f"{rel}: playbook needs '{key}:'")
+            if fields.get("state") and fields["state"] not in PLAYBOOK_STATES:
+                errors.append(f"{rel}: state must be one of {sorted(PLAYBOOK_STATES)}")
+            if not path.with_suffix(".pdf").exists():
+                errors.append(f"{rel}: no rendered PDF (python3 scripts/build_playbook.py {rel})")
         return errors
     if is_decision:
         if fields.get("status") not in DECISION_STATUSES:

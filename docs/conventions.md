@@ -49,7 +49,7 @@ We borrow from these sources but don't follow any of them exactly. Where we diff
    - `superseded`: kept for history. Add `superseded_by: <path>` and move it to [`archive/`](./archive/archive.md).
    - `last_verified`: the last date someone **checked the content against the thing it describes**: the code, the live machines, or the source document. Fixing typos doesn't count. **Never set it to today unless you checked today.** Agents trust this field.
 
-   Decision records use `status: proposed | accepted | rejected | superseded` and `date:` in place of `last_verified` (see the [template](./_templates/decision.md)). Evidence files use only `date:`, because they are records of one moment and are never updated.
+   Decision records use `status: proposed | accepted | rejected | superseded` and `date:` in place of `last_verified` (see the [template](./_templates/decision.md)). Evidence files use only `date:`, because they are records of one moment and are never updated. [Playbooks](#playbooks) add a few fields and stay editable until they're `done`.
 
 3. **Sort by how often something changes.** Design docs (`architecture/`, `decisions/`) never say "right now" or "tonight". Anything time-sensitive goes in `status.md` or `evidence/`.
 
@@ -85,6 +85,18 @@ Security (`security/`) and testing (`testing/`) get their own folders because th
 3. Link it from [`docs.md`](./docs.md) or from its folder index.
 4. Run `python3 scripts/check_docs.py`. It checks headers, broken links, and that every doc is reachable from the index.
 5. Commit the doc together with the code change it describes.
+
+## Playbooks
+
+A playbook is the write-up of one sprint item: what was wrong, what we did, how to check it, and what's still open. Every playbook uses the same format, so they read the same and render to the same PDF.
+
+- **Where:** `evidence/sprintN/YYYY-MM-DD-short-title.md`, dated by the first day of the work, with the rendered `.pdf` next to it. Images go next to the playbook or in `assets/`.
+- **Start from** [`_templates/playbook.md`](./_templates/playbook.md). It has the header and the section order: summary paragraph, At a glance, Before, What we did, How to check it, Pitfalls, Open items, Sources. Leave out a section only if it would be empty.
+- **Header:** `type: playbook`, `date`, `title`, `subtitle`, `sprint`, `state`, `authors`. `state` is `in progress` or `done`.
+- **Editable until done.** An `in progress` playbook may be updated as the work moves. Once it's `done`, it's frozen like any other evidence. Changes after that go in a new dated file.
+- **Facts the team reported** but nobody captured at the time are marked as reported, with the date. They aren't presented as measured.
+- **Render** with `python3 scripts/build_playbook.py <file.md>` (or `--all`). It needs `pandoc` and `pip install weasyprint`. Commit the `.md` and the `.pdf` together. The style is the team's Illuminati palette, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
+- **Link it** from the log in [`evidence/evidence.md`](../evidence/evidence.md) and from the sprint's row in the [roadmap](./project/roadmap.md#sprints).
 
 ## File naming
 

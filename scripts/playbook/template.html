@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$title$</title>
+<style>
+$highlighting-css$
+</style>
+</head>
+<body>
+<header class="cover">
+<p class="kicker">OCS Intelligence · Sprint $sprint$ · Playbook</p>
+<h1 class="title">$title$</h1>
+$if(subtitle)$
+<p class="subtitle">$subtitle$</p>
+$endif$
+<ul class="meta">
+<li class="state state-$state-class$"><b>State</b>$state$</li>
+<li><b>Date</b>$date$</li>
+$if(authors)$
+<li><b>By</b>$authors$</li>
+$endif$
+<li><b>Source</b>$source-path$</li>
+</ul>
+</header>
+$body$
+</body>
+</html>

@@ -26,7 +26,7 @@ OCS Intelligence is a student-built, OpenAI-compatible coding API at `https://ai
 | `infra/ec2/`, `infra/rig/`, `infra/rig2/` | systemd units, env templates, Nginx site | copied to each host by hand |
 | `infra/netbird/` | NetBird access policies (`acl.json`, `apply.py`) and the client container | the NetBird account, via its API |
 | `benchmark/` | Speed benchmark + Pareto chart against the public API | your machine |
-| `scripts/` | `demo.py` (live walkthrough), `request.sh`, `check_docs.py` | your machine |
+| `scripts/` | `demo.py` (live walkthrough), `request.sh`, `check_docs.py`, `build_playbook.py` | your machine |
 | `tests/` | Offline tests (no network, no GPU) | your machine |
 | `docs/` | Documentation | — |
 | `evidence/` | Dated, append-only proof: captures, results, weekly reports | — |
@@ -37,6 +37,7 @@ OCS Intelligence is a student-built, OpenAI-compatible coding API at `https://ai
 python3 -m pip install pytest fastapi httpx -r benchmark/requirements.txt
 python3 -m pytest -q                 # all offline tests
 python3 scripts/check_docs.py        # doc headers, links, index reachability
+python3 scripts/build_playbook.py --all   # re-render playbook PDFs (needs pandoc + weasyprint)
 python3 scripts/demo.py              # live API walkthrough (needs .env)
 ```
 
@@ -56,7 +57,7 @@ Full rules: [`docs/conventions.md`](./docs/conventions.md). The short version:
 
 1. **One fact, one place.** Link to it, don't copy it. The table of canonical homes is in the conventions doc.
 2. **Every doc under `docs/` has a header** with `status` (`draft | current | superseded`) and `last_verified: YYYY-MM-DD`. Only set `last_verified` to a date when you actually checked the content against the code or the live system. Reading the code counts for code-derived docs. It doesn't count for claims about live machines.
-3. **Put new docs in the right folder:** how-to → `docs/guides/` or `docs/operations/`; a fact to look up → `docs/reference/`; how/why → `docs/architecture/`; X over Y → `docs/decisions/NNNN-*.md`; proof → `evidence/`. Copy a template from `docs/_templates/`.
+3. **Put new docs in the right folder:** how-to → `docs/guides/` or `docs/operations/`; a fact to look up → `docs/reference/`; how/why → `docs/architecture/`; X over Y → `docs/decisions/NNNN-*.md`; proof → `evidence/`; a sprint playbook → `evidence/sprintN/` in the [playbook format](./docs/conventions.md#playbooks). Copy a template from `docs/_templates/`.
 4. **Link every new doc** from `docs/docs.md` or its folder index.
 5. **Update docs in the same commit as the code change.**
 6. **If you change something the blueprint specifies, write a decision record** with `status: proposed`. Don't mark decisions `accepted` yourself. An accepted decision that differs from the blueprint carries `blueprint_review: pending` until someone reviews it.
