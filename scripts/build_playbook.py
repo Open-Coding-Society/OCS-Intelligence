@@ -72,6 +72,7 @@ def build(path: Path, html: bool) -> None:
         ],
         check=True, capture_output=True, text=True,
     ).stdout
+    page = re.sub(r'<a href="#cb\d+-\d+" aria-hidden="true" tabindex="-1"></a>', "", page)
     if html:
         path.with_suffix(".html").write_text(page, encoding="utf-8")
     out = path.with_suffix(".pdf")

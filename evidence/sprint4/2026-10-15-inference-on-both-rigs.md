@@ -5,7 +5,6 @@ title: Inference on both rigs, behind one chat
 subtitle: Rig 1 and Rig 2 both serve models, and ai.opencodingsociety.com shows all three in one model picker.
 sprint: 4
 state: in progress
-authors: Yash Parikh
 ---
 
 # Inference on both rigs, behind one chat
@@ -109,7 +108,7 @@ This playbook stays `in progress` until these are settled.
 - **Benchmark Rig 2's config** against alternatives (fewer GPUs, `PARALLEL`, `-ub`). A `llama-bench` run was started and interrupted before it printed anything.
 - **Decide on 0009.** It's `proposed`. It also differs from the blueprint, which has Rig 2 as dev/test, not serving students.
 - **Leftovers from the `ai2` attempt:** a TLS cert and Nginx site on EC2 (answering `301` to itself), and `/home/ocs/ai2-site` on Rig 2.
-- **Rig 1's 8th GPU**, working since the [Sprint 3](../../docs/project/roadmap.md#sprints) rebuild, isn't used by either worker yet. Workers pin their GPUs by UUID.
+- **Rig 1's 8th GPU** has been working since the [Sprint 3](../../docs/project/roadmap.md#sprints) rebuild, as the team reported. The workers pin their GPUs by UUID, and their configs list seven, so it's probably idle. Nobody has checked Rig 1 live since 2026-09-18.
 
 ## Sources
 

@@ -92,10 +92,10 @@ A playbook is the write-up of one sprint item: what was wrong, what we did, how 
 
 - **Where:** `evidence/sprintN/YYYY-MM-DD-short-title.md`, dated by the first day of the work, with the rendered `.pdf` next to it. Images go next to the playbook or in `assets/`.
 - **Start from** [`_templates/playbook.md`](./_templates/playbook.md). It has the header and the section order: summary paragraph, At a glance, Before, What we did, How to check it, Pitfalls, Open items, Sources. Leave out a section only if it would be empty.
-- **Header:** `type: playbook`, `date`, `title`, `subtitle`, `sprint`, `state`, `authors`. `state` is `in progress` or `done`.
+- **Header:** `type: playbook`, `date`, `title`, `subtitle`, `sprint`, `state`. `state` is `in progress` or `done`. Playbooks carry no author names: the work is the project's, and every PDF is tagged **PROMX-OCS**.
 - **Editable until done.** An `in progress` playbook may be updated as the work moves. Once it's `done`, it's frozen like any other evidence. Changes after that go in a new dated file.
 - **Facts the team reported** but nobody captured at the time are marked as reported, with the date. They aren't presented as measured.
-- **Render** with `python3 scripts/build_playbook.py <file.md>` (or `--all`). It needs `pandoc` and `pip install weasyprint`. Commit the `.md` and the `.pdf` together. The style is the team's Illuminati palette, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
+- **Render** with `python3 scripts/build_playbook.py <file.md>` (or `--all`). It needs `pandoc` and `pip install weasyprint`. Commit the `.md` and the `.pdf` together. The style is the Illuminati palette from Yash's VS Code theme, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
 - **Link it** from the log in [`evidence/evidence.md`](../evidence/evidence.md) and from the sprint's row in the [roadmap](./project/roadmap.md#sprints).
 
 ## File naming

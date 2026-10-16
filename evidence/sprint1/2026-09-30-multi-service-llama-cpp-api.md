@@ -14,7 +14,7 @@ Read the first half to explain the live services. Use the second half to check w
 A FastAPI broker, Redis, RDS, per-student keys, and Rig 2 appear in the Week 0+1 mentor deck. They are not running. They are listed at the end so they are not mistaken for the live path.
 
 > [!NOTE]
-> Written 2026-09-30 and re-rendered on 2026-10-16 in the [standard playbook format](../../docs/conventions.md#playbooks). The wording is unchanged, so this is a record of 2026-09-30. Some of it has changed since: NetBird now limits rig `:9000` to EC2 and operator peers, and Rig 2 is serving. For the current state, see [status](../../docs/status.md).
+> Written 2026-09-30 and re-rendered on 2026-10-16 in the [standard playbook format](../../docs/conventions.md#playbooks). The wording is unchanged, so this is a record of 2026-09-30. Some of it has changed since: NetBird now limits who can reach rig `:9000` (EC2, operator peers, and the other rig), and Rig 2 is serving. For the current state, see [status](../../docs/status.md).
 
 ## The live path
 

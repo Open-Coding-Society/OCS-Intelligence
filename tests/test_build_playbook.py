@@ -48,7 +48,11 @@ def test_bad_state_and_name_fail(tmp_path, monkeypatch):
     assert "YYYY-MM-DD-short-title.md" in errors
 
 
+def test_template_names_no_authors():
+    assert "authors" not in bp.header(REPO / "docs" / "_templates" / "playbook.md")
+
+
 def test_template_has_every_required_field():
     fields = bp.header(REPO / "docs" / "_templates" / "playbook.md")
-    for key in bp.REQUIRED + ("type", "subtitle", "authors"):
+    for key in bp.REQUIRED + ("type", "subtitle"):
         assert key in fields

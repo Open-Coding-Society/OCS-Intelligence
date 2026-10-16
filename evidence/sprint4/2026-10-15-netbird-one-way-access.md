@@ -5,7 +5,6 @@ title: Locking down NetBird with one-way group policies
 subtitle: Servers stay reachable for operators and for each other, and nothing on the network can open a connection to an operator's own machine.
 sprint: 4
 state: done
-authors: Yash Parikh
 ---
 
 # Locking down NetBird with one-way group policies

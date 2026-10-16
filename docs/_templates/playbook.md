@@ -5,7 +5,6 @@ title: Short title
 subtitle: One line on what this playbook gets the reader.
 sprint: N
 state: in progress         # in progress | done. Editable until done, frozen after.
-authors: Names of the people who did the work
 ---
 
 # Short title
