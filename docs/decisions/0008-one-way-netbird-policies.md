@@ -27,6 +27,7 @@ We chose **option 3**. Adding an operator means adding their peer to one group i
 - Good: nothing in the NetBird network can start a connection to an `outbound-only` machine. Peers in it don't even appear in each other's network maps.
 - Good: the rig's `:9000` and `:3000` are reachable only from EC2 and from `outbound-only` peers, instead of from every peer.
 - Bad / accepted trade-off: a new peer that isn't in any group can only use NetBird SSH to the servers (through the existing `SSH Access` policies, whose source is `All`) until someone adds it to a group.
+- Amended 2026-10-15: the rigs may reach each other both ways (`rigs-to-rigs`), so Open WebUI on Rig 1 can call a model on Rig 2. Restricting server-to-server traffic adds little here: EC2, the most exposed host, already reaches both rigs. What this decision protects is the `outbound-only` machines, and that rule is unchanged. **Temporary:** remove `rigs-to-rigs` once a router (the planned Mac Mini, or EC2) sits between the rigs.
 - Bad / accepted trade-off: any new service that has to cross NetBird needs a new rule in `acl.json` and in the dashboard.
 - Follow-up work: verify from a server that a connection to an `outbound-only` peer times out; confirm dashboard browser SSH still works; add Rig 2's orchestrator port to `gateway-to-rigs` if it isn't `9000`.
 

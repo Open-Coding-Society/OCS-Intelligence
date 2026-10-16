@@ -33,10 +33,10 @@ NetBird's built-in `Default` policy (every peer reaches every peer, both ways) i
 | Group | Members | Can reach | Can be reached by |
 |---|---|---|---|
 | `ocs-gateway` | EC2 | `ocs-rigs` on TCP 9000, 3000 | `outbound-only`; anyone via NetBird SSH |
-| `ocs-rigs` | Rig 1, Rig 2 | nothing | `ocs-gateway` (9000, 3000); `outbound-only`; anyone via NetBird SSH |
+| `ocs-rigs` | Rig 1, Rig 2 | each other, all ports | each other; `ocs-gateway` (9000, 3000); `outbound-only`; anyone via NetBird SSH |
 | `outbound-only` | operator machines | `ocs-gateway`, `ocs-rigs`, all ports | **nobody** |
 
-"Anyone via NetBird SSH" is the `SSH Access` policies that NetBird's SSH feature created (source `All`, one per server). Policies are stateful: replies to a connection come back even though the rule is one-way.
+"Anyone via NetBird SSH" is the `SSH Access` policies that NetBird's SSH feature created (source `All`, one per server). Policies are stateful: replies to a connection come back even though the rule is one-way. The rigs talk to each other both ways (`rigs-to-rigs`) so that Open WebUI on one rig can call a model served by the other. **This is temporary:** once a router (the planned Mac Mini, or EC2) sits between the rigs, traffic goes through it and `rigs-to-rigs` is removed.
 
 The groups and policies are recorded in [`infra/netbird/acl.json`](../../infra/netbird/acl.json). `python3 infra/netbird/apply.py check` compares that file with the live account; `apply` creates anything missing. Group membership is managed in the dashboard, not by the script. Last applied and checked: [2026-10-15](../../evidence/captures/2026-10-15-netbird-access-policies.md).
 

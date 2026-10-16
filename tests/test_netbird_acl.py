@@ -67,7 +67,7 @@ def test_diff_reports_changed_rule():
 
 def test_policy_payload_uses_group_ids_and_omits_ports_for_all():
     ids = {n: f"id-{n}" for n in ACL["groups"]}
-    allp = nb.policy_payload(next(p for p in ACL["policies"] if p["protocol"] == "all"), ids)
+    allp = nb.policy_payload(next(p for p in ACL["policies"] if p["name"] == "outbound-only-to-infra"), ids)
     rule = allp["rules"][0]
     assert rule["sources"] == ["id-outbound-only"] and "ports" not in rule and rule["bidirectional"] is False
     tcp = nb.policy_payload(next(p for p in ACL["policies"] if p["name"] == "gateway-to-rigs"), ids)

@@ -25,6 +25,15 @@
       "bidirectional": false
     },
     {
+      "name": "rigs-to-rigs",
+      "description": "TEMPORARY: GPU rigs can reach each other both ways (Open WebUI on Rig 1 calling a model on Rig 2). Remove once a router (Mac Mini or EC2) sits between the rigs.",
+      "sources": ["ocs-rigs"],
+      "destinations": ["ocs-rigs"],
+      "protocol": "all",
+      "ports": null,
+      "bidirectional": true
+    },
+    {
       "name": "outbound-only-to-infra",
       "description": "Peers in outbound-only can reach the servers; nothing can reach them",
       "sources": ["outbound-only"],
