@@ -23,7 +23,8 @@ OCS Intelligence is a student-built, OpenAI-compatible coding API at `https://ai
 |---|---|---|
 | `gateway/` | FastAPI admission gateway: auth, per-model wait line, proxy | EC2, `127.0.0.1:9100` |
 | `orchestrator/` | FastAPI router: model → worker, injects worker key | GPU rig, `:9000` |
-| `infra/ec2/`, `infra/rig/` | systemd units, env templates, Nginx site | copied to each host by hand |
+| `infra/ec2/`, `infra/rig/`, `infra/rig2/` | systemd units, env templates, Nginx site | copied to each host by hand |
+| `infra/netbird/` | NetBird access policies (`acl.json`, `apply.py`) and the client container | the NetBird account, via its API |
 | `benchmark/` | Speed benchmark + Pareto chart against the public API | your machine |
 | `scripts/` | `demo.py` (live walkthrough), `request.sh`, `check_docs.py` | your machine |
 | `tests/` | Offline tests (no network, no GPU) | your machine |

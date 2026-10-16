@@ -15,6 +15,7 @@ Copy [`.env.example`](../../.env.example) to `.env`. Read by `scripts/demo.py`, 
 |---|---|---|
 | `OCS_BASE_URL` | `https://ai.opencodingsociety.com/v1` | API base URL |
 | `OCS_API_KEY` | — (required) | Student key. Ask an operator. |
+| `NETBIRD_API_TOKEN` | — (operators only) | NetBird personal access token for the management API (`https://api.netbird.io`). Read by [`infra/netbird/apply.py`](../../infra/netbird/apply.py). Needs an **admin** service user; a `user`-role token gets 403 on writes. |
 
 ## Admission gateway (EC2, `/etc/ocs-gateway/gateway.env`)
 

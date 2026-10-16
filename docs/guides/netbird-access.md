@@ -5,24 +5,28 @@ last_verified: 2026-09-18
 
 # How to get a shell on the rig or EC2
 
-Operators reach both machines over NetBird SSH from a local Docker container named `netbird-dev`. Host IPs: [hosts](../reference/hosts.md#machines).
+Operators reach both machines over NetBird SSH, either from the NetBird client installed on their machine (Linux, WSL, macOS, Windows) or from the Docker container in [`infra/netbird/`](../../infra/netbird/). Host IPs: [hosts](../reference/hosts.md#machines).
 
 ## Before you start
 
-- The `netbird-dev` container set up on your machine and joined to the OCS NetBird network. Ask the team lead if you don't have it.
+- A NetBird peer on the OCS network: the client installed natively, or the container below.
+- Your peer added to the **`outbound-only`** group by a NetBird admin (dashboard → Peers → your peer → Groups). Without it you can only use NetBird SSH; with it you can reach every server port, and nothing on the network can connect to your machine. Why: [decision 0008](../decisions/0008-one-way-netbird-policies.md).
 - A browser, for NetBird's SSO approval.
 
-## The container
+## The container (optional)
+
+Use this if you don't want the NetBird client installed on your machine. It uses the host's network, and keeps its identity in `infra/netbird/netbird_data/` (gitignored: it holds the peer's private key).
 
 ```bash
-docker start netbird-dev          # if it's stopped
-docker exec -it netbird-dev sh    # open a shell inside it
-docker stop netbird-dev           # when you're done
+docker compose -f infra/netbird/docker-compose.yml up -d   # start it
+docker exec -it netbird-client netbird up                   # first time only: join, approve SSO in the browser
+docker exec -it netbird-client bash                         # open a shell inside it
+docker compose -f infra/netbird/docker-compose.yml down     # when you're done
 ```
 
 ## SSH in
 
-From inside the container:
+From your machine, or from inside the container:
 
 ```bash
 ssh root@100.75.123.203   # GPU rig  (ocs-intelligence-rig)

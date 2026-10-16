@@ -22,10 +22,10 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. SSH to either ho
 |---|---|---:|---|---|
 | EC2 | `0.0.0.0` | 80, 443 | Nginx (`llm-relay` site) | Internet |
 | EC2 | `127.0.0.1` | 9100 | `ocs-gateway` (admission gateway) | EC2 only (Nginx) |
-| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | NetBird peers (no firewall rule yet, see [threat model](../security/threat-model.md)) |
+| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)) |
 | Rig | `127.0.0.1` | 8081 | `ocs-llama-a` (Worker A, `qwen3.8:27b`) | Rig only |
 | Rig | `127.0.0.1` | 8082 | `ocs-llama-b` (Worker B, `qwen2.5:0.5b`) | Rig only |
-| Rig | — | 3000 | Open WebUI (Docker) | NetBird (Nginx `/` proxies to it) |
+| Rig | — | 3000 | Open WebUI (Docker) | EC2 and `outbound-only` peers over NetBird (Nginx `/` proxies to it) |
 
 ## systemd services
 

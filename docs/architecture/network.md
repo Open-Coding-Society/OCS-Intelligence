@@ -22,9 +22,23 @@ Internet ──HTTPS──▶ EC2 Nginx (TLS, ai.opencodingsociety.com)
 
 ## NetBird
 
-A WireGuard-based overlay network. Both hosts are peers, and so are operator laptops (through the `netbird-dev` Docker container). On 2026-09-16 the EC2 peer connected peer-to-peer and the rig peer connected **through a relay** ([discovery record](../archive/phase1-discovery.md)).
+A WireGuard-based overlay network. Both hosts are peers, and so are operator machines (the NetBird client, natively or in the [`infra/netbird/`](../../infra/netbird/) container). On 2026-09-16 the EC2 peer connected peer-to-peer and the rig peer connected **through a relay** ([discovery record](../archive/phase1-discovery.md)).
 
 NetBird SSH needs a browser SSO approval for **every new connection**. For how operators work around that, see [NetBird access](../guides/netbird-access.md).
+
+### Access policies
+
+NetBird's built-in `Default` policy (every peer reaches every peer, both ways) is disabled. Access is one-way, group to group ([decision 0008](../decisions/0008-one-way-netbird-policies.md)):
+
+| Group | Members | Can reach | Can be reached by |
+|---|---|---|---|
+| `ocs-gateway` | EC2 | `ocs-rigs` on TCP 9000, 3000 | `outbound-only`; anyone via NetBird SSH |
+| `ocs-rigs` | Rig 1, Rig 2 | nothing | `ocs-gateway` (9000, 3000); `outbound-only`; anyone via NetBird SSH |
+| `outbound-only` | operator machines | `ocs-gateway`, `ocs-rigs`, all ports | **nobody** |
+
+"Anyone via NetBird SSH" is the `SSH Access` policies that NetBird's SSH feature created (source `All`, one per server). Policies are stateful: replies to a connection come back even though the rule is one-way.
+
+The groups and policies are recorded in [`infra/netbird/acl.json`](../../infra/netbird/acl.json). `python3 infra/netbird/apply.py check` compares that file with the live account; `apply` creates anything missing. Group membership is managed in the dashboard, not by the script. Last applied and checked: [2026-10-15](../../evidence/captures/2026-10-15-netbird-access-policies.md).
 
 ## The district network
 

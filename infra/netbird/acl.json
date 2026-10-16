@@ -1,0 +1,37 @@
+{
+  "default_policy_enabled": false,
+  "groups": {
+    "outbound-only": {
+      "description": "Operator machines. They can reach the servers; nothing can reach them. Add new operators in the dashboard.",
+      "peers": ["Yash WSL", "adi-dell"]
+    },
+    "ocs-gateway": {
+      "description": "The EC2 admission gateway.",
+      "peers": ["ip-172-31-42-43"]
+    },
+    "ocs-rigs": {
+      "description": "GPU rigs running the orchestrator and Open WebUI.",
+      "peers": ["ocs-intelligence-rig", "ocs-intelligence-rig2"]
+    }
+  },
+  "policies": [
+    {
+      "name": "gateway-to-rigs",
+      "description": "EC2 admission gateway -> rig orchestrator (9000) and Open WebUI (3000)",
+      "sources": ["ocs-gateway"],
+      "destinations": ["ocs-rigs"],
+      "protocol": "tcp",
+      "ports": ["9000", "3000"],
+      "bidirectional": false
+    },
+    {
+      "name": "outbound-only-to-infra",
+      "description": "Peers in outbound-only can reach the servers; nothing can reach them",
+      "sources": ["outbound-only"],
+      "destinations": ["ocs-gateway", "ocs-rigs"],
+      "protocol": "all",
+      "ports": null,
+      "bidirectional": false
+    }
+  ]
+}

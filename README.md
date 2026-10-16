@@ -37,7 +37,7 @@ Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality, reasoning, slower).
 |---|---|
 | [`gateway/`](./gateway/) | EC2 admission gateway (FastAPI) |
 | [`orchestrator/`](./orchestrator/) | Rig-side model router (FastAPI) |
-| [`infra/`](./infra/) | systemd units, env templates, and the Nginx site for [`ec2/`](./infra/ec2/) and [`rig/`](./infra/rig/) |
+| [`infra/`](./infra/) | systemd units, env templates, and the Nginx site for [`ec2/`](./infra/ec2/) and [`rig/`](./infra/rig/); NetBird access policies in [`netbird/`](./infra/netbird/) |
 | [`benchmark/`](./benchmark/) | Speed benchmark and Pareto chart ([guide](./docs/testing/benchmarks.md)) |
 | [`scripts/`](./scripts/) | `demo.py`, `request.sh`, `check_docs.py` |
 | [`tests/`](./tests/) | Offline tests: `python3 -m pytest -q` |

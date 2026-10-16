@@ -41,7 +41,7 @@ This is the one thing standing between "technically works" and "actually done." 
 - **EC2 disk is about 61% used** (~19 GB free of 48 GB) after removing the unused Kasm 1.16.0.
 - **Ollama is stopped, not removed.** See [runbook: roll back](./operations/runbook.md#6-roll-back).
 - **Open WebUI was never touched.** Direct Ollama-backed chat in WebUI will fail while Ollama is stopped. WebUI traffic still bypasses the EC2 wait line.
-- **No firewall rule limits rig port 9000 to the EC2 NetBird IP**, so a NetBird peer can still skip the wait line ([threat model](./security/threat-model.md)).
+- Rig port 9000 is reachable over NetBird from EC2 and `outbound-only` operator peers only (NetBird policies applied 2026-10-15, [evidence](../evidence/captures/2026-10-15-netbird-access-policies.md)). Operators can still skip the wait line.
 - **Installed package versions:** the rig orchestrator runs on Ubuntu's `python3-fastapi` 0.101.0, `python3-uvicorn` 0.27.1, and `python3-httpx` 0.26.0 (PyPI is unreachable from the rig). The EC2 gateway venv came from PyPI (FastAPI 0.141.1).
 - **Copilot Chat** hasn't been signed in from a student machine yet. The API path is verified.
 
@@ -51,7 +51,7 @@ In rough priority order. The full list is in the [roadmap](./project/roadmap.md#
 
 1. **NCCL / Worker A throughput:** deferred.
 2. **Per-student API keys:** still one shared Bearer key. Needed so one laptop can't fill the wait line.
-3. **Housekeeping:** `apt-get clean` on the rig. Optionally restrict rig port 9000 to the EC2 NetBird IP.
+3. **Housekeeping:** `apt-get clean` on the rig.
 4. **Copilot Chat** from a student machine ([using the API](./guides/using-the-api.md)).
 
 ## Updating this page
