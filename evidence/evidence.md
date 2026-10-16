@@ -39,5 +39,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-15 | [Open WebUI connected to Rig 2](./captures/2026-10-15-open-webui-rig2-connection.md): second OpenAI connection with its own key; both connections' model lists and a Rig 2 chat checked from inside the container |
 | 2026-10-15 | [Open WebUI admin password reset](./captures/2026-10-15-open-webui-admin-password-reset.md): admin password replaced in the `auth` table; sign-in checked. Password not recorded |
 | 2026-10-15 | [Playbook: locking down NetBird with one-way group policies](./sprint4/2026-10-15-netbird-one-way-access.md) ([PDF](./sprint4/2026-10-15-netbird-one-way-access.pdf)), Sprint 4, done |
+| 2026-10-15 | [Playbook: inference on both rigs, behind one chat](./sprint4/2026-10-15-inference-on-both-rigs.md) ([PDF](./sprint4/2026-10-15-inference-on-both-rigs.pdf)), Sprint 4, in progress. Includes the 2026-10-16 [model picker screenshot](./sprint4/2026-10-16-open-webui-model-picker.png) |
 
 Add a row for each new record, newest last.

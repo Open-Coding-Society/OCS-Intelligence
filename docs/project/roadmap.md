@@ -16,7 +16,7 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 | 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
 | 2 | 2–3 | VR-related work (owner: yashpatil321) | Material not in this repo yet. yashpatil321 will commit it. |
 | 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
-| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done) |
+| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
 
 ## The blueprint's six-week campaign
 

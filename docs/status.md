@@ -25,7 +25,7 @@ What is running **right now** and what's broken. This is the only page for time-
 | Open WebUI | ✅ Running (port 3000), version 0.11.3. Two model connections: Rig 1 via the gateway, Rig 2 direct (2026-10-15). Admin password reset 2026-10-15 ([evidence](../evidence/captures/2026-10-15-open-webui-admin-password-reset.md)) |
 | Rig 2 worker (`qwen3.6:35b-a3b` MoE, all 8 GPUs, port 8081) | ✅ Running, healthy (2026-10-15). ~27 tok/s generation, 2 slots × 262k context ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Rig 2 orchestrator (`:9000`, one model) | ✅ Running, healthy (2026-10-15). Accepts the Open WebUI key and a temporary operator key, not the student key |
-| Open WebUI → Rig 2 | ✅ Connected (2026-10-15): second OpenAI connection `http://100.75.127.192:9000/v1` with its own key ([evidence](../evidence/captures/2026-10-15-open-webui-rig2-connection.md)). The dropdown hasn't been checked in a browser yet |
+| Open WebUI → Rig 2 | ✅ Connected (2026-10-15): second OpenAI connection `http://100.75.127.192:9000/v1` with its own key ([evidence](../evidence/captures/2026-10-15-open-webui-rig2-connection.md)). The team saw all three models in the dropdown as a regular user on 2026-10-16 ([screenshot](../evidence/sprint4/2026-10-16-open-webui-model-picker.png)) |
 | `ai2.opencodingsociety.com` | 🛑 Not pursued. A teammate's TLS cert and Nginx site exist on EC2 (answers `301` to itself). Left untouched |
 | **Open issue:** Worker A throughput | ⚠️ 8.7 tok/s, *slower* than the 12.5 tok/s baseline. NCCL deferred. See below. |
 
@@ -52,7 +52,6 @@ This is the one thing standing between "technically works" and "actually done." 
 
 In rough priority order. The full list is in the [roadmap](./project/roadmap.md#planned-not-built).
 
-1. **Check the Open WebUI model dropdown** as a regular user: it should list `qwen3.6:35b-a3b` next to Rig 1's models.
 1. **Rotate the student key:** the current shared key is a guessable string.
 1. **NCCL / Worker A throughput:** deferred.
 2. **Per-student API keys:** still one shared Bearer key. Needed so one laptop can't fill the wait line.
