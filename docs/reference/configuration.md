@@ -59,11 +59,11 @@ Templates: [`infra/rig/worker-a.env.template`](../../infra/rig/worker-a.env.temp
 
 | Variable | Worker A | Worker B | Meaning |
 |---|---|---|---|
-| `CUDA_VISIBLE_DEVICES` | GPUs 0–3 by UUID | GPUs 5–6 by UUID | Which cards the worker can use ([UUIDs](../architecture/hardware.md)) |
+| `CUDA_VISIBLE_DEVICES` | GPUs 0–4 by UUID | GPUs 5–6 by UUID | Which cards the worker can use ([UUIDs](../architecture/hardware.md)) |
 | `DEFAULT_MODEL_GGUF` / `SPEED_MODEL_GGUF` | `…/qwen3.8-27b-q4_k_m.gguf` | `…/qwen2.5-0.5b.gguf` | Model file |
 | `DEFAULT_MODEL_ID` / `SPEED_MODEL_ID` | `qwen3.8:27b` | `qwen2.5:0.5b` | `--alias`, the public model name |
-| `CONTEXT_SIZE` | `163840` | `8192` | `--ctx-size` |
-| `TENSOR_SPLIT` | `1,1,1,1` | `1,1` | `--tensor-split` across the visible GPUs |
+| `CONTEXT_SIZE` | `4096` | `8192` | `--ctx-size` |
+| `TENSOR_SPLIT` | `1,1,1,1,1` | `1,1` | `--tensor-split` across the visible GPUs |
 | `WORKER_API_KEY` | secret | same secret | `--api-key` |
 
 Fixed flags in both units: `--n-gpu-layers 999 --split-mode layer --parallel 2 --cont-batching --flash-attn on --metrics --slots --warmup`. Why each worker is set up this way: [workers](../architecture/workers.md).
