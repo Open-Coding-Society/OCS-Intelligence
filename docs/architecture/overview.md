@@ -31,13 +31,13 @@ flowchart LR
     end
     subgraph rig [GPU rig · NetBird only]
         O[Orchestrator :9000]
-        A[Worker A · llama-server<br/>qwen3.8:27b · 5 GPUs]
-        B[Worker B · llama-server<br/>qwen2.5:0.5b · 2 GPUs]
+        A[Worker A · llama-server<br/>qwen3.8:27b · 4 GPUs]
+        B[Worker B · llama-server<br/>gemma4:26b · 4 GPUs]
         UI[Open WebUI :3000]
     end
     subgraph rig2 [GPU rig 2 · NetBird only]
         O2[Orchestrator :9000]
-        M[Worker · llama-server<br/>qwen3.6:35b-a3b · 8 GPUs]
+        M[Worker · llama-server<br/>qwen3.6:35b-a3b · 9 GPUs]
     end
     C -->|HTTPS /v1/*| N
     W -->|HTTPS /| N

@@ -42,5 +42,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-15 | [Playbook: inference on both rigs, behind one chat](./sprint4/2026-10-15-inference-on-both-rigs.md) ([PDF](./sprint4/2026-10-15-inference-on-both-rigs.pdf)), Sprint 4, in progress. Includes the 2026-10-16 [model picker screenshot](./sprint4/2026-10-16-open-webui-model-picker.png) |
 | 2026-09-28 | [Playbook: resolving both rigs](./sprint3/2026-09-28-resolving-both-rigs.md) ([PDF](./sprint3/2026-09-28-resolving-both-rigs.pdf)), Sprint 3, done: rewire, power split, Rig 1 at 8 GPUs, Rig 2's RAM fault and BIOS reflash. Written 2026-10-16 from team reports |
 | 2026-10-16 | [Playbook: the VR experience of the OCS LLM path](./sprint2/2026-09-16-vr-experience.md) ([PDF](./sprint2/2026-09-16-vr-experience.pdf)), Sprint 2, in progress. Proof in [`sprint2/assets/`](./sprint2/assets/): headless run log (100/100 tests, 144 s arc), per-card load data, rig model renders, trace and commit charts. Not yet run on a headset |
+| 2026-10-19 | [Rig 2: ninth GPU, driver 580](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md): new kernel had no NVIDIA module and the worker fell back to CPU; swapped 550 for 580 with DKMS (as on Rig 1), worker on all 9 cards at 27.7 tok/s. Rig 1 inventory refreshed read-only |
 
 Add a row for each new record, newest last.

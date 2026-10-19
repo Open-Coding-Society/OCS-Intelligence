@@ -108,7 +108,7 @@ This playbook stays `in progress` until these are settled.
 - **Benchmark Rig 2's config** against alternatives (fewer GPUs, `PARALLEL`, `-ub`). A `llama-bench` run was started and interrupted before it printed anything.
 - **Decide on 0009.** It's `proposed`. It also differs from the blueprint, which has Rig 2 as dev/test, not serving students.
 - **Leftovers from the `ai2` attempt:** a TLS cert and Nginx site on EC2 (answering `301` to itself), and `/home/ocs/ai2-site` on Rig 2.
-- **Rig 1's 8th GPU** has been working since the [Sprint 3](../../docs/project/roadmap.md#sprints) rebuild, as the team reported. The workers pin their GPUs by UUID, and their configs list seven, so it's probably idle. Nobody has checked Rig 1 live since 2026-09-18.
+- **Rig 1's 8th GPU:** resolved. Checked live on 2026-10-19: all 8 cards are in use, Worker A (`qwen3.8:27b`) on 4 and Worker B (now `gemma4:26b`) on 4 ([evidence](../captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). The same day Rig 2 got a ninth card and serves `qwen3.6:35b-a3b` on all 9.
 
 ## Sources
 

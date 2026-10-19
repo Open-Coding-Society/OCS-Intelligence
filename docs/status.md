@@ -1,11 +1,11 @@
 ---
 status: current
-last_verified: 2026-10-15
+last_verified: 2026-10-19
 ---
 
 # Status
 
-What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. Rig 1 and EC2 were last verified live over NetBird SSH on **2026-09-18**. Rig 2 was checked and fixed live over NetBird SSH on **2026-10-15** ([evidence](../evidence/captures/2026-10-15-rig2-inference-fix.md)).
+What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. EC2 was last verified live over NetBird SSH on **2026-09-18**. Rig 1 was inspected read-only and Rig 2 was checked and changed over NetBird SSH on **2026-10-19** ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)).
 
 **How it works:** [architecture overview](./architecture/overview.md) · **Where things are:** [hosts](./reference/hosts.md), [configuration](./reference/configuration.md), [hardware](./architecture/hardware.md) · **How we got here:** [deployment log](../evidence/captures/2026-09-18-rig1-deployment-log.md) · **What's next:** [roadmap](./project/roadmap.md)
 
@@ -14,17 +14,17 @@ What is running **right now** and what's broken. This is the only page for time-
 | Component | Status |
 |---|---|
 | CUDA 12.6 toolkit on rig (`sm_61`/Pascal support) | ✅ Installed, verified |
-| `llama.cpp` built with CUDA backend | ✅ Built, all 7 GPUs detected |
+| `llama.cpp` built with CUDA backend | ✅ Built. Rig 1 now has 8 GPUs, driver 580.178.04 (2026-10-19) |
 | Model symlinks (`/srv/ocs-intelligence/models/`) | ✅ Done |
-| Worker A (`qwen3.8:27b`, 5 GPUs, port 8081) | ✅ Running, healthy |
-| Worker B (`qwen2.5:0.5b`, 2 GPUs, port 8082) | ✅ Running, healthy |
+| Worker A (`qwen3.8:27b`, 4 GPUs, port 8081) | ✅ Running (2026-10-19) |
+| Worker B (`gemma4:26b`, 4 GPUs, port 8082) | ✅ Running (2026-10-19). Changed from `qwen2.5:0.5b` on 2 GPUs on 2026-10-16 (config file date); who changed it and its speed aren't recorded. Docs describing the 5 + 2 split ([workers](./architecture/workers.md), [0003](./decisions/0003-5-plus-2-gpu-split.md)) predate this |
 | Ollama (old single-worker path) | 🛑 Stopped (freed for the two new workers) |
 | FastAPI orchestrator (on the rig, `:9000`) | ✅ Running, healthy; routes both models |
 | EC2 admission gateway (`127.0.0.1:9100`) | ✅ Running; auth + wait line, then proxy to the rig |
 | EC2 Nginx `/v1/` route | ✅ Live → localhost gateway; `/` still Open WebUI |
 | Open WebUI | ✅ Running (port 3000), version 0.11.3. Two model connections: Rig 1 via the gateway, Rig 2 direct (2026-10-15). Admin password reset 2026-10-15 ([evidence](../evidence/captures/2026-10-15-open-webui-admin-password-reset.md)) |
-| Rig 2 worker (`qwen3.6:35b-a3b` MoE, all 8 GPUs, port 8081) | ✅ Running, healthy (2026-10-15). ~27 tok/s generation, 2 slots × 262k context ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)) |
-| Rig 2 orchestrator (`:9000`, one model) | ✅ Running, healthy (2026-10-15). Accepts the Open WebUI key and a temporary operator key, not the student key |
+| Rig 2 worker (`qwen3.6:35b-a3b` MoE, all 9 GPUs, port 8081) | ✅ Running, healthy (2026-10-19). ~27.7 tok/s generation, 2 slots × 262k context ([0009](./decisions/0009-rig2-moe-behind-open-webui.md)). Ninth GPU added and driver moved to 580 that day ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)) |
+| Rig 2 orchestrator (`:9000`, one model) | ✅ Running, ready (2026-10-19). Accepts the Open WebUI key and a temporary operator key, not the student key |
 | Open WebUI → Rig 2 | ✅ Connected (2026-10-15): second OpenAI connection `http://100.75.127.192:9000/v1` with its own key ([evidence](../evidence/captures/2026-10-15-open-webui-rig2-connection.md)). The team saw all three models in the dropdown as a regular user on 2026-10-16 ([screenshot](../evidence/sprint4/2026-10-16-open-webui-model-picker.png)) |
 | `ai2.opencodingsociety.com` | 🛑 Not pursued. A teammate's TLS cert and Nginx site exist on EC2 (answers `301` to itself). Left untouched |
 | **Open issue:** Worker A throughput | ⚠️ 8.7 tok/s, *slower* than the 12.5 tok/s baseline. NCCL deferred. See below. |
@@ -40,6 +40,7 @@ This is the one thing standing between "technically works" and "actually done." 
 
 ## Other things worth knowing
 
+- **Both rigs take kernel updates automatically** (unattended upgrades). On 2026-10-19 Rig 2 rebooted into a new kernel that its prebuilt 550 driver didn't cover and served on CPU until the driver was moved to 580 with DKMS, the setup Rig 1 already had ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). After any rig reboot, check `nvidia-smi` and the worker log for `no usable GPU found`.
 - **Rig disk usage grew by ~4.3 GB.** That's `apt`'s package cache from the CUDA install (`/var/cache/apt/archives/`). It's safe to clear with `apt-get clean`. The rig has 151 GB free, so this isn't urgent.
 - **EC2 disk is about 61% used** (~19 GB free of 48 GB) after removing the unused Kasm 1.16.0.
 - **Ollama is stopped, not removed.** See [runbook: roll back](./operations/runbook.md#6-roll-back).
