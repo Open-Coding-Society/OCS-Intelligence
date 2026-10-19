@@ -14,7 +14,7 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 | Sprint | Weeks | Goal | State |
 |---:|---|---|---|
 | 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
-| 2 | 2–3 | VR-related work (owner: yashpatil321) | Material not in this repo yet. yashpatil321 will commit it. |
+| 2 | 2–3 | VR-related work (owner: yashpatil321) | In progress. Playbook in [`evidence/sprint2/`](../../evidence/evidence.md): [the VR experience](../../evidence/sprint2/2026-09-16-vr-experience.md) (in progress: full arc passes in simulation; not yet run on a headset) |
 | 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Done (reported 2026-10-16): both rigs boot with 8 GPUs. [Playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md) |
 | 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
 | 5 | Projected | Establish a stronger scheduling mechanism and improve networking | Projected. To be documented |

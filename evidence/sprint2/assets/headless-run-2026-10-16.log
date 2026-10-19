@@ -1,0 +1,221 @@
+== editor scripts compile ==
+Assets/Editor/ExperienceSceneBuilder.cs(1404,22): warning CS0219: The variable `far' is assigned but its value is never used
+Compilation succeeded - 2 warning(s)
+  ok
+
+== edit mode tests ==
+Compilation succeeded - 1 warning(s)
+-- TraceLoaderTests
+  PASS  ParsesValidTrace
+  PASS  AbsentGpuIndexIsNotCardZero
+  PASS  ReadsGpuTelemetryOnRigHops
+  PASS  SortsOutOfOrderHops
+  PASS  UnknownHopTypeIsDroppedNotThrown
+  PASS  RejectsHopEndingBeforeItStarts
+  PASS  RejectsEmptyTrace
+-- CardLoadStateTests
+  PASS  StartingAHopLightsThatCard
+  PASS  EndingTheOnlyHopDarkensTheCard
+  PASS  AdjacentHopsOnOneCardDoNotBlankIt
+  PASS  UnbalancedEndsDoNotDriveTheCountNegative
+  PASS  OutOfRangeCardsAreIgnored
+  PASS  StepEasesCurrentTowardTarget
+  PASS  ResetAllClearsEverything
+-- AssemblyTimelineTests
+  PASS  TotalDurationCountsStepsAndGaps
+  PASS  StepsRunInOrder
+  PASS  PartStaysSeatedDuringTheGapBetweenSteps
+  PASS  TravelProgressRunsZeroToOneAcrossTheTravel
+  PASS  FinishesAfterTheLastStep
+  PASS  ALongFrameCanCrossSeveralSteps
+  PASS  EmptySequenceFinishesInsteadOfHanging
+  PASS  ValidateRejectsDuplicateStepIds
+  PASS  ValidateRejectsZeroTravel
+  PASS  ValidateAcceptsAWellFormedSequence
+-- SystemRouteStateTests
+  PASS  AdjacentHopsOnOneNodeDoNotBlinkItOff
+  PASS  MovingToANewNodeRestartsTheEdge
+  PASS  EdgeProgressReachesOneAndStops
+  PASS  GlowRisesOnBusyNodesAndFallsOnIdleOnes
+  PASS  OutOfRangeNodesAreIgnored
+  PASS  ResetAllClearsTheRoute
+-- SystemGraphTests
+  PASS  ResolvesByNodeIdFirst
+  PASS  FallsBackToHopTypeForAnUnknownNodeId
+  PASS  AnUnknownHopTypeResolvesToNothing
+  PASS  ValidateRejectsDuplicateNodeIds
+  PASS  EveryHopInTheSampleTraceResolves
+-- NarrationTrackTests
+  PASS  FindsALineByCue
+  PASS  AnUnauthoredCueReturnsNothingRatherThanThrowing
+  PASS  HoldFallsBackToTheTrackDefault
+  PASS  CueHelpersMatchTheAuthoredFormat
+  PASS  ValidateRejectsDuplicateCues
+-- CardVisualMathTests
+  PASS  UnpoweredCardIsDarkAndStill
+  PASS  PoweredIdleCardGlowsFaintlyAndIdles
+  PASS  FullLoadIsFullyLitAndFastest
+  PASS  LoadOutsideZeroToOneIsClamped
+  PASS  HeatFollowsLoadOnlyWhilePowered
+  PASS  ApproachMovesByAtMostTheStepAndNeverOvershoots
+  PASS  FansSpinUpGraduallyAfterPowerOn
+-- BeamGlowStateTests
+  PASS  TheSampleRouteGivesFourBeams
+  PASS  MovingBetweenNodesLightsTheBeamBetweenThem
+  PASS  TheWayBackLightsTheSameBeam
+  PASS  StayingOnANodeLightsNothing
+  PASS  GlowFadesAndStopsAtZero
+  PASS  UnplacedNodesBreakTheChain
+-- TelemetryTextTests
+  PASS  CardHeaderNamesTheGpuAndRig
+  PASS  CardStatsShowLoadTemperatureAndMemory
+  PASS  CardStatsLeaveOutWhatTheHopDoesNotCarry
+  PASS  GeneratingLineCountsTokens
+  PASS  DurationSwitchesToSecondsAboveOneSecond
+  PASS  HopCaptionIsLabelThenDuration
+  PASS  TokensClimbAcrossTheModelHop
+-- TimelineLayoutTests
+  PASS  WidthsFillTheBarAndRespectTheMinimum
+  PASS  OffsetsAreRunningTotals
+  PASS  TooManySegmentsShareTheBarEvenly
+-- StageMotionTests
+  PASS  NothingMovesBeforeItsAct
+  PASS  EverythingHasMovedAfterItsAct
+  PASS  DuringItsActItWaitsForTheDelayThenEasesIn
+  PASS  EasingStartsAndEndsGently
+  PASS  ZeroDurationSnaps
+-- FlightPathTests
+  PASS  StartsAtTheTrayAndEndsInTheSocket
+  PASS  ItLiftsOverTheBenchOnTheWay
+  PASS  AFrontEntryArrivesLevel
+  PASS  TheLandingDipIsSmall
+  PASS  LongerFlightsArcHigher
+  PASS  TheEaseOvershootsThenLandsExactly
+  PASS  TheSpinIsGoneOnArrival
+-- WorldPulseTests
+  PASS  TheHallIdlesBeforePowerOn
+  PASS  TheWaveWaitsForTheCardsThenRunsOut
+  PASS  TheWaveFadesAsItGoes
+  PASS  EverythingIsAwakeAfterPowerOn
+-- AnswerTextTests
+  PASS  WrapsOnWordBoundaries
+  PASS  OneFramePerWord
+  PASS  OldLinesScrollOffTheTop
+  PASS  WordsArriveEvenlyAcrossTheHop
+-- JourneyTextTests
+  PASS  OneStatePerHopPlusBeforeAndAfter
+  PASS  TheRunningHopIsLitAndTheGpuInAmber
+  PASS  TheLastStateGivesTheTotalAndTheGpuShare
+  PASS  TheResponseHeadingNamesTheCardAndModel
+-- PlaybackPaceTests
+  PASS  NothingRunningPlaysAtTimeScale
+  PASS  AShortHopIsStretchedToTheMinimum
+  PASS  LongHopsAreLeftAlone
+  PASS  TheShortestRunningHopSetsThePace
+  PASS  ZeroMinimumPlaysStraight
+-- LocomotionTests
+  PASS  ARestingThumbDoesNotMove
+  PASS  FullTiltStillReachesFullSpeed
+  PASS  StickUpWalksWhereTheHeadFaces
+  PASS  StickRightSidesteps
+  PASS  WalkingIntoAWallSlidesAlongIt
+  PASS  OutsideTheBoundsYouCanStillWalkBackIn
+  PASS  ClimbingStopsAtTheFloorAndTheCeiling
+  PASS  OneFlickIsOneSnapTurn
+
+100 passed, 0 failed
+
+== full arc on the real assets ==
+Compilation succeeded - 1 warning(s)
+=== assets bound to their C# types ===
+  RigLayout        8 cards, spacing 0.075, temp 35-85C
+  AssemblySequence 23 steps, 50.2s
+  SystemGraph      7 nodes
+  NarrationTrack   14 lines, default hold 4s
+  every key in every asset matched a real field.
+  RigFacts         "THE RIG AT A GLANCE", 8 lines
+
+=== the five act arc, end to end ===
+  t=    0.0s  EmptyBench
+  t=   20.0s  Assembly
+  t=   70.2s  PowerOn
+  t=   85.2s  Request
+  t=  124.2s  Answer
+  t=  144.2s  Complete
+
+  assembly steps played : 23 of 23
+  narration lines shown : 24
+  peak load, GPUs 0-3   : 1.00
+  total runtime         : 144s (budget 300s)
+  glow before power on  : 0.00   fan degrees before power on: 0
+  during the request    : GPUs 0-3 peak at 1.00, other cards at most 0.12 (idle glow 0.12)
+  colour heat           : GPUs 0-3 reach 1.00 (amber is 1), other cards at most 0.00
+  beams                 : 6 of 6 lit as the request passed; card beam peak width 0.057 m
+  timeline              : generation segment peaked at red 2.2, playhead reached 2.40 of 2.40 m
+  broker caption        : "Response relayed / 6 ms"
+  card readout mid-run  : "GPUs 0?3  ?  rig-2 / Split 4 ways: every token crosses all 4 cards / 92% load  ?  68?C  ?  5.8 GB VRAM each / Generating  ?  1 token  ?  12 tok/s"
+  hall                  : wave peaked at 1.00, racks awake to 150 m by the request, ripples peaked at 1.00
+  bursts                : 39 (23 parts, 6 node pings, power on, the card, the answer)
+  tokens                : 9.0 particles/s while generating, 0.0 after
+  prompt                : "How does the OCS broker decide which / GPUs run my request?"
+  answer mid-stream     : "The broker keeps a live registry of / every"
+  answer at the end     : "replica that already has it loaded, / and picks the least busy of those. If / nothing is free, your job waits in the / queue. Every decision is logged, so / smarter rules can be measured against / this one."
+  journey board, end    : "<color=#5BD1FF>Total 10.02 s  ?  the GPU took 98.1%</color>"
+  answer heading        : "RESPONSE  ?  GPUs 0?3  ?  Qwen3.8 27B, Q4_K_M"
+  stage                 : system view at scale 1.00 when the request starts, timeline at 1.00 by the answer, tray and stand gone
+  fans turned           : 486 revolutions per card on average
+
+  first lines the viewer hears:
+    t=   0.0s  "A bare frame and a tray of parts. Nothing is running yet."
+    t=  20.0s  "This is how one of our rigs goes together."
+    t=  20.0s  "An open frame. Eight cards need airflow more than they need a case."
+    t=  23.4s  "The motherboard. Its job here is mostly to have enough PCIe lanes."
+    t=  26.1s  "The CPU barely works during inference. The cards do that."
+    t=  28.3s  "System memory holds the model while it is on its way to the cards."
+
+0 problem(s).
+
+== request act, frame by frame ==
+Compilation succeeded - 1 warning(s)
+=== SIM 1: which card is lit, frame by frame (72 fps) ===
+  peak load on GPU 0, whole trace      : 1.000
+  peak load on GPU 0, DURING generation: 1.000   (2131-9965 ms, generating)
+    t=    0ms  GPU 0 load=0.000
+    t=  800ms  GPU 0 load=1.000
+    t= 1600ms  GPU 0 load=1.000
+    t= 2400ms  GPU 0 load=1.000
+    t= 3200ms  GPU 0 load=1.000
+    t= 4000ms  GPU 0 load=1.000
+    t= 4800ms  GPU 0 load=1.000
+    t= 5600ms  GPU 0 load=1.000
+    t= 6400ms  GPU 0 load=1.000
+    t= 7200ms  GPU 0 load=1.000
+    t= 8000ms  GPU 0 load=1.000
+    t= 8800ms  GPU 0 load=1.000
+    t= 9600ms  GPU 0 load=1.000
+    t=10400ms  GPU 0 load=0.000
+
+=== SIM 2: five-act arc ===
+  t=    0.0s  EmptyBench
+  t=   20.0s  Assembly
+  t=  110.0s  PowerOn
+  t=  125.0s  Request
+  t=  164.0s  Answer
+  t=  184.0s  Complete
+  Request act lasted 38.99s (trace is ~6.4s at timeScale 0.5 + 1.5s tail)
+
+0 runtime problem(s) found.
+
+== shaders compile (glslang, URP stand-ins) ==
+OCSGlow.shader         vert nofog ok
+OCSGlow.shader         frag nofog ok
+OCSGlow.shader         vert fog   ok
+OCSGlow.shader         frag fog   ok
+OCSGridFloor.shader    vert nofog ok
+OCSGridFloor.shader    frag nofog ok
+OCSGridFloor.shader    vert fog   ok
+OCSGridFloor.shader    frag fog   ok
+OCSRackLights.shader   vert nofog ok
+OCSRackLights.shader   frag nofog ok
+OCSRackLights.shader   vert fog   ok
+OCSRackLights.shader   frag fog   ok
