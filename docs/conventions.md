@@ -49,7 +49,7 @@ We borrow from these sources but don't follow any of them exactly. Where we diff
    - `superseded`: kept for history. Add `superseded_by: <path>` and move it to [`archive/`](./archive/archive.md).
    - `last_verified`: the last date someone **checked the content against the thing it describes**: the code, the live machines, or the source document. Fixing typos doesn't count. **Never set it to today unless you checked today.** Agents trust this field.
 
-   Decision records use `status: proposed | accepted | rejected | superseded` and `date:` in place of `last_verified` (see the [template](./_templates/decision.md)). Evidence files use only `date:`, because they are records of one moment and are never updated. [Playbooks](#playbooks) add a few fields and stay editable until they're `done`.
+   Decision records use `status: proposed | accepted | rejected | superseded` and `date:` in place of `last_verified` (see the [template](./_templates/decision.md)). Evidence files use only `date:`, because they are records of one moment and are never updated. [Playbooks](#playbooks) add a few fields and are never edited once committed either. The one evidence file that changes is [`pending-playbook.md`](../evidence/pending-playbook.md), the queue that feeds the next playbook ([how](#pending-playbook-material)).
 
 3. **Sort by how often something changes.** Design docs (`architecture/`, `decisions/`) never say "right now" or "tonight". Anything time-sensitive goes in `status.md` or `evidence/`.
 
@@ -74,6 +74,7 @@ Ask what the reader is trying to do:
 | know why we picked X over Y | explanation | `decisions/` | [`decision.md`](./_templates/decision.md) |
 | know the project's scope, plan, or people | — | `project/` | [`doc.md`](./_templates/doc.md) |
 | see proof that something was measured or tested | — | `../evidence/` | [`weekly-report.md`](./_templates/weekly-report.md), or a dated capture |
+| log work this week that a future playbook should cover | — | [`../evidence/pending-playbook.md`](../evidence/pending-playbook.md) | a dated entry ([how](#pending-playbook-material)) |
 | read an outside document (mentor spec, slides) | — | `sources/` | [`source-summary.md`](./_templates/source-summary.md) |
 
 Security (`security/`) and testing (`testing/`) get their own folders because the blueprint treats them as their own review areas. They hold explanation and reference docs about those topics.
@@ -93,10 +94,20 @@ A playbook is the write-up of one sprint item: what was wrong, what we did, how 
 - **Where:** `evidence/sprintN/YYYY-MM-DD-short-title.md`, dated by the first day of the work, with the rendered `.pdf` next to it. Images go next to the playbook or in `assets/`.
 - **Start from** [`_templates/playbook.md`](./_templates/playbook.md). It has the header and the section order: summary paragraph, At a glance, Before, What we did, How to check it, Pitfalls, Open items, Sources. Leave out a section only if it would be empty.
 - **Header:** `type: playbook`, `date`, `title`, `subtitle`, `sprint`, `state`. `state` is `in progress` or `done`. Playbooks carry no author names: the work is the project's, and every PDF is tagged **PROMX-OCS**.
-- **Editable until done.** An `in progress` playbook may be updated as the work moves. Once it's `done`, it's frozen like any other evidence. Changes after that go in a new dated file.
+- **Frozen once committed.** Don't edit a playbook after it's committed, even one whose `state` is `in progress`. `in progress` means the work continues: later progress goes into [pending playbook material](#pending-playbook-material) and from there into the next playbook.
 - **Facts the team reported** but nobody captured at the time are marked as reported, with the date. They aren't presented as measured.
 - **Render** with `python3 scripts/build_playbook.py <file.md>` (or `--all`). It needs `pandoc` and `pip install weasyprint`. Commit the `.md` and the `.pdf` together. The style is the Illuminati palette from Yash's VS Code theme, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
 - **Link it** from the log in [`evidence/evidence.md`](../evidence/evidence.md) and from the sprint's row in the [roadmap](./project/roadmap.md#sprints).
+
+## Pending playbook material
+
+[`evidence/pending-playbook.md`](../evidence/pending-playbook.md) is where people and agents log the week's work as they do it. Every entry is waiting to go into a playbook. It's the one evidence file that's edited in place.
+
+- **Add an entry** when you finish something a playbook should cover: a fix, a deployment, a measurement, a hardware change, an answer to an open item in an earlier playbook. Don't edit that earlier playbook.
+- **Put it under the current week** (`## Week of YYYY-MM-DD`, the Monday) and under the closest category: `Rigs and hardware`, `Inference and models`, `Gateway and API`, `Networking and access`, `VR`, `Docs and process`. Add a category if none fits.
+- **Each entry** is a `###` heading with the date and a short title, then a few bullets: what was wrong or asked, what was done, and the result with numbers. Add the sprint it belongs to if you know it. Link the proof, usually a dated capture in [`evidence/captures/`](../evidence/evidence.md), and the earlier playbook it follows up, if there is one. Same rules as playbooks: no author names, and mark facts the team reported but nobody captured as reported.
+- **Write facts, not plans.** Things still to do go in the entry as open items, or in the [roadmap](./project/roadmap.md).
+- **Folding it in.** When a playbook is written for the next sprint, or a new playbook in the current one, its author moves the entries it covers into the playbook and deletes them here in the same commit. Note the playbook in each removed week's heading if part of that week stays.
 
 ## File naming
 
