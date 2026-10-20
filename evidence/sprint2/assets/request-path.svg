@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="Ubuntu Sans, Inter, DejaVu Sans, sans-serif">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D97757"/></marker></defs>
+  <rect width="760" height="330" rx="8" fill="#191918" stroke="#2E2E2C"/>
+  <text x="24" y="34" fill="#F4F0E8" font-size="15" font-weight="700">The stations the request visits, in the order they rise from the floor</text>
+  <text x="24" y="54" fill="#A8A6A0" font-size="11">From SystemGraph.asset (7 nodes). This is the target path from the week 1 deck, not the live API.</text>
+  <g font-size="12" text-anchor="middle">
+    <rect x="24" y="96" width="110" height="64" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="79" y="124" fill="#F4F0E8" font-weight="700">Student</text><text x="79" y="143" fill="#A8A6A0" font-size="10.5">web-client</text>
+    <path d="M134,128 L170,128" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="172" y="96" width="120" height="64" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="232" y="124" fill="#F4F0E8" font-weight="700">AWS relay</text><text x="232" y="143" fill="#A8A6A0" font-size="10.5">NGINX + TLS</text>
+    <path d="M292,128 L328,128" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="330" y="96" width="130" height="64" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="395" y="124" fill="#F4F0E8" font-weight="700">FastAPI broker</text><text x="395" y="143" fill="#A8A6A0" font-size="10.5">auth, queue, scheduling</text>
+    <path d="M370,160 L345,206" stroke="#5BD1FF" stroke-width="1.5" stroke-dasharray="4 3"/><path d="M420,160 L445,206" stroke="#5BD1FF" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect x="290" y="208" width="100" height="52" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="340" y="231" fill="#F4F0E8" font-weight="700">Redis</text><text x="340" y="248" fill="#A8A6A0" font-size="10.5">live workers</text>
+    <rect x="400" y="208" width="100" height="52" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="450" y="231" fill="#F4F0E8" font-weight="700">RDS</text><text x="450" y="248" fill="#A8A6A0" font-size="10.5">users, history</text>
+    <path d="M460,128 L496,128" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="498" y="96" width="100" height="64" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/><text x="548" y="124" fill="#F4F0E8" font-weight="700">NetBird</text><text x="548" y="143" fill="#A8A6A0" font-size="10.5">private overlay</text>
+    <path d="M598,128 L634,128" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="636" y="86" width="104" height="84" rx="6" fill="#2A1C16" stroke="#D97757"/><text x="688" y="112" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1">GPU RIG</text><text x="688" y="131" fill="#F4F0E8" font-size="11">rig-2</text><text x="688" y="148" fill="#A8A6A0" font-size="10.5">llama-server</text><text x="688" y="163" fill="#A8A6A0" font-size="10.5">GPUs 0-3</text>
+  </g>
+  <text x="24" y="298" fill="#A8A6A0" font-size="11">Tokens come back the same way. In the hall the stations stand in a horseshoe round the rig, joined by a track of light on the floor.</text>
+</svg>

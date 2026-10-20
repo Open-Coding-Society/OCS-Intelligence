@@ -167,7 +167,7 @@ If Copilot disconnects during the wait, acquire is cancelled. If the semaphore w
 - It does not run models.
 - It does not use Redis, SQS, or a job queue. Copilot holds a live HTTP stream; there is no “we will call you back.”
 - It does not change `--parallel` on `llama-server`. The rig can still take a second 27B job if something bypasses EC2.
-- It does not see Open WebUI. Browser chat still goes `Nginx → rig :3000` and skips this line.
+- It doesn't see the Open WebUI page, which goes `Nginx → rig :3000`. Open WebUI's calls to Rig 1's models do come back through `/v1` and wait in this line. Its calls to Rig 2's model go straight to Rig 2 and don't.
 
 Those are boundaries, not unfinished sentences. The gateway’s job is one thing: **never let the public internet decide how many inferences the 1070s run.**
 

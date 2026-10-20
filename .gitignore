@@ -4,3 +4,4 @@ __pycache__/
 .venv/
 benchmark/results/
 netbird_data/
+evidence/**/*.html

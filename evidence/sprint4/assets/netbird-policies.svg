@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="Ubuntu Sans, Inter, DejaVu Sans, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#D97757"/>
+    </marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#89B4FA"/>
+    </marker>
+    <marker id="y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F5A961"/>
+    </marker>
+  </defs>
+  <rect width="760" height="330" rx="8" fill="#191918" stroke="#2E2E2C"/>
+
+  <!-- outbound-only -->
+  <rect x="24" y="96" width="190" height="128" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="40" y="122" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1.2">OUTBOUND-ONLY</text>
+  <text x="40" y="146" fill="#F4F0E8" font-size="13">Yash WSL</text>
+  <text x="40" y="166" fill="#F4F0E8" font-size="13">adi-dell</text>
+  <text x="40" y="198" fill="#6E6E6C" font-size="10.5">operators: nothing can</text>
+  <text x="40" y="212" fill="#6E6E6C" font-size="10.5">start a connection to them</text>
+
+  <!-- ocs-gateway -->
+  <rect x="300" y="28" width="190" height="96" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="316" y="54" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1.2">OCS-GATEWAY</text>
+  <text x="316" y="78" fill="#F4F0E8" font-size="13">EC2 (ip-172-31-42-43)</text>
+  <text x="316" y="104" fill="#6E6E6C" font-size="10.5">public Nginx + wait line</text>
+
+  <!-- ocs-rigs -->
+  <rect x="300" y="196" width="190" height="108" rx="6" fill="#1E1E1C" stroke="#2E2E2C"/>
+  <text x="316" y="222" fill="#D97757" font-size="11" font-weight="700" letter-spacing="1.2">OCS-RIGS</text>
+  <text x="316" y="246" fill="#F4F0E8" font-size="13">ocs-intelligence-rig</text>
+  <text x="316" y="266" fill="#F4F0E8" font-size="13">ocs-intelligence-rig2</text>
+  <text x="316" y="290" fill="#6E6E6C" font-size="10.5">orchestrator :9000, WebUI :3000</text>
+
+  <!-- outbound-only -> gateway / rigs -->
+  <path d="M214,140 C250,120 260,90 296,80" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M214,180 C250,200 260,240 296,248" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#a)"/>
+  <text x="218" y="104" fill="#A8A6A0" font-size="10.5">all ports</text>
+  <text x="218" y="236" fill="#A8A6A0" font-size="10.5">all ports</text>
+
+  <!-- gateway -> rigs -->
+  <path d="M395,124 L395,192" fill="none" stroke="#89B4FA" stroke-width="2" marker-end="url(#b)"/>
+  <text x="404" y="156" fill="#89B4FA" font-size="10.5">TCP 9000, 3000</text>
+  <text x="404" y="170" fill="#6E6E6C" font-size="10.5">gateway-to-rigs</text>
+
+  <!-- rigs <-> rigs -->
+  <path d="M490,226 C560,200 560,300 490,276" fill="none" stroke="#F5A961" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#y)" marker-end="url(#y)"/>
+  <text x="560" y="244" fill="#F5A961" font-size="10.5">rigs-to-rigs, both ways</text>
+  <text x="560" y="258" fill="#6E6E6C" font-size="10.5">TEMPORARY, until a router</text>
+  <text x="560" y="272" fill="#6E6E6C" font-size="10.5">sits between the rigs</text>
+
+  <!-- legend -->
+  <text x="560" y="52" fill="#A8A6A0" font-size="10.5">Arrows point the way a</text>
+  <text x="560" y="66" fill="#A8A6A0" font-size="10.5">connection can be started.</text>
+  <text x="560" y="86" fill="#A8A6A0" font-size="10.5">Replies always come back.</text>
+  <text x="560" y="106" fill="#6E6E6C" font-size="10.5">Default (All ↔ All): disabled</text>
+</svg>

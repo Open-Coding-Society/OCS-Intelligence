@@ -31,9 +31,13 @@ flowchart LR
     end
     subgraph rig [GPU rig · NetBird only]
         O[Orchestrator :9000]
-        A[Worker A · llama-server<br/>qwen3.8:27b · 5 GPUs]
-        B[Worker B · llama-server<br/>qwen2.5:0.5b · 2 GPUs]
+        A[Worker A · llama-server<br/>qwen3.8:27b · 4 GPUs]
+        B[Worker B · llama-server<br/>gemma4:26b · 4 GPUs]
         UI[Open WebUI :3000]
+    end
+    subgraph rig2 [GPU rig 2 · NetBird only]
+        O2[Orchestrator :9000]
+        M[Worker · llama-server<br/>qwen3.6:35b-a3b · 9 GPUs]
     end
     C -->|HTTPS /v1/*| N
     W -->|HTTPS /| N
@@ -42,7 +46,12 @@ flowchart LR
     G -->|auth → wait line → proxy<br/>over NetBird| O
     O -->|by model name| A
     O -->|by model name| B
+    UI -->|Rig 1 models: HTTPS /v1| N
+    UI -->|Rig 2 model, over NetBird| O2
+    O2 --> M
 ```
+
+Open WebUI's backend calls models over the OpenAI API: Rig 1's through the public `/v1` (so through the gateway and wait line), Rig 2's straight to Rig 2's orchestrator ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)).
 
 Tokens stream back along the same path as Server-Sent Events. Every hop passes them through without buffering.
 
@@ -55,7 +64,7 @@ Tokens stream back along the same path as Server-Sent Events. Every hop passes t
 | NetBird | both | Private overlay between EC2 and the rig. The rig has no public exposure. | [network](./network.md) |
 | Orchestrator | rig | Routes by `model` to a worker, swaps the student key for the worker secret, polls worker health | [orchestrator](./orchestrator.md) |
 | Worker A / B | rig | `llama-server` processes pinned to GPU groups | [workers](./workers.md) |
-| Open WebUI | rig (Docker) | Browser chat. Skips the gateway. | — |
+| Open WebUI | rig (Docker) | Browser chat. The page skips the gateway; its calls to Rig 1's models go through it, its calls to Rig 2's model don't. | [hosts](../reference/hosts.md#ports) |
 
 Addresses and ports: [hosts](../reference/hosts.md). Env vars: [configuration](../reference/configuration.md). Endpoints and errors: [API](../reference/api.md).
 

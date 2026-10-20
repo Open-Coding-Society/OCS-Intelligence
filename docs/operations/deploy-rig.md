@@ -46,7 +46,7 @@ DEFAULT_MODEL_GGUF=/srv/ocs-intelligence/models/qwen3.6-35b-a3b-ud-q4_k_xl.gguf
 DEFAULT_MODEL_ID=qwen3.6:35b-a3b
 CONTEXT_SIZE=524288          # shared by the slots: 2 x 262144, the model's maximum
 PARALLEL=2
-TENSOR_SPLIT=11,8,8,8,8,8,8,8   # GPU 0 is the 11 GB 1080 Ti
+TENSOR_SPLIT=11,8,8,8,8,8,8,8,8   # GPU 0 is the 11 GB 1080 Ti; 9 cards since 2026-10-19
 LLAMA_EXTRA_ARGS=-ub 1024
 ```
 

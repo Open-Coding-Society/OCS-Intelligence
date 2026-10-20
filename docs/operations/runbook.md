@@ -86,7 +86,8 @@ systemctl restart ocs-llama-a && journalctl -u ocs-llama-a -f     # wait for the
 TODO: there are no tagged releases. What exists:
 
 - **Nginx:** restore the latest `/etc/nginx/sites-available/llm-relay.bak.*`, then `nginx -t && systemctl reload nginx`.
-- **Back to Ollama (last resort):** `systemctl stop ocs-orchestrator ocs-llama-a ocs-llama-b`, check VRAM is free, then `systemctl start ollama`. Open WebUI works again. **`/v1/` won't work**, because the gateway expects the orchestrator.
+- **Back to Ollama (last resort):** `systemctl stop ocs-orchestrator ocs-llama-a ocs-llama-b`, check VRAM is free, then `systemctl start ollama`. **`/v1/` won't work**, because the gateway expects the orchestrator. Open WebUI's Ollama connection is disabled (it now uses OpenAI connections), so re-enable it in Admin Settings → Connections for browser chat on Rig 1.
+- **Open WebUI settings:** its database backup from before the Rig 2 connection is `webui.db.bak-20261015` ([hosts](../reference/hosts.md#rig)). Restoring it reverts every setting changed since, including the admin password reset.
 
 ## 7. Capture an incident bundle
 

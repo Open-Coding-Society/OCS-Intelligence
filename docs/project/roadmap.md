@@ -13,14 +13,15 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 
 | Sprint | Weeks | Goal | State |
 |---:|---|---|---|
-| 1 | 1 | Prove one lane end to end (blueprint Week 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
-| 2 | 2–3 | VR-related work (owner: yashpatil321) | Material not in this repo yet. yashpatil321 will commit it. |
-| 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Nearly done, as reported by the team on 2026-10-14. Not reflected in [status](../status.md) yet. |
-| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14) |
+| 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
+| 2 | 2–3 | VR-related work (owner: yashpatil321) | In progress. Playbook in [`evidence/sprint2/`](../../evidence/evidence.md): [the VR experience](../../evidence/sprint2/2026-09-16-vr-experience.md) (in progress: full arc passes in simulation; not yet run on a headset) |
+| 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Done (reported 2026-10-16): both rigs boot with 8 GPUs. [Playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md) |
+| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
+| 5 | Projected | Establish a stronger scheduling mechanism and improve networking | Projected. To be documented |
 
 ## The blueprint's six-week campaign
 
-From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). This is the plan we're measured against. We now track work as [sprints](#sprints), and Sprint 1 corresponds to Week 1. Each week closes only when its exit criteria are true **and** there is evidence.
+From [Blueprint v2.2](../sources/2026-09-11-blueprint-v2.2.md) §7, as adapted in the deck (slide 27). This is the plan we're measured against. We now track work as [sprints](#sprints), and Sprint 1 corresponds to Weeks 0 and 1. Each week closes only when its exit criteria are true **and** there is evidence.
 
 | Week | Goal | Done when |
 |---:|---|---|
@@ -80,18 +81,19 @@ From blueprint §3. Verified against the code and [status](../status.md) as of 2
 |---|---|---|
 | Model bake-off | Blueprint §5, deck slide 18 | Frozen task set, blind grading. Would confirm or reverse [0002](../decisions/0002-sharded-27b-over-per-gpu-replicas.md). |
 | Per-student API keys, quotas, revocation | Blueprint §3, §10 | Needed so the line is fair per person |
+| Router that knows both rigs (Mac Mini; EC2 gateway in the meantime) | Team, 2026-10-15 | Would replace Open WebUI's direct connection to Rig 2 and the temporary rigs-to-rigs NetBird rule ([0009](../decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Broker: FastAPI + Redis (live state) + RDS (durable state) | Deck slides 07–08, 21, 32 | MVP policy: filter healthy → capable → prefer loaded → least busy → queue → log. Would revisit [0005](../decisions/0005-admission-queue-on-ec2.md). |
-| Rig 2 (dev and test) | Deck slides 16–17 | Being built |
+| Rig 2 (dev and test) | Deck slides 16–17 | Built and serving `qwen3.6:35b-a3b` through Open WebUI since 2026-10-15 ([status](../status.md), [0009](../decisions/0009-rig2-moe-behind-open-webui.md)) |
 | Worker A throughput fix | [status](../status.md#open-issue-worker-a-is-slower-than-baseline) | `llama-bench`, then NCCL |
 | Monitoring: GPU exporter → Prometheus → Grafana | Blueprint §4, deck slide 35 | llama-server already exposes `/metrics` |
 | R&D: model warming, speculative decoding, quantization levels, YaRN | Deck slide 20 | Each needs a before/after measurement |
-| Label rigs and GPUs, physical subgroups | Deck slide 33 | Also settles the [7-vs-8 card question](../architecture/hardware.md) |
+| Label rigs and GPUs, physical subgroups | Deck slide 33 | The 7-vs-8 card question was settled in [Sprint 3](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md): Rig 1 runs 8 |
 | Week 0 and Week 1 (Sprint 1) playbooks | Deck slide 33 | In progress: two in [`evidence/sprint1/`](../../evidence/evidence.md) |
 | Self-healing agent loop (detect → diagnose → repair → verify → log) | Deck slide 34 | "Run" stage. Research question. |
 
 ## Sprint 1 backlog (as presented 2026-09-28)
 
-From deck slide 32, with state as of 2026-09-29. Everything below refers to Rig 1. **Nothing is done on Rig 2 yet.**
+From deck slide 32, with state as of 2026-09-29. Everything below refers to Rig 1. Rig 2's state is in [status](../status.md).
 
 | # | Item | State |
 |---|---|---|

@@ -18,7 +18,7 @@ Internet ──HTTPS──▶ EC2 Nginx (TLS, ai.opencodingsociety.com)
 - **EC2 is the only public host.** It has the public IP, the DNS name, and the Let's Encrypt certificate (Certbot). Port 80 redirects to 443.
 - **The rig has no inbound exposure to the internet.** EC2 reaches it over the NetBird overlay using its `100.75.x.x` address.
 - **Nginx settings for `/v1/`** ([`infra/ec2/llm-relay-nginx.conf`](../../infra/ec2/llm-relay-nginx.conf)): `proxy_buffering off` and `proxy_request_buffering off` so tokens stream immediately; `proxy_read_timeout` and `proxy_send_timeout` of 3600 s so long waits in line aren't cut off; `client_max_body_size 2m`. The path isn't rewritten, so `/v1/models` stays `/v1/models`.
-- `/` (Open WebUI) goes straight to the rig with a 300 s read timeout and WebSocket upgrade. It **skips the gateway**.
+- `/` (Open WebUI) goes straight to the rig with a 300 s read timeout and WebSocket upgrade. The page **skips the gateway**. Open WebUI's own model calls go to the public `/v1` (Rig 1's models) and over NetBird to Rig 2's `:9000` (Rig 2's model).
 
 ## NetBird
 
