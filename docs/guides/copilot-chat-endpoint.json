@@ -1,0 +1,28 @@
+[
+    {
+        "name": "OCS Intelligence",
+        "vendor": "customendpoint",
+        "apiKey": "${input:chat.lm.secret.-3581f028}",
+        "apiType": "chat-completions",
+        "models": [
+            {
+                "id": "qwen2.5:0.5b",
+                "name": "qwen2.5:0.5b",
+                "url": "https://ai.opencodingsociety.com/v1",
+                "toolCalling": false,
+                "vision": false,
+                "maxInputTokens": 8192,
+                "maxOutputTokens": 2048
+            },
+            {
+                "id": "qwen3.8:27b",
+                "name": "qwen3.8:27b",
+                "url": "https://ai.opencodingsociety.com/v1",
+                "toolCalling": true,
+                "vision": true,
+                "maxInputTokens": 163840,
+                "maxOutputTokens": 16384
+            }
+        ]
+    }
+]
