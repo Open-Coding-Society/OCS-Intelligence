@@ -52,3 +52,12 @@ Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md).
 #### Rig 1 Worker B switched to `gemma4:26b` (seen 2026-10-19)
 
 - Worker B serves `gemma4:26b` on 4 GPUs, not `qwen2.5:0.5b` on 2. The config file is dated 2026-10-16. Who made the change, why, and the model's speed aren't recorded.
+
+### Networking and access
+
+#### 2026-10-20: Fewer NetBird SSO prompts; EC2 SSH stops working
+
+- **Asked:** stop the browser login on every SSH connection.
+- **Done:** turned on the client's token cache (`netbird up --ssh-jwt-cache-ttl`) on one operator machine. NetBird's CLI reference says servers reject tokens older than 10 minutes, so 600 s is the useful maximum. The login link now opens in a chosen Brave profile ([guide](../docs/guides/netbird-access.md#avoid-re-approving-every-command)).
+- **Result:** after one approval, a new connection to Rig 1 needed no prompt.
+- **Found:** NetBird SSH to EC2 fails right after a successful login (`ssh handshake failed: ... i/o timeout`, three tries). EC2's SSH server is NetBird 0.78.1; the rigs are on 0.80.0 and work. The public API was unaffected (`/healthz` 200). Open: fix via the AWS console, then re-check the instance type.
