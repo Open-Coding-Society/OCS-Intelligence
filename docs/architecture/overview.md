@@ -19,6 +19,8 @@ The hard constraints that shape everything:
 
 ## Request path
 
+The full system as one picture, with both rigs, the NetBird rules, and operator access: [pipeline diagram](../visuals/pipeline.png).
+
 ```mermaid
 flowchart LR
     subgraph client [Student machine]

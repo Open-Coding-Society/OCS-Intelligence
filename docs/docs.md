@@ -46,6 +46,7 @@ Start here. Every doc in the repo is linked from this page, either directly or t
 | [API](./reference/api.md) | Endpoints, models, error codes |
 | [Configuration](./reference/configuration.md) | Every environment variable for each service |
 | [Hosts](./reference/hosts.md) | Machines, IPs, ports, paths on disk, service names |
+| Visuals: [Rig 1](./visuals/rig1.pdf), [Rig 2](./visuals/rig2.pdf), [pipeline](./visuals/pipeline.png) | Printable one-page sheet per rig (Letter) and the full system diagram. Source: [`scripts/visuals/`](../scripts/visuals/) |
 
 ## Operations (running the service)
 

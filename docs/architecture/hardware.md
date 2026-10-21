@@ -7,6 +7,8 @@ last_verified: 2026-10-20
 
 The physical rigs and the single source for the GPU inventory. GPU inventories verified with `nvidia-smi` over NetBird SSH on 2026-10-19, the rest of the platform on 2026-10-20.
 
+Printable one-page sheets of each rig: [Rig 1](../visuals/rig1.pdf), [Rig 2](../visuals/rig2.pdf). They're generated from [`scripts/visuals/`](../../scripts/visuals/); regenerate them when this page changes.
+
 ## Rigs
 
 | Rig | Role | State | Cards |
@@ -41,7 +43,7 @@ As reported by the team on 2026-10-16 ([Sprint 3](../../evidence/sprint3/2026-09
 | | Rig 1 | Rig 2 |
 |---|---|---|
 | Supply 1 | 1800 W, brand unknown: 5 GPUs + board and CPU | 1800 W, brand unknown: 5 GPUs + board and CPU |
-| Supply 2 | Antec 1300 W: 3 GPUs | EVGA, 850 W or 1300 W (not known which): 2 GPUs |
+| Supply 2 | Antec 1300 W: 3 GPUs | EVGA 850 W (the team's best recollection; the label hasn't been read): 2 GPUs |
 | Supply 3 | — | Antec 1300 W: 2 GPUs (one before the ninth card; the ninth is believed to be on this one) |
 
 ## GPU inventory (Rig 1)

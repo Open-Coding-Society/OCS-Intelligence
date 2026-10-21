@@ -5,3 +5,4 @@ __pycache__/
 benchmark/results/
 netbird_data/
 evidence/**/*.html
+node_modules/
