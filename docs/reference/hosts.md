@@ -5,7 +5,7 @@ last_verified: 2026-10-19
 
 # Hosts, ports, and paths
 
-The single place for machine names, addresses, ports, on-disk paths, and service names. Other docs link here instead of repeating them. EC2 verified live over NetBird SSH on 2026-09-18, Rig 1 and Rig 2 on 2026-10-19 (see [status](../status.md)).
+The single place for machine names, addresses, ports, on-disk paths, and service names. Other docs link here instead of repeating them. EC2 verified live over NetBird SSH on 2026-09-18, Rig 1 and Rig 2 on 2026-10-19, their hardware on 2026-10-20 (see [status](../status.md)).
 
 ## Machines
 
@@ -13,7 +13,7 @@ The single place for machine names, addresses, ports, on-disk paths, and service
 |---|---|---|---|---|
 | EC2 gateway | `100.75.172.167` | `ip-172-31-42-43` | Public TLS entry point, admission gateway | Ubuntu 24.04, AWS m5.large |
 | GPU rig (Rig 1) | `100.75.123.203` | `ocs-intelligence-rig` | llama.cpp workers, orchestrator, Open WebUI | Ubuntu 24.04.4, ASUS B250 Mining Expert, 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
-| GPU rig (Rig 2) | `100.75.127.192` | `ocs-intelligence-rig2` | One llama.cpp worker (`qwen3.6:35b-a3b`), orchestrator | Ubuntu 24.04, Python 3.12.3, 1 × GTX 1080 Ti + 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
+| GPU rig (Rig 2) | `100.75.127.192` | `ocs-intelligence-rig2` | One llama.cpp worker (`qwen3.6:35b-a3b`), orchestrator | Ubuntu 24.04.3, Python 3.12.3, ASUS B250 Mining Expert, 1 × GTX 1080 Ti + 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
 
 Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencodingsociety.com` also resolves to EC2 and has a cert there, but isn't used: [status](../status.md).) SSH to either host goes through NetBird ([how](../guides/netbird-access.md)).
 

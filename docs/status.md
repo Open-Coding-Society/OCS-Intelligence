@@ -40,8 +40,9 @@ This is the one thing standing between "technically works" and "actually done." 
 
 ## Other things worth knowing
 
+- **Rig 1's Ethernet links at 100 Mb/s**; Rig 2 gets 1 Gb/s on the same onboard port (2026-10-20, [evidence](../evidence/captures/2026-10-20-rig-hardware-inventory.md)). Likely a cable or switch port. The second SSD the team reports in each rig isn't visible to the OS.
 - **Both rigs take kernel updates automatically** (unattended upgrades). On 2026-10-19 Rig 2 rebooted into a new kernel that its prebuilt 550 driver didn't cover and served on CPU until the driver was moved to 580 with DKMS, the setup Rig 1 already had ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). After any rig reboot, check `nvidia-smi` and the worker log for `no usable GPU found`.
-- **Rig disk usage grew by ~4.3 GB.** That's `apt`'s package cache from the CUDA install (`/var/cache/apt/archives/`). It's safe to clear with `apt-get clean`. The rig has 151 GB free, so this isn't urgent.
+- **Rig disk usage grew by ~4.3 GB.** That's `apt`'s package cache from the CUDA install (`/var/cache/apt/archives/`). It's safe to clear with `apt-get clean`. The rig had 139 GB free on 2026-10-20, so this isn't urgent.
 - **EC2 disk is about 61% used** (~19 GB free of 48 GB) after removing the unused Kasm 1.16.0.
 - **Ollama is stopped, not removed.** See [runbook: roll back](./operations/runbook.md#6-roll-back).
 - **Open WebUI** (2026-10-15) has two enabled OpenAI connections. `https://ai.opencodingsociety.com/v1` serves Rig 1's models through the EC2 gateway and wait line. `http://100.75.127.192:9000/v1` serves Rig 2's model straight from its orchestrator, **skipping the wait line**. Its Ollama connections are disabled. Open WebUI 0.11.3 keeps only the **first** connection that offers a given model ID, so two rigs serving the same model name would never load-balance there.

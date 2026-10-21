@@ -30,6 +30,17 @@ Answers an open item in the [Sprint 4 inference playbook](./sprint4/2026-10-15-i
 
 - All 8 cards are in use, 4 per worker. Inventory with UUIDs: [hardware](../docs/architecture/hardware.md#gpu-inventory-rig-1).
 
+#### 2026-10-20: Platform inventory of both rigs
+
+Fills the "not recorded" items in the [Sprint 3 playbook](./sprint3/2026-09-28-resolving-both-rigs.md). Proof: [capture](./captures/2026-10-20-rig-hardware-inventory.md) (read-only).
+
+- **Same platform on both:** ASUS B250 Mining Expert, Intel Celeron G3930 (2 cores), Corsair 8 GB DDR4 sticks at 2133 MT/s. Rig 1 has 2 sticks (16 GB), Rig 2 has 1 (8 GB). BIOS 0403 on Rig 1, 1001 on Rig 2.
+- **Cards:** every 1070 is an EVGA GTX 1070 FTW Hybrid (185 W limit). Rig 2's 1080 Ti is an EVGA SC Black Edition, air-cooled (250 W limit).
+- **Both rigs are on wired Ethernet now** (onboard Intel I219-V). Rig 1 links at only 100 Mb/s, Rig 2 at 1 Gb/s.
+- **Storage:** each OS sees one Samsung 860 EVO 250 GB. The team reports a second SSD in each (480 GB in Rig 1, 256 GB in Rig 2); neither shows up.
+- **Power (reported):** both 1800 W supplies are an unknown brand. Rig 2's EVGA is 850 W or 1300 W. Rig 2's ninth card is believed to be on the Antec, making its split 5 / 2 / 2.
+- **Open:** connect or check the second SSDs; find out why Rig 1 links at 100 Mb/s; read the EVGA supply's label.
+
 ### Inference and models
 
 #### 2026-10-19: Rig 2 serves `qwen3.6:35b-a3b` on all 9 cards
