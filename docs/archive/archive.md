@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-22
 ---
 
 # Archive
@@ -13,5 +13,7 @@ Superseded plans and records, kept for history. **Don't follow them as instructi
 | [4+3 orchestrator deployment guide](./inference-orchestrator-deployment-4plus3.md) | First plan: 4-GPU pinned + 3-GPU flexible workers, orchestrator on EC2 | [decision 0003](../decisions/0003-5-plus-2-gpu-split.md) |
 | [Cursor handoff](./cursor-handoff.md) | The 5+2 execution plan handed to a coding agent | [deploy the rig](../operations/deploy-rig.md), [workers](../architecture/workers.md) |
 | [EC2 gateway plan](./plan-ec2-gateway.md) | Implementation plan for the admission gateway | [gateway](../architecture/gateway.md), [deploy EC2](../operations/deploy-ec2.md) |
+| [Status, 2026-09-23](./status-2026-09-23.md) | The old root `STATUS.md`: live state, deployed units and env as of 2026-09-23 | [status](../status.md), [workers](../architecture/workers.md), [deploy the rig](../operations/deploy-rig.md) |
+| [Worker A context window](./worker-a-context-window.md) | The old root `CONTEXT.md`: why Worker A went to one slot with a 262,144-token window, with VRAM measurements (2026-09-23) | [workers](../architecture/workers.md), [configuration](../reference/configuration.md) |
 
 To archive a doc: `git mv` it here, set `status: superseded` and `superseded_by:`, update links that pointed to it, and add a row above.

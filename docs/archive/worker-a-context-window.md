@@ -1,3 +1,9 @@
+---
+status: superseded
+superseded_by: ../architecture/workers.md
+last_verified: 2026-09-23
+---
+
 # Context windows
 
 Live as of 2026-09-23. Worker A (`qwen3.8:27b`) serves one request at a time with a **262,144-token** context window. Worker B is unchanged.
@@ -19,7 +25,7 @@ The model file itself can do 262,144 tokens. That is also the largest power of t
 | 131,072 | fit | 5,861 MiB |
 | 262,144 | fit | 7,391 MiB of 8,192 |
 
-Startup logged one compute-buffer allocation failure on GPU 2, then llama.cpp retried without pipeline parallelism and came up. No KV-cache quantization. After a few-thousand-token prompt, GPU 2 sits around 7.4 GB of 8 GB, so a prompt near the full window has little scratch memory left and will be slow to prefill across the PCIe x1 risers. Deployed env and unit: [`STATUS.md`](./STATUS.md) §4.2 and §4.4. Templates: [`systemd/worker-a.env.template`](./systemd/worker-a.env.template), [`systemd/ocs-llama-a.service`](./systemd/ocs-llama-a.service).
+Startup logged one compute-buffer allocation failure on GPU 2, then llama.cpp retried without pipeline parallelism and came up. No KV-cache quantization. After a few-thousand-token prompt, GPU 2 sits around 7.4 GB of 8 GB, so a prompt near the full window has little scratch memory left and will be slow to prefill across the PCIe x1 risers. Deployed env and unit: [`STATUS.md`](./status-2026-09-23.md) §4.2 and §4.4. Templates: [`systemd/worker-a.env.template`](../../infra/rig/worker-a.env.template), [`systemd/ocs-llama-a.service`](../../infra/rig/ocs-llama-a.service).
 
 Checked on the rig after the change:
 
