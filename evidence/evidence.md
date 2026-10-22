@@ -45,5 +45,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-19 | [Rig 2: ninth GPU, driver 580](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md): new kernel had no NVIDIA module and the worker fell back to CPU; swapped 550 for 580 with DKMS (as on Rig 1), worker on all 9 cards at 27.7 tok/s. Rig 1 inventory refreshed read-only |
 | 2026-10-20 | [Both rigs: platform inventory](./captures/2026-10-20-rig-hardware-inventory.md): read-only. Celeron G3930, B250 Mining Expert, Corsair DDR4, one 250 GB 860 EVO visible per rig, I219-V Ethernet (Rig 1 at 100 Mb/s). Every 1070 is an EVGA FTW Hybrid; the 1080 Ti is an EVGA SC Black (air) |
 | 2026-10-22 | [Rig 1: gigabit Ethernet](./captures/2026-10-22-rig1-gigabit-link.md): read-only. `enp0s31f6` now links at 1000 Mb/s full duplex (was 100 Mb/s on 2026-10-20); the link partner advertises 1000baseT/Full. Six link drops that morning, consistent with recabling |
+| 2026-10-22 | [Rig 1 ↔ Rig 2 iperf3](./captures/2026-10-22-rig-to-rig-iperf3.md): `iperf3` installed on both rigs. 934 Mb/s each way and ~931 Mb/s in both directions at once, 0 retransmits, 0.23 ms ping: line rate on the LAN |
 
 Add a row for each new record, newest last. This week's work that a playbook should cover goes in [pending playbook material](./pending-playbook.md), sorted by week and category, until a playbook picks it up.
