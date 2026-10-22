@@ -5,7 +5,7 @@ last_verified: 2026-10-19
 
 # Status
 
-What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. EC2 was last verified live over NetBird SSH on **2026-09-18**. Rig 1 was inspected read-only and Rig 2 was checked and changed over NetBird SSH on **2026-10-19** ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)).
+What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. EC2 was last verified live over NetBird SSH on **2026-09-18**. Rig 1 was inspected read-only and Rig 2 was checked and changed over NetBird SSH on **2026-10-19** ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). Rig 1's network link was checked read-only on **2026-10-22**.
 
 **How it works:** [architecture overview](./architecture/overview.md) · **Where things are:** [hosts](./reference/hosts.md), [configuration](./reference/configuration.md), [hardware](./architecture/hardware.md) · **How we got here:** [deployment log](../evidence/captures/2026-09-18-rig1-deployment-log.md) · **What's next:** [roadmap](./project/roadmap.md)
 
@@ -41,7 +41,7 @@ This is the one thing standing between "technically works" and "actually done." 
 ## Other things worth knowing
 
 - **NetBird SSH to EC2 fails** (2026-10-20, three tries): SSO succeeds, then `ssh handshake failed: ... i/o timeout`. The peer is connected peer-to-peer, port 22 answers with `NetBird-SSH-Server-0.78.1`, and the public API is up (`/healthz` 200). The same client (0.77.1) reaches both rigs, which run NetBird 0.80.0. Until it's fixed, EC2 can only be changed through AWS. Its instance type (`m5.large`, from the 2026-09-16 audit) couldn't be re-checked.
-- **Rig 1's Ethernet links at 100 Mb/s**; Rig 2 gets 1 Gb/s on the same onboard port (2026-10-20, [evidence](../evidence/captures/2026-10-20-rig-hardware-inventory.md)). Likely a cable or switch port. The second SSD the team reports in each rig isn't visible to the OS.
+- **Both rigs' Ethernet links at 1 Gb/s.** Rig 1 was at 100 Mb/s on 2026-10-20 and was at 1 Gb/s on 2026-10-22, after six link drops that morning ([evidence](../evidence/captures/2026-10-22-rig1-gigabit-link.md)). The second SSD the team reports in each rig isn't visible to the OS.
 - **Both rigs take kernel updates automatically** (unattended upgrades). On 2026-10-19 Rig 2 rebooted into a new kernel that its prebuilt 550 driver didn't cover and served on CPU until the driver was moved to 580 with DKMS, the setup Rig 1 already had ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). After any rig reboot, check `nvidia-smi` and the worker log for `no usable GPU found`.
 - **Rig disk usage grew by ~4.3 GB.** That's `apt`'s package cache from the CUDA install (`/var/cache/apt/archives/`). It's safe to clear with `apt-get clean`. The rig had 139 GB free on 2026-10-20, so this isn't urgent.
 - **EC2 disk is about 61% used** (~19 GB free of 48 GB) after removing the unused Kasm 1.16.0.

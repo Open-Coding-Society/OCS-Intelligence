@@ -39,7 +39,15 @@ Fills the "not recorded" items in the [Sprint 3 playbook](./sprint3/2026-09-28-r
 - **Both rigs are on wired Ethernet now** (onboard Intel I219-V). Rig 1 links at only 100 Mb/s, Rig 2 at 1 Gb/s.
 - **Storage:** each OS sees one Samsung 860 EVO 250 GB. The team reports a second SSD in each (480 GB in Rig 1, 256 GB in Rig 2); neither shows up.
 - **Power (reported):** both 1800 W supplies are an unknown brand. Rig 2's EVGA is 850 W or 1300 W. Rig 2's ninth card is believed to be on the Antec, making its split 5 / 2 / 2.
-- **Open:** connect or check the second SSDs; find out why Rig 1 links at 100 Mb/s; read the EVGA supply's label.
+- **Open:** connect or check the second SSDs; ~~find out why Rig 1 links at 100 Mb/s~~ (fixed 2026-10-22, below); read the EVGA supply's label.
+
+#### 2026-10-22: Rig 1's Ethernet now links at 1 Gb/s
+
+Answers the 100 Mb/s open item from the 2026-10-20 inventory above. Proof: [capture](./captures/2026-10-22-rig1-gigabit-link.md) (read-only).
+
+- **Was:** Rig 1 linked at 100 Mb/s on the onboard I219-V while Rig 2 got 1 Gb/s.
+- **Now:** `ethtool` shows 1000 Mb/s full duplex, and the switch side advertises 1000baseT/Full. The cable or switch port was changed (which one wasn't recorded).
+- **Watch:** the link dropped 6 times that morning, consistent with recabling. It had been up at 1 Gb/s for about 14 minutes when checked. Throughput wasn't measured.
 
 ### Inference and models
 

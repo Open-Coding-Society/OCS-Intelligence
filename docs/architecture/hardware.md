@@ -1,11 +1,11 @@
 ---
 status: current
-last_verified: 2026-10-20
+last_verified: 2026-10-22
 ---
 
 # Hardware
 
-The physical rigs and the single source for the GPU inventory. GPU inventories verified with `nvidia-smi` over NetBird SSH on 2026-10-19, the rest of the platform on 2026-10-20.
+The physical rigs and the single source for the GPU inventory. GPU inventories verified with `nvidia-smi` over NetBird SSH on 2026-10-19, the rest of the platform on 2026-10-20, Rig 1's network link on 2026-10-22.
 
 Printable one-page sheets of each rig: [Rig 1](../visuals/rig1.pdf), [Rig 2](../visuals/rig2.pdf). They're generated from [`scripts/visuals/`](../../scripts/visuals/); regenerate them when this page changes.
 
@@ -28,7 +28,7 @@ Both rigs checked read-only over NetBird SSH on 2026-10-20 ([evidence](../../evi
 | CPU | Intel Celeron G3930, 2 cores, 2.9 GHz (llama.cpp builds take ~35 min) | Same |
 | RAM | 16 GB: 2 × 8 GB DDR4 Corsair Vengeance LPX (`CMK8GX4M1A2400C16`) at 2133 MT/s | 8 GB: 1 stick, same part. With two, the board doesn't POST |
 | Storage the OS sees | Samsung 860 EVO 250 GB SATA SSD | Samsung 860 EVO M.2 250 GB SATA SSD |
-| Network | Onboard Intel I219-V Ethernet, wired. Link at **100 Mb/s** on 2026-10-20 (Rig 2 gets 1 Gb/s on the same port): check the cable or switch port | Onboard Intel I219-V Ethernet, wired, 1 Gb/s |
+| Network | Onboard Intel I219-V Ethernet, wired. 1 Gb/s on 2026-10-22 ([evidence](../../evidence/captures/2026-10-22-rig1-gigabit-link.md)); it was 100 Mb/s on 2026-10-20 | Onboard Intel I219-V Ethernet, wired, 1 Gb/s |
 | OS | Ubuntu 24.04.4 | Ubuntu 24.04.3 |
 | GPU links | PCIe Gen1 ×1 risers, ~250 MB/s each. **No NVLink.** | Same |
 
