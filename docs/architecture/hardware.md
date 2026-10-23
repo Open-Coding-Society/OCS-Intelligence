@@ -1,11 +1,13 @@
 ---
 status: current
-last_verified: 2026-10-19
+last_verified: 2026-10-20
 ---
 
 # Hardware
 
-The physical rigs and the single source for the GPU inventory. Both rigs' inventories verified with `nvidia-smi` over NetBird SSH on 2026-10-19.
+The physical rigs and the single source for the GPU inventory. GPU inventories verified with `nvidia-smi` over NetBird SSH on 2026-10-19, the rest of the platform on 2026-10-20.
+
+Printable one-page sheets of each rig: [Rig 1](../visuals/rig1.pdf), [Rig 2](../visuals/rig2.pdf). They're generated from [`scripts/visuals/`](../../scripts/visuals/); regenerate them when this page changes.
 
 ## Rigs
 
@@ -16,31 +18,37 @@ The physical rigs and the single source for the GPU inventory. Both rigs' invent
 
 > **Card count, resolved.** The 2026-09-18 inventory of Rig 1 showed 7 cards. After the Sprint 3 rewire ([playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md)) all 8 work; the table below is the 2026-10-19 inventory and includes the 8th card (`GPU-4de8c392…`). Indices and bus numbers changed in the rewire, which is why workers pin by UUID.
 
-## Power, storage, and memory
+## Platform
 
-As reported by the team on 2026-10-16 ([Sprint 3](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md)). Not checked on the machines.
+Both rigs checked read-only over NetBird SSH on 2026-10-20 ([evidence](../../evidence/captures/2026-10-20-rig-hardware-inventory.md)).
 
 | | Rig 1 | Rig 2 |
 |---|---|---|
-| Power supplies | 1800 W (5 GPUs + board and CPU), Antec 1300 W (3 GPUs) | 1800 W (5 GPUs + board and CPU), EVGA (2 GPUs), Antec 1300 W (1 GPU) |
-| SSDs | 2 | 1 |
-| RAM | Not recorded | 1 stick: with two, the board doesn't start |
-| BIOS | Not reflashed | Reflashed in Sprint 3 |
+| Motherboard | ASUS B250 Mining Expert, BIOS 0403 | ASUS B250 Mining Expert, BIOS 1001 (reflashed in Sprint 3) |
+| CPU | Intel Celeron G3930, 2 cores, 2.9 GHz (llama.cpp builds take ~35 min) | Same |
+| RAM | 16 GB: 2 × 8 GB DDR4 Corsair Vengeance LPX (`CMK8GX4M1A2400C16`) at 2133 MT/s | 8 GB: 1 stick, same part. With two, the board doesn't POST |
+| Storage the OS sees | Samsung 860 EVO 250 GB SATA SSD | Samsung 860 EVO M.2 250 GB SATA SSD |
+| Network | Onboard Intel I219-V Ethernet, wired. Link at **100 Mb/s** on 2026-10-20 (Rig 2 gets 1 Gb/s on the same port): check the cable or switch port | Onboard Intel I219-V Ethernet, wired, 1 Gb/s |
+| OS | Ubuntu 24.04.4 | Ubuntu 24.04.3 |
+| GPU links | PCIe Gen1 ×1 risers, ~250 MB/s each. **No NVLink.** | Same |
 
-## Rig 1 platform
+The team reports a second SSD in each rig (480 GB in Rig 1, 256 GB in Rig 2). The OS doesn't see either one, so neither is usable yet.
 
-| | |
-|---|---|
-| Motherboard | ASUS B250 Mining Expert |
-| CPU | 2 cores (llama.cpp builds take ~35 min) |
-| OS | Ubuntu 24.04.4 |
-| GPU links | PCIe Gen1 x1 risers, ~250 MB/s each. **No NVLink.** |
-| Network | School Wi-Fi over a USB 2.0 dongle. PyPI is DNS-blocked. |
-| Disk | ~151 GB free (2026-09-18) |
+Rig 1 used to be on school Wi-Fi over a USB 2.0 dongle, and couldn't reach PyPI then ([network](./network.md)). Whether the wired link changes that hasn't been checked.
+
+## Power
+
+As reported by the team on 2026-10-16 ([Sprint 3](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md)) and 2026-10-20. Not checked on the machines, and which card is on which supply isn't recorded.
+
+| | Rig 1 | Rig 2 |
+|---|---|---|
+| Supply 1 | 1800 W, brand unknown: 5 GPUs + board and CPU | 1800 W, brand unknown: 5 GPUs + board and CPU |
+| Supply 2 | Antec 1300 W: 3 GPUs | EVGA 850 W (the team's best recollection; the label hasn't been read): 2 GPUs |
+| Supply 3 | — | Antec 1300 W: 2 GPUs (one before the ninth card; the ninth is believed to be on this one) |
 
 ## GPU inventory (Rig 1)
 
-GTX 1070: Pascal, compute capability 6.1 (`sm_61`), 8 GB GDDR5, 150 W board power.
+Every 1070 on both rigs is an EVGA GTX 1070 FTW Hybrid (`08G-P4-6278`, PCI subsystem `3842:6278`): Pascal, compute capability 6.1 (`sm_61`), 8 GB GDDR5, 185 W power limit, hybrid water/air cooler.
 
 | Index | UUID | PCI bus | Worker |
 |---:|---|---|---|
@@ -59,7 +67,7 @@ Workers pin their GPUs by UUID, not index, so re-cabling can't silently reassign
 
 ## GPU inventory (Rig 2)
 
-From `nvidia-smi` on 2026-10-19 ([evidence](../../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). The worker uses all nine, in this order.
+From `nvidia-smi` on 2026-10-19 ([evidence](../../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). The worker uses all nine, in this order. GPU 0 is an EVGA GTX 1080 Ti SC Black Edition (`11G-P4-6393`, subsystem `3842:6393`): 11 GB GDDR5X, 250 W power limit, iCX air cooler, not a hybrid.
 
 | Index | Card | UUID | PCI bus |
 |---:|---|---|---|
@@ -72,8 +80,6 @@ From `nvidia-smi` on 2026-10-19 ([evidence](../../evidence/captures/2026-10-19-r
 | 6 | GTX 1070 | `GPU-2b6607e6-a556-543b-4c88-d7ddb156b184` | `0E:00.0` |
 | 7 | GTX 1070 | `GPU-64ccc864-2ced-25a4-64bc-f23cd1f108dc` | `0F:00.0` |
 | 8 | GTX 1070 | `GPU-a512d941-05b9-654c-b47c-8cc3b03bfa1a` | `10:00.0` |
-
-Which power supply feeds the ninth card isn't recorded; the power table above predates it.
 
 ## Why the hardware matters
 

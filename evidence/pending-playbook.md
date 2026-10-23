@@ -30,6 +30,17 @@ Answers an open item in the [Sprint 4 inference playbook](./sprint4/2026-10-15-i
 
 - All 8 cards are in use, 4 per worker. Inventory with UUIDs: [hardware](../docs/architecture/hardware.md#gpu-inventory-rig-1).
 
+#### 2026-10-20: Platform inventory of both rigs
+
+Fills the "not recorded" items in the [Sprint 3 playbook](./sprint3/2026-09-28-resolving-both-rigs.md). Proof: [capture](./captures/2026-10-20-rig-hardware-inventory.md) (read-only).
+
+- **Same platform on both:** ASUS B250 Mining Expert, Intel Celeron G3930 (2 cores), Corsair 8 GB DDR4 sticks at 2133 MT/s. Rig 1 has 2 sticks (16 GB), Rig 2 has 1 (8 GB). BIOS 0403 on Rig 1, 1001 on Rig 2.
+- **Cards:** every 1070 is an EVGA GTX 1070 FTW Hybrid (185 W limit). Rig 2's 1080 Ti is an EVGA SC Black Edition, air-cooled (250 W limit).
+- **Both rigs are on wired Ethernet now** (onboard Intel I219-V). Rig 1 links at only 100 Mb/s, Rig 2 at 1 Gb/s.
+- **Storage:** each OS sees one Samsung 860 EVO 250 GB. The team reports a second SSD in each (480 GB in Rig 1, 256 GB in Rig 2); neither shows up.
+- **Power (reported):** both 1800 W supplies are an unknown brand. Rig 2's EVGA is 850 W or 1300 W. Rig 2's ninth card is believed to be on the Antec, making its split 5 / 2 / 2.
+- **Open:** connect or check the second SSDs; find out why Rig 1 links at 100 Mb/s; read the EVGA supply's label.
+
 ### Inference and models
 
 #### 2026-10-19: Rig 2 serves `qwen3.6:35b-a3b` on all 9 cards
@@ -41,3 +52,12 @@ Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md).
 #### Rig 1 Worker B switched to `gemma4:26b` (seen 2026-10-19)
 
 - Worker B serves `gemma4:26b` on 4 GPUs, not `qwen2.5:0.5b` on 2. The config file is dated 2026-10-16. Who made the change, why, and the model's speed aren't recorded.
+
+### Networking and access
+
+#### 2026-10-20: Fewer NetBird SSO prompts; EC2 SSH stops working
+
+- **Asked:** stop the browser login on every SSH connection.
+- **Done:** turned on the client's token cache (`netbird up --ssh-jwt-cache-ttl`) on one operator machine. NetBird's CLI reference says servers reject tokens older than 10 minutes, so 600 s is the useful maximum. The login link now opens in a chosen Brave profile ([guide](../docs/guides/netbird-access.md#avoid-re-approving-every-command)).
+- **Result:** after one approval, a new connection to Rig 1 needed no prompt.
+- **Found:** NetBird SSH to EC2 fails right after a successful login (`ssh handshake failed: ... i/o timeout`, three tries). EC2's SSH server is NetBird 0.78.1; the rigs are on 0.80.0 and work. The public API was unaffected (`/healthz` 200). Open: fix via the AWS console, then re-check the instance type.

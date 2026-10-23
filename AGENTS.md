@@ -26,7 +26,7 @@ OCS Intelligence is a student-built, OpenAI-compatible coding API at `https://ai
 | `infra/ec2/`, `infra/rig/`, `infra/rig2/` | systemd units, env templates, Nginx site | copied to each host by hand |
 | `infra/netbird/` | NetBird access policies (`acl.json`, `apply.py`) and the client container | the NetBird account, via its API |
 | `benchmark/` | Speed benchmark + Pareto chart against the public API | your machine |
-| `scripts/` | `demo.py` (live walkthrough), `request.sh`, `check_docs.py`, `build_playbook.py` | your machine |
+| `scripts/` | `demo.py` (live walkthrough), `request.sh`, `check_docs.py`, `build_playbook.py`, `visuals/` (rig sheets + pipeline diagram → `docs/visuals/`) | your machine |
 | `tests/` | Offline tests (no network, no GPU) | your machine |
 | `docs/` | Documentation | — |
 | `evidence/` | Dated, append-only proof: captures, results, weekly reports | — |

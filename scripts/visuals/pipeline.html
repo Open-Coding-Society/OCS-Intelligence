@@ -1,0 +1,356 @@
+<title>OCS Intelligence Pipeline</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;600;700;800&family=Ubuntu+Sans+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one wide left-to-right system map (clients → EC2 → NetBird → rigs), then two reading columns. */
+:root {
+  --bg:#FFFFFF; --panel:#F8F4EE; --panel-2:#F1EAE0; --border:#E2D8C8; --fg:#1E1C19; --fg-2:#4F4B45; --muted:#8B867D;
+  --accent:#D97757; --accent-ink:#B04F2C; --accent-tint:#FBEBE4;
+  --blue:#3B67B5; --blue-tint:#E7EEFA; --violet:#6560C4; --violet-tint:#ECEBFA;
+  --gold:#B8741C; --gold-tint:#FBF0DF; --green:#3C8656; --green-tint:#E6F3EA;
+  --net:#EEF5F6; --net-line:#7FB3BC; --zone:#FCFAF7;
+  --sans:"Ubuntu Sans", "Inter", "DejaVu Sans", system-ui, sans-serif;
+  --mono:"Ubuntu Sans Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#141414; --panel:#1E1E1C; --panel-2:#252523; --border:#34342F; --fg:#F4F0E8; --fg-2:#C3C0B8; --muted:#8A8882;
+  --accent:#D97757; --accent-ink:#F2907C; --accent-tint:#33231C;
+  --blue:#89B4FA; --blue-tint:#1C2433; --violet:#B1B9F9; --violet-tint:#232436;
+  --gold:#F5A961; --gold-tint:#33281B; --green:#7CB88F; --green-tint:#1B2A20;
+  --net:#17262A; --net-line:#4E8A94; --zone:#191918; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg:#141414; --panel:#1E1E1C; --panel-2:#252523; --border:#34342F; --fg:#F4F0E8; --fg-2:#C3C0B8; --muted:#8A8882;
+  --accent:#D97757; --accent-ink:#F2907C; --accent-tint:#33231C;
+  --blue:#89B4FA; --blue-tint:#1C2433; --violet:#B1B9F9; --violet-tint:#232436;
+  --gold:#F5A961; --gold-tint:#33281B; --green:#7CB88F; --green-tint:#1B2A20;
+  --net:#17262A; --net-line:#4E8A94; --zone:#191918; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1480px; margin: 0 auto; padding-block: 36px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { border-left: 4px solid var(--accent); padding: 2px 0 2px 16px; margin-bottom: 22px; }
+.kicker { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); }
+h1 { font-size: clamp(30px, 4vw, 44px); line-height: 1.05; margin: 6px 0 8px; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+.sub { color: var(--fg-2); max-width: 75ch; margin: 0; }
+.sub code, td code, li code, figcaption code { font-family: var(--mono); font-size: .92em; background: var(--panel-2); padding: 0 4px; border-radius: 3px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0; list-style: none; }
+.meta li { font-size: 12px; color: var(--fg-2); background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 3px 9px; }
+.meta b { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+
+figure { margin: 0; }
+.scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+svg.map { display: block; width: 100%; min-width: 1100px; height: auto; font-family: var(--sans); }
+figcaption { font-size: 13.5px; color: var(--fg-2); margin-top: 10px; max-width: 110ch; }
+
+/* svg classes */
+.zone { fill: var(--zone); stroke: var(--border); stroke-width: 1.5; }
+.zone-title { fill: var(--fg); font-size: 16px; font-weight: 800; }
+.zone-sub { fill: var(--muted); font-size: 12px; }
+.netband { fill: var(--net); stroke: var(--net-line); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.net-label { fill: var(--net-line); font-size: 14px; font-weight: 800; letter-spacing: .12em; }
+.node { fill: var(--bg); stroke: var(--border); stroke-width: 1.5; }
+.node-title { fill: var(--fg); font-size: 15px; font-weight: 800; }
+.node-port { fill: var(--accent-ink); font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.node-line { fill: var(--fg-2); font-size: 12.5px; }
+.node-dim { fill: var(--muted); font-size: 11.5px; }
+.mono { font-family: var(--mono); }
+.model { fill: var(--fg); font-family: var(--mono); font-size: 15px; font-weight: 600; }
+.step-n { fill: var(--accent); font-family: var(--mono); font-size: 12.5px; font-weight: 700; }
+.reject { fill: var(--accent-ink); font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.edge { fill: none; stroke-width: 2.6; stroke-linejoin: round; }
+.e-api { stroke: var(--accent); } .e-web { stroke: var(--blue); } .e-r2 { stroke: var(--violet); }
+.e-ops { stroke: var(--muted); stroke-dasharray: 6 5; stroke-width: 2; }
+.e-dash { stroke-dasharray: 8 5; }
+.h-api { fill: var(--accent); } .h-web { fill: var(--blue); } .h-r2 { fill: var(--violet); } .h-ops { fill: var(--muted); }
+.lbl { font-size: 12.5px; font-weight: 700; }
+.l-api { fill: var(--accent-ink); } .l-web { fill: var(--blue); } .l-r2 { fill: var(--violet); } .l-ops { fill: var(--muted); }
+.lbl-bg { fill: var(--bg); }
+.chip { stroke-width: 1.5; }
+.chip-a { fill: var(--accent-tint); stroke: var(--accent); } .chip-b { fill: var(--blue-tint); stroke: var(--blue); }
+.chip-v { fill: var(--violet-tint); stroke: var(--violet); } .chip-g { fill: var(--gold-tint); stroke: var(--gold); }
+.chip-t { fill: var(--fg); font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+.bar-a { fill: var(--accent); } .bar-b { fill: var(--blue); } .bar-v { fill: var(--violet); } .bar-w { fill: var(--blue); }
+.boundary { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 5; }
+.b-label { fill: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--fg-2); }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 28px; height: 0; border-top: 3px solid; display: inline-block; }
+.sw.api { border-color: var(--accent); } .sw.web { border-color: var(--blue); }
+.sw.webd { border-color: var(--blue); border-top-style: dashed; } .sw.r2 { border-color: var(--violet); }
+.sw.ops { border-color: var(--muted); border-top-style: dashed; }
+
+.cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 36px; margin-top: 34px; }
+@media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+h2 { font-size: 19px; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-weight: 800; }
+h2::before { content: ""; width: 10px; height: 10px; background: var(--accent); }
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 10px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: baseline; color: var(--fg-2); }
+ol.steps li::before { content: counter(s); font-family: var(--mono); font-weight: 700; color: var(--accent-ink); background: var(--accent-tint);
+  border-radius: 6px; text-align: center; font-size: 13px; line-height: 24px; }
+ol.steps b { color: var(--fg); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+.note { font-size: 13.5px; color: var(--fg-2); margin-top: 12px; }
+.tablewrap { overflow-x: auto; }
+footer { margin-top: 36px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between; }
+footer code { font-family: var(--mono); color: var(--accent-ink); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">OCS Intelligence · System map</div>
+    <h1>From a student's editor to a GPU</h1>
+    <p class="sub">Students call one public URL, <code>https://ai.opencodingsociety.com/v1</code>. EC2 is the only machine on the internet: it checks the key, holds each request in a per-model wait line, and passes it over the private NetBird network to the GPU rigs in the school.</p>
+    <ul class="meta">
+      <li><b>As of</b>2026-10-20</li>
+      <li><b>Rig 1</b>8 × GTX 1070 · 2 models</li>
+      <li><b>Rig 2</b>1080 Ti + 8 × GTX 1070 · 1 model</li>
+      <li><b>Protocol</b>OpenAI Chat Completions, streamed</li>
+    </ul>
+  </header>
+
+  <figure>
+    <div class="scroll">
+    <svg class="map" viewBox="0 0 1680 980" role="img" aria-label="System map. Student API requests go over HTTPS to Nginx on EC2, through the admission gateway's key check and wait line, then over NetBird TCP 9000 to Rig 1's orchestrator, which picks Worker A or B by model name. The chat site goes from Nginx over NetBird TCP 3000 to Open WebUI on Rig 1. Open WebUI calls Rig 1's models through the public URL and Rig 2's model directly over NetBird, skipping the wait line. Operators reach every host over NetBird SSH.">
+      <defs>
+        <marker id="h-api" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="h-api"/></marker>
+        <marker id="h-web" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="h-web"/></marker>
+        <marker id="h-r2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="h-r2"/></marker>
+        <marker id="h-ops" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="h-ops"/></marker>
+      </defs>
+
+      <!-- NetBird band (behind everything) -->
+      <rect class="netband" x="652" y="30" width="136" height="930" rx="14"/>
+      <text class="net-label" transform="translate(726 770) rotate(-90)" text-anchor="start">NETBIRD OVERLAY</text>
+      <text class="net-label" transform="translate(746 770) rotate(-90)" text-anchor="start" style="font-size:11px;font-weight:600">WIREGUARD</text>
+      <text class="net-label" x="720" y="60" text-anchor="middle" style="font-size:12px">PRIVATE</text>
+
+      <!-- Zones -->
+      <rect class="zone" x="20" y="40" width="610" height="250" rx="12"/>
+      <text class="zone-title" x="40" y="72">Operators</text>
+      <text class="zone-sub" x="40" y="92">NetBird group outbound-only</text>
+
+      <rect class="zone" x="20" y="330" width="230" height="630" rx="12"/>
+      <text class="zone-title" x="40" y="362">Students</text>
+      <text class="zone-sub" x="40" y="382">Laptops anywhere</text>
+
+      <rect class="zone" x="282" y="330" width="348" height="630" rx="12"/>
+      <text class="zone-title" x="302" y="362">EC2 · AWS m5.large</text>
+      <text class="zone-sub" x="302" y="382">The only public host · Ubuntu 24.04</text>
+
+      <rect class="zone" x="810" y="40" width="850" height="290" rx="12"/>
+      <text class="zone-title" x="830" y="72">Rig 2 · ocs-intelligence-rig2</text>
+      <text class="zone-sub" x="1640" y="72" text-anchor="end">School building · no inbound from the internet</text>
+
+      <rect class="zone" x="810" y="360" width="850" height="600" rx="12"/>
+      <text class="zone-title" x="830" y="392">Rig 1 · ocs-intelligence-rig</text>
+      <text class="zone-sub" x="1640" y="392" text-anchor="end">School building · no inbound from the internet</text>
+
+      <!-- internet boundary -->
+      <line class="boundary" x1="266" y1="400" x2="266" y2="940"/>
+      <text class="b-label" transform="translate(262 930) rotate(-90)">PUBLIC INTERNET</text>
+
+      <!-- ===== Operators ===== -->
+      <rect class="node" x="40" y="110" width="400" height="150" rx="10"/>
+      <text class="node-title" x="60" y="140">Operator laptops</text>
+      <text class="node-line" x="60" y="166">NetBird client, browser sign-in (SSO)</text>
+      <text class="node-line" x="60" y="188">for every new SSH connection</text>
+      <text class="node-line" x="60" y="214">Can reach every host, every port</text>
+      <text class="node-dim" x="60" y="238">Nothing can open a connection to them</text>
+
+      <!-- ===== Students ===== -->
+      <rect class="node" x="36" y="410" width="198" height="104" rx="10"/>
+      <text class="node-title" x="52" y="438">Copilot Chat</text>
+      <text class="node-line" x="52" y="460">or curl, any OpenAI SDK</text>
+      <text class="node-dim" x="52" y="482">Bearer = student key</text>
+      <text class="node-dim" x="52" y="500">base URL …/v1</text>
+
+      <rect class="node" x="36" y="540" width="198" height="80" rx="10"/>
+      <text class="node-title" x="52" y="568">Web browser</text>
+      <text class="node-line" x="52" y="590">Open WebUI chat site</text>
+      <text class="node-dim" x="52" y="608">its own login</text>
+
+      <!-- ===== EC2 ===== -->
+      <rect class="node" x="302" y="410" width="308" height="160" rx="10"/>
+      <text class="node-title" x="320" y="438">Nginx</text>
+      <text class="node-port" x="592" y="438" text-anchor="end">:443</text>
+      <text class="node-line" x="320" y="462">TLS for ai.opencodingsociety.com</text>
+      <text class="node-line" x="320" y="484">Let's Encrypt certificate</text>
+      <text class="node-line mono" x="320" y="512">/v1/*   → gateway</text>
+      <text class="node-line mono" x="320" y="534">/       → Open WebUI</text>
+      <text class="node-dim" x="320" y="556">no buffering, so tokens stream</text>
+
+      <rect class="node" x="302" y="640" width="308" height="250" rx="10" style="stroke:var(--accent)"/>
+      <text class="node-title" x="320" y="668">Admission gateway</text>
+      <text class="node-port" x="592" y="668" text-anchor="end">127.0.0.1:9100</text>
+      <text class="node-dim" x="320" y="690">FastAPI · one process, so one wait line</text>
+      <text class="step-n" x="320" y="724">1</text><text class="node-line" x="340" y="724">Check the student key</text><text class="reject" x="592" y="724" text-anchor="end">401</text>
+      <text class="step-n" x="320" y="752">2</text><text class="node-line" x="340" y="752">Join this model's wait line</text>
+      <text class="step-n" x="320" y="780">3</text><text class="node-line" x="340" y="780">Line full (4 waiting)</text><text class="reject" x="592" y="780" text-anchor="end">429</text>
+      <text class="step-n" x="320" y="808">4</text><text class="node-line" x="340" y="808">GPU slot free: forward to rig</text>
+      <text class="node-dim" x="320" y="840">Waiting streams get ": queued"</text>
+      <text class="node-dim" x="320" y="858">every 15 s so nothing times out</text>
+      <text class="node-dim" x="320" y="876">Closing the tab leaves the line</text>
+
+      <!-- ===== Rig 2 ===== -->
+      <rect class="node" x="850" y="100" width="270" height="200" rx="10" style="stroke:var(--violet)"/>
+      <text class="node-title" x="868" y="128">Orchestrator</text>
+      <text class="node-port" x="1102" y="128" text-anchor="end">:9000</text>
+      <text class="node-line" x="868" y="154">Serves one model</text>
+      <text class="node-line" x="868" y="176">Accepts Open WebUI's key,</text>
+      <text class="node-line" x="868" y="198">not the student key</text>
+      <text class="node-line" x="868" y="224">Swaps it for the worker secret</text>
+      <text class="node-dim" x="868" y="250">100.75.127.192</text>
+
+      <rect class="node" x="1190" y="100" width="450" height="200" rx="10"/>
+      <rect class="bar-v" x="1190" y="100" width="6" height="200" rx="3"/>
+      <text class="node-title" x="1212" y="128">Worker · llama-server</text>
+      <text class="node-port" x="1622" y="128" text-anchor="end">127.0.0.1:8081</text>
+      <text class="model" x="1212" y="156">qwen3.6:35b-a3b</text>
+      <text class="node-dim" x="1212" y="176">mixture of experts · all 9 cards · ~27.7 tok/s</text>
+      <g transform="translate(1212 196)">
+        <rect class="chip chip-g" x="0" y="0" width="58" height="30" rx="5"/><text class="chip-t" x="29" y="20" text-anchor="middle">0 · Ti</text>
+        <rect class="chip chip-v" x="66" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="85" y="20" text-anchor="middle">1</text>
+        <rect class="chip chip-v" x="110" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="129" y="20" text-anchor="middle">2</text>
+        <rect class="chip chip-v" x="154" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="173" y="20" text-anchor="middle">3</text>
+        <rect class="chip chip-v" x="198" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="217" y="20" text-anchor="middle">4</text>
+        <rect class="chip chip-v" x="242" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="261" y="20" text-anchor="middle">5</text>
+        <rect class="chip chip-v" x="286" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="305" y="20" text-anchor="middle">6</text>
+        <rect class="chip chip-v" x="330" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="349" y="20" text-anchor="middle">7</text>
+        <rect class="chip chip-v" x="374" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="393" y="20" text-anchor="middle">8</text>
+      </g>
+      <text class="node-dim" x="1212" y="250">GTX 1080 Ti (11 GB) + 8 × GTX 1070 (8 GB) · 75 GB VRAM</text>
+      <text class="node-dim" x="1212" y="270">2 slots × 262k context · PCIe Gen1 ×1 risers</text>
+
+      <!-- ===== Rig 1 ===== -->
+      <rect class="node" x="850" y="420" width="270" height="150" rx="10" style="stroke:var(--blue)"/>
+      <text class="node-title" x="868" y="448">Open WebUI</text>
+      <text class="node-port" x="1102" y="448" text-anchor="end">:3000</text>
+      <text class="node-line" x="868" y="474">Docker · the chat site</text>
+      <text class="node-line" x="868" y="496">Model menu lists all three</text>
+      <text class="node-line" x="868" y="518">models from both rigs</text>
+      <text class="node-dim" x="868" y="546">two OpenAI connections</text>
+
+      <rect class="node" x="850" y="640" width="270" height="200" rx="10" style="stroke:var(--accent)"/>
+      <text class="node-title" x="868" y="668">Orchestrator</text>
+      <text class="node-port" x="1102" y="668" text-anchor="end">:9000</text>
+      <text class="node-line" x="868" y="694">Picks the worker by the</text>
+      <text class="node-line" x="868" y="716">request's model name</text>
+      <text class="node-line" x="868" y="742">Swaps the student key for</text>
+      <text class="node-line" x="868" y="764">the worker secret</text>
+      <text class="node-dim" x="868" y="790">Polls worker health every 5 s</text>
+      <text class="node-dim" x="868" y="814">100.75.123.203</text>
+
+      <rect class="node" x="1190" y="610" width="450" height="130" rx="10"/>
+      <rect class="bar-a" x="1190" y="610" width="6" height="130" rx="3"/>
+      <text class="node-title" x="1212" y="638">Worker A · llama-server</text>
+      <text class="node-port" x="1622" y="638" text-anchor="end">127.0.0.1:8081</text>
+      <text class="model" x="1212" y="666">qwen3.8:27b</text>
+      <g transform="translate(1212 684)">
+        <rect class="chip chip-a" x="0" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="19" y="20" text-anchor="middle">1</text>
+        <rect class="chip chip-a" x="44" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="63" y="20" text-anchor="middle">3</text>
+        <rect class="chip chip-a" x="88" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="107" y="20" text-anchor="middle">5</text>
+        <rect class="chip chip-a" x="132" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="151" y="20" text-anchor="middle">7</text>
+      </g>
+      <text class="node-dim" x="1400" y="704">4 × GTX 1070 · layer split</text>
+
+      <rect class="node" x="1190" y="780" width="450" height="130" rx="10"/>
+      <rect class="bar-b" x="1190" y="780" width="6" height="130" rx="3"/>
+      <text class="node-title" x="1212" y="808">Worker B · llama-server</text>
+      <text class="node-port" x="1622" y="808" text-anchor="end">127.0.0.1:8082</text>
+      <text class="model" x="1212" y="836">gemma4:26b</text>
+      <g transform="translate(1212 854)">
+        <rect class="chip chip-b" x="0" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="19" y="20" text-anchor="middle">0</text>
+        <rect class="chip chip-b" x="44" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="63" y="20" text-anchor="middle">2</text>
+        <rect class="chip chip-b" x="88" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="107" y="20" text-anchor="middle">4</text>
+        <rect class="chip chip-b" x="132" y="0" width="38" height="30" rx="5"/><text class="chip-t" x="151" y="20" text-anchor="middle">6</text>
+      </g>
+      <text class="node-dim" x="1400" y="874">4 × GTX 1070 · layer split</text>
+      <text class="node-dim" x="1640" y="940" text-anchor="end">Workers listen on localhost only: just the orchestrator talks to them</text>
+
+      <!-- ===== Edges ===== -->
+      <!-- operators -->
+      <path class="edge e-ops" d="M440 200 H800" marker-end="url(#h-ops)"/>
+      <text class="lbl l-ops" x="545" y="190" text-anchor="middle">SSH, any port</text>
+      <path class="edge e-ops" d="M440 240 H560 V408" marker-end="url(#h-ops)"/>
+      <text class="lbl l-ops" x="568" y="320">SSH</text>
+
+      <!-- API path -->
+      <path class="edge e-api" d="M234 448 H300" marker-end="url(#h-api)"/>
+      <text class="lbl l-api" x="242" y="440" style="font-size:11.5px">HTTPS</text>
+      <path class="edge e-api" d="M456 570 V638" marker-end="url(#h-api)"/>
+      <text class="lbl l-api" x="466" y="598">/v1/*, /healthz</text>
+      <text class="lbl l-api" x="466" y="616" style="font-weight:400">localhost</text>
+      <path class="edge e-api" d="M610 808 H848" marker-end="url(#h-api)"/>
+      <rect class="lbl-bg" x="676" y="784" width="88" height="16" rx="3" style="fill:var(--net)"/>
+      <text class="lbl l-api" x="720" y="797" text-anchor="middle">TCP 9000</text>
+      <text class="lbl l-api" x="720" y="830" text-anchor="middle" style="font-weight:400">student key</text>
+      <path class="edge e-api" d="M1120 700 H1155 V675 H1188" marker-end="url(#h-api)"/>
+      <path class="edge e-api" d="M1120 780 H1155 V845 H1188" marker-end="url(#h-api)"/>
+
+      <!-- chat site path -->
+      <path class="edge e-web" d="M234 580 H300" marker-end="url(#h-web)"/>
+      <text class="lbl l-web" x="242" y="572" style="font-size:11.5px">HTTPS</text>
+      <path class="edge e-web" d="M610 470 H848" marker-end="url(#h-web)"/>
+      <text class="lbl l-web" x="720" y="460" text-anchor="middle">TCP 3000</text>
+      <text class="lbl l-web" x="720" y="488" text-anchor="middle" style="font-weight:400">chat page</text>
+
+      <!-- Open WebUI → Rig 1 models via public URL -->
+      <path class="edge e-web e-dash" d="M850 540 H612" marker-end="url(#h-web)"/>
+      <text class="lbl l-web" x="720" y="530" text-anchor="middle" style="font-weight:400">Rig 1 models:</text>
+      <text class="lbl l-web" x="720" y="558" text-anchor="middle">public /v1</text>
+
+      <!-- Open WebUI → Rig 2 direct -->
+      <path class="edge e-r2" d="M1090 420 V302" marker-end="url(#h-r2)"/>
+      <rect class="lbl-bg" x="1100" y="334" width="300" height="20" rx="3" style="fill:var(--zone)"/>
+      <text class="lbl l-r2" x="1104" y="349">Rig 2 model: rig to rig over NetBird, no wait line</text>
+      <path class="edge e-r2" d="M1120 200 H1188" marker-end="url(#h-r2)"/>
+    </svg>
+    </div>
+    <figcaption>Each colour is one kind of traffic. Replies come back along the same path as a stream of tokens (Server-Sent Events), and no hop buffers them. Only EC2 accepts connections from the internet. The rigs sit on the school network and are reached only through NetBird.</figcaption>
+    <ul class="legend">
+      <li><span class="sw api"></span>Student API request (Copilot, curl)</li>
+      <li><span class="sw web"></span>Chat site page</li>
+      <li><span class="sw webd"></span>Open WebUI calling Rig 1's models through the public URL</li>
+      <li><span class="sw r2"></span>Open WebUI calling Rig 2 directly</li>
+      <li><span class="sw ops"></span>Operator SSH</li>
+    </ul>
+  </figure>
+
+  <div class="cols">
+    <section>
+      <h2>One Copilot request, step by step</h2>
+      <ol class="steps">
+        <li><span><b>Copilot sends</b> <code>POST /v1/chat/completions</code> with the student key and a model name, over HTTPS to <code>ai.opencodingsociety.com</code>.</span></li>
+        <li><span><b>Nginx on EC2</b> ends TLS and hands every <code>/v1/</code> path to the gateway on localhost.</span></li>
+        <li><span><b>The gateway checks the key</b> (wrong key: 401), then puts the request in that model's wait line. A full line answers 429 with <code>Retry-After: 15</code>.</span></li>
+        <li><span><b>When a GPU slot frees up</b>, the gateway forwards the request over NetBird to Rig 1's orchestrator on TCP 9000.</span></li>
+        <li><span><b>The orchestrator</b> picks Worker A or B by the model name and swaps the student key for the worker's secret.</span></li>
+        <li><span><b>llama-server</b> runs the model across its four GTX 1070s and streams tokens back through every hop to the editor.</span></li>
+      </ol>
+    </section>
+    <section>
+      <h2>Who can reach whom on NetBird</h2>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Group</th><th>Members</th><th>Can open connections to</th></tr></thead>
+        <tbody>
+          <tr><td>ocs-gateway</td><td>EC2</td><td>Rigs on TCP 9000 and 3000 only</td></tr>
+          <tr><td>ocs-rigs</td><td>Rig 1, Rig 2</td><td>Each other, all ports</td></tr>
+          <tr><td>outbound-only</td><td>Operator laptops</td><td>EC2 and both rigs, all ports</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">Rules are one-way: replies flow back, but nothing can open a connection to an operator laptop, and the rigs can't open one to EC2. The rig-to-rig rule exists so Open WebUI on Rig 1 can reach Rig 2. It's temporary, until a router sits between the rigs.</p>
+    </section>
+  </div>
+
+  <footer>
+    <span>Sources: <code>docs/architecture/overview.md</code>, <code>network.md</code>, <code>gateway.md</code>, <code>hardware.md</code>, <code>docs/reference/hosts.md</code>.</span>
+    <span>Rigs checked over NetBird SSH 2026-10-20; EC2 last checked 2026-09-18.</span>
+  </footer>
+</div>

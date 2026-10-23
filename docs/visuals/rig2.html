@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rig 2 Hardware</title><style>
+@page { size: Letter; margin: 0.5in; }
+:root {
+  --paper:#FFFFFF; --panel:#F8F4EE; --panel-2:#F1EAE0; --border:#E4DBCD; --rule:#D8CDBC;
+  --ink:#1E1C19; --ink-2:#4F4B45; --muted:#8B867D;
+  --accent:#D97757; --accent-ink:#B04F2C; --accent-tint:#FBEBE4;
+  --blue:#3B67B5; --blue-tint:#E7EEFA;
+  --violet:#6560C4; --violet-tint:#ECEBFA;
+  --gold:#B8741C; --gold-tint:#FBF0DF;
+  --green:#3C8656; --green-tint:#E6F3EA;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background: var(--paper); color: var(--ink);
+  font-family: "Ubuntu Sans", "Inter", "DejaVu Sans", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media screen { body { padding: 0.5in; width: 8.5in; } }
+.sheet { width: 7.5in; height: 10in; display: flex; flex-direction: column; overflow: hidden; }
+.mono { font-family: "Ubuntu Sans Mono", "DejaVu Sans Mono", monospace; }
+
+/* header */
+header { display:flex; justify-content: space-between; align-items: flex-end;
+  border-left: 4px solid var(--accent); padding: 2px 0 2px 14px; }
+.kicker { font-size: 8.5pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); }
+h1 { font-size: 34pt; line-height: 1; margin: 6px 0 6px; font-weight: 800; letter-spacing: -.02em; }
+.sub { font-size: 11pt; color: var(--ink-2); }
+.sub b { color: var(--ink); font-weight: 600; }
+.chips { display:flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+.chip { font-size: 8pt; color: var(--ink-2); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 8px; white-space: nowrap; }
+.chip b { font-size: 6.8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; font-weight: 700; }
+
+/* stats */
+.stats { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 14px; }
+.stat { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px 8px; }
+.stat .v { font-size: 22pt; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+.stat .v small { font-size: 11pt; font-weight: 600; color: var(--ink-2); margin-left: 2px; }
+.stat .l { font-size: 7.6pt; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; margin-top: 2px; }
+
+h2 { font-size: 11pt; margin: 0 0 8px; display:flex; align-items:center; gap: 8px; font-weight: 800; }
+h2::before { content:""; width: 9px; height: 9px; background: var(--accent); display:inline-block; }
+h2 .note { font-weight: 400; font-size: 8pt; color: var(--muted); margin-left: auto; }
+
+/* GPU groups */
+.groups { display:flex; gap: 12px; }
+.group { flex: 1; border: 1.5px solid var(--c); background: var(--tint); border-radius: 10px; padding: 9px 10px 10px; }
+.group-head { display:flex; align-items: baseline; gap: 8px; margin: 0 2px 8px; }
+.group-head .name { font-weight: 800; font-size: 11pt; color: var(--c); }
+.group-head .model { font-size: 9.5pt; font-weight: 700; }
+.group-head .meta { margin-left:auto; font-size: 8pt; color: var(--ink-2); }
+.tiles { display:grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 8px; }
+.tile { background: var(--paper); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; position: relative; }
+.tile .band { height: 5px; background: var(--c); }
+.tile .body { padding: 6px 9px 7px; }
+.tile .row1 { display:flex; align-items: baseline; justify-content: space-between; }
+.tile .idx { font-size: 15pt; font-weight: 800; letter-spacing: -.01em; }
+.tile .idx span { font-size: 8pt; color: var(--muted); font-weight: 700; margin-right: 2px; letter-spacing: .06em; }
+.tile .vram { font-size: 9pt; font-weight: 800; color: var(--c); }
+.tile .card { font-size: 9.5pt; font-weight: 700; margin-top: 1px; }
+.tile .variant { font-size: 7.8pt; color: var(--ink-2); }
+.tile .facts { display:flex; justify-content: space-between; font-size: 7.4pt; color: var(--muted); margin-top: 4px;
+  border-top: 1px dashed var(--border); padding-top: 4px; }
+.group.inline .card { display:inline; }
+.group.inline .variant { display:inline; margin-left: 5px; }
+.tile.special { border: 1.5px solid var(--gold); }
+.tile.special .band { background: var(--gold); }
+.tile.special .vram { color: var(--gold); }
+.tile .flag { position:absolute; top: 9px; right: 8px; }
+
+/* bus */
+.bus { margin-top: 10px; display:flex; align-items:center; gap: 10px; background: var(--panel-2);
+  border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; font-size: 8.4pt; color: var(--ink-2); }
+.bus b { color: var(--ink); }
+.bus .pill { margin-left:auto; font-size: 7.6pt; font-weight: 700; color: var(--accent-ink); background: var(--accent-tint);
+  border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+
+/* lower */
+.lower { display:grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-top: 16px; flex: 1; min-height: 0; }
+dl { margin: 0; display:grid; grid-template-columns: 1.05in 1fr; border-top: 1px solid var(--border); }
+dt, dd { margin:0; padding: 5.5px 0; border-bottom: 1px solid var(--border); font-size: 8.6pt; line-height: 1.3; }
+dt { color: var(--muted); font-weight: 700; font-size: 7.4pt; text-transform: uppercase; letter-spacing: .08em; padding-top: 7px; }
+dd b { font-weight: 700; }
+dd .dim { color: var(--muted); font-size: 7.8pt; }
+.psu { display:flex; align-items:center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.psu:first-of-type { border-top: 1px solid var(--border); }
+.psu .w { width: 0.95in; }
+.psu .w b { display:block; font-size: 10.5pt; font-weight: 800; }
+.psu .w span { font-size: 7.6pt; color: var(--muted); }
+.slots { display:flex; gap: 3px; flex-wrap: wrap; align-items:center; }
+.slot { width: 15px; height: 21px; border-radius: 3px; background: var(--green-tint); border: 1.5px solid var(--green); }
+.slot.ti { border-color: var(--gold); background: var(--gold-tint); }
+.slot.mb { width: auto; height: 21px; padding: 0 6px; font-size: 7pt; font-weight: 700; color: var(--ink-2);
+  background: var(--panel-2); border: 1.5px solid var(--rule); display:flex; align-items:center; }
+.psu .cnt { margin-left:auto; font-size: 8pt; color: var(--ink-2); white-space: nowrap; }
+.svc { display:grid; grid-template-columns: auto 1fr auto; column-gap: 8px; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 8.6pt; }
+.svc:first-of-type { border-top: 1px solid var(--border); }
+.svc .port { font-weight: 700; color: var(--accent-ink); font-size: 8.4pt; min-width: 0.5in; }
+.svc .what b { font-weight: 700; }
+.svc .what span { color: var(--muted); font-size: 7.8pt; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display:inline-block; }
+.dot.off { background: transparent; border: 1.5px solid var(--muted); }
+.small { font-size: 7.4pt; color: var(--muted); margin-top: 5px; line-height: 1.35; }
+.col > section + section { margin-top: 14px; }
+
+footer { margin-top: 12px; padding-top: 7px; border-top: 1px solid var(--rule); display:flex; justify-content: space-between;
+  font-size: 7.4pt; color: var(--muted); }
+footer b { color: var(--accent-ink); }
+</style></head><body><div class="sheet">
+<header>
+  <div>
+    <div class="kicker">OCS Intelligence · Hardware</div>
+    <h1>Rig 2</h1>
+    <div class="sub"><b class="mono">ocs-intelligence-rig2</b> · Development and test · serves Open WebUI</div>
+  </div>
+  <div class="chips">
+    <span class="chip"><b>NetBird</b><span class="mono">100.75.127.192</span></span>
+    <span class="chip"><b>Endpoint</b><span class="mono">ai.opencodingsociety.com</span></span>
+    <span class="chip"><b>As of</b>2026-10-20</span>
+  </div>
+</header><div class="stats"><div class="stat"><div class="v">9</div><div class="l">GPUs · 1080 Ti + 8 × 1070</div></div><div class="stat"><div class="v">75<small>GB</small></div><div class="l">Total VRAM</div></div><div class="stat"><div class="v">1,730<small>W</small></div><div class="l">Max GPU power</div></div><div class="stat"><div class="v">8<small>GB</small></div><div class="l">System RAM · 1 stick</div></div></div>
+<section>
+  <h2>GPUs <span class="note">Numbered by nvidia-smi index, not physical position. GPU 3 was added 2026-10-19.</span></h2>
+  <div class="groups">
+    
+    <div class="group inline" style="--c:var(--violet); --tint:var(--violet-tint); --cols:3">
+      <div class="group-head"><span class="name">One worker</span><span class="model mono">qwen3.6:35b-a3b</span><span class="meta">port 8081 · all 9 cards · split 11:8:8:8:8:8:8:8:8</span></div>
+      <div class="tiles">
+    <div class="tile special">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>0</div><div class="vram">11 GB</div></div>
+        <div class="card">GTX 1080 Ti</div>
+        <div class="variant">EVGA SC Black · air · 250 W</div>
+        <div class="facts mono"><span>bus 01:00.0</span><span>GPU-51bb095a</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>1</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 04:00.0</span><span>GPU-83daccf4</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>2</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 08:00.0</span><span>GPU-5564a0bd</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>3</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 0B:00.0</span><span>GPU-8e7ca25c</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>4</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 0C:00.0</span><span>GPU-ee8e7563</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>5</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 0D:00.0</span><span>GPU-69f0a712</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>6</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 0E:00.0</span><span>GPU-2b6607e6</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>7</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 0F:00.0</span><span>GPU-64ccc864</span></div>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="band"></div>
+      <div class="body">
+        <div class="row1"><div class="idx"><span>GPU</span>8</div><div class="vram">8 GB</div></div>
+        <div class="card">GTX 1070</div>
+        <div class="variant">EVGA FTW Hybrid · 185 W</div>
+        <div class="facts mono"><span>bus 10:00.0</span><span>GPU-a512d941</span></div>
+      </div>
+    </div></div>
+    </div>
+  </div>
+  <div class="bus"><span>Every card reaches the board over a <b>PCIe Gen1 ×1 riser</b> (~250 MB/s). The MoE model runs ~27.7 tok/s, 2 slots of 262k context.</span><span class="pill">No NVLink</span></div>
+</section>
+<div class="lower">
+  <div class="col"><section><h2>Platform</h2><dl>
+  
+  <dt>Board</dt><dd><b>ASUS B250 Mining Expert</b> <span class="dim">· BIOS 1001 (reflashed)</span></dd>
+  <dt>CPU</dt><dd><b>Intel Celeron G3930</b> <span class="dim">· 2 cores · 2.9 GHz</span></dd>
+  <dt>Memory</dt><dd><b>8 GB DDR4</b> <span class="dim">· 1 × 8 GB Corsair Vengeance LPX · 2133 MT/s. With 2 sticks the board won't POST</span></dd>
+  <dt>Storage</dt><dd><b>Samsung 860 EVO 250 GB</b> <span class="dim">(M.2 SATA)</span><br><span class="dim">Boot + model. A second 256 GB SSD is installed but not detected by the OS.</span></dd>
+  <dt>Network</dt><dd><b>Wired Ethernet</b> <span class="dim">· onboard Intel I219-V · NetBird overlay</span></dd>
+  <dt>OS</dt><dd><b>Ubuntu 24.04.3 LTS</b> <span class="dim">· kernel 7.0.0-38</span></dd>
+  <dt>GPU stack</dt><dd><b>NVIDIA 580.178.04</b> (DKMS) <span class="dim">· CUDA 12.6 · Pascal sm_61</span></dd>
+  <dt>Inference</dt><dd><b>llama.cpp</b> <span class="dim">llama-server · layer split across cards</span></dd>
+
+  </dl></section></div>
+  <div class="col">
+    <section><h2>Power</h2>
+      <div class="psu"><div class="w"><b>1800 W</b><span>brand unknown</span></div><div class="slots"><span class="slot mb">board + CPU</span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div><div class="cnt">5 GPUs</div></div>
+      <div class="psu"><div class="w"><b>850 W</b><span>EVGA</span></div><div class="slots"><span class="slot"></span><span class="slot"></span></div><div class="cnt">2 GPUs</div></div>
+      <div class="psu"><div class="w"><b>1300 W</b><span>Antec</span></div><div class="slots"><span class="slot"></span><span class="slot"></span></div><div class="cnt">2 GPUs</div></div>
+      <div class="small">Team-reported. The 9th card is believed to be on the Antec. Which card is on which supply isn't recorded.</div>
+    </section>
+    <section><h2>Services</h2>
+      <div class="svc"><span class="port mono">:9000</span><span class="what"><b>Orchestrator</b> <span>one model, reached from Open WebUI over NetBird</span></span><span class="dot"></span></div>
+      <div class="svc"><span class="port mono">:8081</span><span class="what"><b>Worker</b> <span>llama-server, localhost only</span></span><span class="dot"></span></div>
+      <div class="svc"><span class="port mono">—</span><span class="what"><b>Ollama</b> <span>disabled (was only used to pull models)</span></span><span class="dot off"></span></div>
+    </section>
+  </div>
+</div>
+<footer><span>Verified over NetBird SSH 2026-10-20 (<span class="mono">nvidia-smi</span>, <span class="mono">dmidecode</span>, <span class="mono">lsblk</span>). Power supplies are team-reported.</span><span>Source of truth: <b class="mono">docs/architecture/hardware.md</b></span></footer></div></body></html>
