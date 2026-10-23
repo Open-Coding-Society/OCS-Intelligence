@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Decision log
@@ -18,6 +18,7 @@ Architecture decision records (ADRs): why we chose X over Y, so nobody has to ar
 | [0007](./0007-sprints-over-fixed-weeks.md) | Track work in sprints, not fixed weeks | proposed | 2026-10-14 | **yes** (§7 schedule) |
 | [0008](./0008-one-way-netbird-policies.md) | One-way, group-based NetBird policies instead of All ↔ All | proposed | 2026-10-15 | no (but §6 two-person review still owed) |
 | [0009](./0009-rig2-moe-behind-open-webui.md) | Rig 2 serves a MoE model (Qwen3.6-35B-A3B), reached through the one Open WebUI | proposed | 2026-10-15 | **yes** (Rig 2 is dev/test; model plan is `qwen3.8:27b`) |
+| [0010](./0010-uv-for-local-dev.md) | uv and a root `pyproject.toml` for local dev and tests, not `pip install` into the system Python | proposed | 2026-10-23 | no |
 
 ## Statuses
 

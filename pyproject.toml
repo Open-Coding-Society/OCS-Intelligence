@@ -1,0 +1,33 @@
+# Local development only: tests, benchmark, doc checks, playbook PDFs.
+# The services install from their own requirements files when deployed
+# (gateway/requirements.txt, orchestrator/requirements.txt); keep the shared
+# version ranges below in step with those. Why uv: docs/decisions/0010-uv-for-local-dev.md
+
+[project]
+name = "ocs-intelligence"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    # gateway and orchestrator, as in their requirements.txt
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "httpx>=0.27,<1",
+    # benchmark/requirements.txt
+    "openai>=1.40,<2",
+    "tiktoken>=0.7,<1",
+    "matplotlib>=3.8,<4",
+]
+# scripts/build_playbook.py (also needs pandoc on PATH)
+playbook = ["weasyprint"]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

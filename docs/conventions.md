@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Documentation conventions
@@ -96,7 +96,7 @@ A playbook is the write-up of one sprint item: what was wrong, what we did, how 
 - **Header:** `type: playbook`, `date`, `title`, `subtitle`, `sprint`, `state`. `state` is `in progress` or `done`. Playbooks carry no author names: the work is the project's, and every PDF is tagged **PROMX-OCS**.
 - **Editable while in progress.** An `in progress` playbook may be updated as the work moves. A `done` playbook can still be corrected if it has to be. For new work, though, the better route is [pending playbook material](#pending-playbook-material), and from there the next playbook.
 - **Facts the team reported** but nobody captured at the time are marked as reported, with the date. They aren't presented as measured.
-- **Render** with `python3 scripts/build_playbook.py <file.md>` (or `--all`). It needs `pandoc` and `pip install weasyprint`. Commit the `.md` and the `.pdf` together. The style is the Illuminati palette from Yash's VS Code theme, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
+- **Render** with `uv run --group playbook scripts/build_playbook.py <file.md>` (or `--all`). The `playbook` group in `pyproject.toml` brings weasyprint; `pandoc` must be on `PATH`. Commit the `.md` and the `.pdf` together. The style is the Illuminati palette from Yash's VS Code theme, in [`scripts/playbook/style.css`](../scripts/playbook/style.css). Relative links become GitHub links in the PDF. GitHub alerts (`> [!NOTE]`, `[!WARNING]`, …) become callouts.
 - **Link it** from the log in [`evidence/evidence.md`](../evidence/evidence.md) and from the sprint's row in the [roadmap](./project/roadmap.md#sprints).
 
 ## Pending playbook material

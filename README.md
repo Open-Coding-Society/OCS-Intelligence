@@ -40,6 +40,6 @@ Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality, reasoning, slower).
 | [`infra/`](./infra/) | systemd units, env templates, and the Nginx site for [`ec2/`](./infra/ec2/) and [`rig/`](./infra/rig/); NetBird access policies in [`netbird/`](./infra/netbird/) |
 | [`benchmark/`](./benchmark/) | Speed benchmark and Pareto chart ([guide](./docs/testing/benchmarks.md)) |
 | [`scripts/`](./scripts/) | `demo.py`, `request.sh`, `check_docs.py` |
-| [`tests/`](./tests/) | Offline tests: `python3 -m pytest -q` |
+| [`tests/`](./tests/) | Offline tests: `uv run pytest -q` |
 | [`docs/`](./docs/docs.md) | Documentation |
 | [`evidence/`](./evidence/evidence.md) | Dated, append-only proof: captures, benchmark runs, weekly reports |

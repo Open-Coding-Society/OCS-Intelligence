@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Render a playbook's Markdown into the standard PDF next to it.
 
-  python3 scripts/build_playbook.py evidence/sprint4/2026-10-15-netbird-access-policies.md
-  python3 scripts/build_playbook.py --all          # every playbook under evidence/
-  python3 scripts/build_playbook.py --html FILE    # also write FILE.html, for previewing
+  uv run --group playbook scripts/build_playbook.py evidence/sprint4/2026-10-15-netbird-access-policies.md
+  uv run --group playbook scripts/build_playbook.py --all          # every playbook under evidence/
+  uv run --group playbook scripts/build_playbook.py --html FILE    # also write FILE.html, for previewing
 
-Needs pandoc on PATH and `pip install weasyprint`. Format rules: docs/conventions.md#playbooks.
+Needs pandoc on PATH; the `playbook` dependency group brings weasyprint. Format rules: docs/conventions.md#playbooks.
 """
 
 from __future__ import annotations

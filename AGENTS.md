@@ -34,12 +34,14 @@ OCS Intelligence is a student-built, OpenAI-compatible coding API at `https://ai
 ## Commands
 
 ```bash
-python3 -m pip install pytest fastapi httpx -r benchmark/requirements.txt
-python3 -m pytest -q                 # all offline tests
-python3 scripts/check_docs.py        # doc headers, links, index reachability
-python3 scripts/build_playbook.py --all   # re-render playbook PDFs (needs pandoc + weasyprint)
-python3 scripts/demo.py              # live API walkthrough (needs .env)
+uv sync                              # .venv with the dev group from pyproject.toml (uv.lock)
+uv run pytest -q                     # all offline tests
+python3 scripts/check_docs.py        # doc headers, links, index reachability (stdlib only)
+uv run --group playbook scripts/build_playbook.py --all   # re-render playbook PDFs (needs pandoc)
+python3 scripts/demo.py              # live API walkthrough (needs .env; stdlib only)
 ```
+
+Local Python dependencies live in the root `pyproject.toml` and `uv.lock` ([decision 0010](./docs/decisions/0010-uv-for-local-dev.md)). Don't `pip install` into the system Python. If you add a dependency, use `uv add --group dev …` and commit `uv.lock`. The services still deploy from `gateway/requirements.txt` and `orchestrator/requirements.txt`; keep their version ranges in step with `pyproject.toml`.
 
 Run both `pytest` and `check_docs.py` before you commit.
 

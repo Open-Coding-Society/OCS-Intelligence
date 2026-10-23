@@ -1,7 +1,7 @@
 """CLI for the OCS GPU benchmark.
 
-  python3 -m benchmark run --out benchmark/results/latest.json
-  python3 -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
+  uv run python -m benchmark run --out benchmark/results/latest.json
+  uv run python -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
 """
 
 from __future__ import annotations

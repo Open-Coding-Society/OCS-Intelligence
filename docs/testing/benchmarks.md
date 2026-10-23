@@ -1,18 +1,18 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Benchmarks
 
-How to measure speed on the live API and plot the speed vs intelligence chart. Code: [`benchmark/`](../../benchmark/). Checked against the code on 2026-09-29.
+How to measure speed on the live API and plot the speed vs intelligence chart. Code: [`benchmark/`](../../benchmark/). Checked against the code on 2026-10-23.
 
 ## Run it
 
 ```bash
-python3 -m pip install -r benchmark/requirements.txt
-python3 -m benchmark run --out benchmark/results/latest.json        # needs .env
-python3 -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
+uv sync                                                            # once; the dev group includes benchmark/requirements.txt
+uv run python -m benchmark run --out benchmark/results/latest.json        # needs .env
+uv run python -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
 ```
 
 Options for `run`: `--repeats N` (default 5), `--max-output-tokens N`, `--models qwen2.5:0.5b qwen3.8:27b`.

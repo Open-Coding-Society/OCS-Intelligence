@@ -72,3 +72,19 @@ Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md).
 - **Done:** turned on the client's token cache (`netbird up --ssh-jwt-cache-ttl`) on one operator machine. NetBird's CLI reference says servers reject tokens older than 10 minutes, so 600 s is the useful maximum. The login link now opens in a chosen Brave profile ([guide](../docs/guides/netbird-access.md#avoid-re-approving-every-command)).
 - **Result:** after one approval, a new connection to Rig 1 needed no prompt.
 - **Found:** NetBird SSH to EC2 fails right after a successful login (`ssh handshake failed: ... i/o timeout`, three tries). EC2's SSH server is NetBird 0.78.1; the rigs are on 0.80.0 and work. The public API was unaffected (`/healthz` 200). Open: fix via the AWS console, then re-check the instance type.
+
+### Docs and process
+
+#### 2026-10-22: Stray root `STATUS.md` and `CONTEXT.md` archived
+
+- **Wrong:** `check_docs.py` reported 9 broken links, all in a root `STATUS.md` and `CONTEXT.md` from 2026-09-23. Commit `0bc27d4` (2026-09-30) had added them back at the root after the docs moved into `docs/`, so their links pointed at the old layout.
+- **Done:** moved them to [`docs/archive/`](../docs/archive/archive.md) as superseded, fixed their links, and listed them in the archive index. `check_docs.py`: 0 problems.
+
+#### 2026-10-23: Local setup moves to uv and a root `pyproject.toml`
+
+Proposed in [decision 0010](../docs/decisions/0010-uv-for-local-dev.md).
+
+- **Wrong:** the documented `python3 -m pip install …` fails on Ubuntu 24.04 and WSL (`externally-managed-environment`), and nothing was locked.
+- **Checked:** uv is on both rigs, but only for the `ocs` user's side experiments. The deployed venvs are plain `python3 -m venv`, and the repo had never used uv.
+- **Done:** added `pyproject.toml` (a `dev` group, a `playbook` group, pytest config) and `uv.lock`, and switched AGENTS.md, getting started, the test plan, benchmarks, and conventions to `uv sync` and `uv run`. Result: 32 tests pass under `uv run pytest -q`. Deployment is unchanged.
+

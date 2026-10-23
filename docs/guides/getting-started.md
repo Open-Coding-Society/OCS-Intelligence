@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Getting started
@@ -32,13 +32,15 @@ python3 scripts/demo.py --pause
 
 ## 4. Run the tests (5 min)
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) once (`curl -LsSf https://astral.sh/uv/install.sh | sh`), then:
+
 ```bash
-python3 -m pip install pytest fastapi httpx -r benchmark/requirements.txt
-python3 -m pytest -q
+uv sync                          # makes .venv from pyproject.toml and uv.lock
+uv run pytest -q
 python3 scripts/check_docs.py
 ```
 
-Everything should pass without network or GPU access.
+Everything should pass without network or GPU access. Don't `pip install` into the system Python: on Ubuntu 24.04, Debian 12, and WSL it refuses (`externally-managed-environment`). Without uv, use a venv: `python3 -m venv .venv && .venv/bin/pip install pytest fastapi httpx -r benchmark/requirements.txt`, then `.venv/bin/python -m pytest -q`.
 
 ## 5. Know where things live
 

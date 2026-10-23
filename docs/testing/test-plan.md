@@ -1,6 +1,6 @@
 ---
 status: draft
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Test plan
@@ -10,7 +10,7 @@ How we prove the service works and fails gracefully. Based on blueprint §11–1
 ## Offline tests (in the repo)
 
 ```bash
-python3 -m pytest -q
+uv run pytest -q     # setup: getting-started §4
 ```
 
 | File | Covers |
