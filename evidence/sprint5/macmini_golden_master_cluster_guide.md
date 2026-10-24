@@ -1,3 +1,7 @@
+---
+date: 2026-10-23
+---
+
 # 20-Node Mac mini (`Macmini7,1`) Golden Master & ML Cluster Deployment Guide
 
 This step-by-step runbook covers turning **20 Late 2014 Mac minis (`Macmini7,1`)** into an **80-thread, 320 GB RAM distributed Linux & ML cluster** running [Ubuntu 26.04 LTS (Resolute Raccoon)](https://discourse.ubuntu.com/t/ubuntu-26-04-1-lts-released/86808) using a single **5-port Gigabit Ethernet switch**.

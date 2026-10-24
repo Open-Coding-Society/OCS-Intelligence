@@ -47,5 +47,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-22 | [Rig 1: gigabit Ethernet](./captures/2026-10-22-rig1-gigabit-link.md): read-only. `enp0s31f6` now links at 1000 Mb/s full duplex (was 100 Mb/s on 2026-10-20); the link partner advertises 1000baseT/Full. Six link drops that morning, consistent with recabling |
 | 2026-10-22 | [Rig 1 ↔ Rig 2 iperf3](./captures/2026-10-22-rig-to-rig-iperf3.md): `iperf3` installed on both rigs. 934 Mb/s each way and ~931 Mb/s in both directions at once, 0 retransmits, 0.23 ms ping: line rate on the LAN |
 | 2026-10-23 | [Both rigs: router link and internet throughput](./captures/2026-10-23-rig-internet-throughput.md): read-only. 1 Gb/s to the router (0.5 ms), but only ~60–90 Mb/s to the internet each way, shared by both rigs (~84 Mb/s combined). The cap is upstream of the router |
+| 2026-10-23 | [Mac mini golden master and ML cluster guide](./sprint5/macmini_golden_master_cluster_guide.md), Sprint 5: a step-by-step plan for imaging 20 Late 2014 Mac minis into a Slurm/Ray/llama.cpp-RPC cluster. Written by the team; not yet run or checked against the hardware |
 
 Add a row for each new record, newest last. This week's work that a playbook should cover goes in [pending playbook material](./pending-playbook.md), sorted by week and category, until a playbook picks it up.
