@@ -1,11 +1,11 @@
 ---
 status: current
-last_verified: 2026-09-29
+last_verified: 2026-10-23
 ---
 
 # Roadmap
 
-The plan, and what's planned but not built. Based on the 2026-09-28 mentor meeting, with backlog state updated 2026-09-29 ([deck](../sources/2026-09-28-week0-1-mentor-deck.md)). For what's live, see [status](../status.md).
+The plan, and what's planned but not built. Based on the 2026-09-28 mentor meeting ([deck](../sources/2026-09-28-week0-1-mentor-deck.md)), the [2026-10-14 mentor audit](../sources/2026-10-14-mentor-audit.md), and the [2026-10-20 mentor meeting](../sources/2026-10-20-mentor-meeting-notes.md). Sprint 5 and 6 plans added 2026-10-23. For what's live, see [status](../status.md).
 
 ## Sprints
 
@@ -16,8 +16,79 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 | 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
 | 2 | 2–3 | VR-related work (owner: yashpatil321) | In progress. Playbook in [`evidence/sprint2/`](../../evidence/evidence.md): [the VR experience](../../evidence/sprint2/2026-09-16-vr-experience.md) (in progress: full arc passes in simulation; not yet run on a headset) |
 | 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Done (reported 2026-10-16): both rigs boot with 8 GPUs. [Playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md) |
-| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
-| 5 | Projected | Establish a stronger scheduling mechanism and improve networking | Projected. To be documented |
+| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). **Proposed (2026-10-23):** close Sprint 4 on what it has shown, both rigs serving through one chat, and move its "one provider" open item into Sprint 5. The team hasn't decided this yet. Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
+| 5 | 6– | Establish a stronger scheduling/orchestrator mechanism and improve networking systems | Started (week 6, from 2026-10-19). [Plan below](#sprint-5-plan). First material: networking measurements in the [pending playbook](../../evidence/pending-playbook.md) and a [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md) |
+| 6 | Projected | Prove it under classroom load, finish the security work, and make it ready to hand off | Projected. [Plan below](#sprint-6-plan) |
+
+## Sprint 5 plan
+
+**Goal:** establish a stronger scheduling/orchestrator mechanism and improve networking systems.
+
+It answers the [2026-10-20 meeting](../sources/2026-10-20-mentor-meeting-notes.md) ("focus on developing a good orchestrator", failure procedures, closed-loop network) and takes the [audit](../sources/2026-10-14-mentor-audit.md) items that live in the orchestrator, the gateway, and the network. The audit's "Now" items go first even where they're off-theme, because each one is small and the rest of the sprint depends on them. No owners or end date are set yet.
+
+### First: the audit's "Now" items
+
+| Item | Done when | Source |
+|---|---|---|
+| CI | A GitHub Actions workflow runs `uv run pytest -q` and `python3 scripts/check_docs.py` on every push and PR | Audit D1 |
+| Changes through pull requests | Code changes land through a reviewed PR. The first one is the auth fix below | Audit D2 |
+| Open WebUI under management | A unit (or compose file) with a restart policy in `infra/`, deployed, plus an uptime check that alerts | Audit M1 |
+| Fail-closed auth | An empty key list rejects every request on both tiers; keys compared with `hmac.compare_digest`; tests for both | Audit S1, S4 |
+
+### Orchestrator and scheduling
+
+| Item | Done when | Source |
+|---|---|---|
+| One provider for both rigs | One API in front of both rigs. Open WebUI uses one connection, Rig 2 goes through the wait line, and the `rigs-to-rigs` NetBird rule is removed | [Sprint 4 open item](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md#open-items), [0009](../decisions/0009-rig2-moe-behind-open-webui.md) |
+| Where the orchestrator runs | A decision record comparing a Mac mini, a rig, and EC2 on availability, latency, and failure | Meeting §4.3 |
+| Health checks and failover | The router drops an unhealthy model or rig and sends eligible requests elsewhere. A model-down drill and a rig-down drill each pass once and are written up | Meeting §5, deck slides 07–08 |
+| Streaming counted correctly | A streamed request holds its slot until the stream ends, with a test | Audit C1 |
+| Bad input returns 400 | Malformed JSON returns 400, not 500, in both services; the lane semaphore can't over-release | Audit C3, C4 |
+| Tests for auth, routing, health | Offline tests cover them | Audit coverage gap |
+| Timeouts sized to the work | One stuck request can't hold the quality slot for an hour | Audit (long timeouts) |
+| Worker speed decision | `llama-bench` on Rig 1's current 4 + 4 layout and Rig 2. Fix NCCL or accept the number, with a date | Audit, [status](../status.md#open-issue-worker-a-is-slower-than-baseline) |
+| Pinned services | Service dependencies locked like local dev ([0010](../decisions/0010-uv-for-local-dev.md)), the rig's version-floor gap closed or recorded, llama.cpp commit recorded per rig | Audit M2, M4, M5 |
+
+### Networking
+
+| Item | Done when | Source |
+|---|---|---|
+| Measured baseline | Done 2026-10-22/23: both rigs link at 1 Gb/s, 934 Mb/s rig to rig, ~84 Mb/s shared to the internet ([pending playbook](../../evidence/pending-playbook.md)) | Meeting §3 |
+| Uplink throughput | The internet path goes Flint 2 → Mac mini → school Wi-Fi ([routing playbook](../../evidence/sprint4/OCS_Rig_Routing_Playbook.pdf)). Measure each hop and decide whether a wired uplink or a second path is needed | Routing playbook §12 |
+| WireGuard relay to EC2 | Routing playbook Steps 6–10 done and checked, or replaced by a decision | Routing playbook |
+| Orchestrator firewalled | Each rig's `:9000` accepts only the gateway (and the new router), enforced on the host | Audit S2 |
+| Closed-loop network, defined | A decision record that says what stays on the GPU LAN, what may leave, and why | Meeting §6 |
+| Latency side by side | The same request timed from a machine on the GPU LAN and from one over the internet | Mortensen, 2026-10-21 |
+| Source into the GPU LAN | A local mirror or cache so rigs don't pull models and source over the shared uplink | Mortensen, 2026-10-21 |
+| Operator access works | NetBird SSH to EC2 works again (likely the client MTU problem logged on 2026-10-23) | [pending playbook](../../evidence/pending-playbook.md) |
+
+### Record
+
+- Friday reports resume in `evidence/weekly/` ([template](../_templates/weekly-report.md)). Audit D4.
+- `status.md` re-verified at least weekly.
+
+## Sprint 6 plan
+
+**Proposed goal:** prove the system under classroom load, finish the security work, and make it ready to hand off. Not started; it depends on Sprint 5's orchestrator.
+
+| Area | Items | Source |
+|---|---|---|
+| Load and failure proofs | 8-user sustained load, the 4-hour soak, the quality test set, the remaining failure drills (orchestrator host, network link, GPU OOM), against targets set first (users, response time, error rate) | Blueprint §11–13, audit fix order, meeting §9 |
+| Hardware experiment | Compare the current layout with 4 GPUs per host under the same load | Meeting §3.2 |
+| Security | Per-student keys with quotas and revocation; services as non-root users and per-person SSH; rate limits and request-size limits; security headers on Nginx; decide what stays out of the public repo | Audit S3, S5–S8, S10, M3 |
+| Raven | Evaluate in isolation once Revollo sends it | Meeting §2.2 |
+| Safety and upkeep | Safety guide (ESD, grounding, power-down), antistatic mat, dated diagrams on the wall, weekly inspection and cleaning checklist | Meeting §10–11 |
+| Handoff | Change log, handoff README, and the continuity drill: someone who didn't build it restores the service from the runbook | Meeting §12, audit D3 |
+
+## Parked: outside the scope lock
+
+The blueprint's [scope lock](#the-blueprints-six-week-campaign) rules out agents, vision, and school-system integrations during the campaign. These came up on 2026-10-20 and stay parked until a decision record (`status: proposed`, marking the blueprint difference) says otherwise.
+
+| Idea | Why it's parked | Source |
+|---|---|---|
+| AI assignment grading (Gists, code runners, rubrics, review) | A school-system integration. It was named the primary classroom use case, so it's the first candidate for a decision record | Meeting §7 |
+| Tool-call harness | An agent feature | Meeting §4.4 |
+| Jarvis images to a vision model | Vision, and it also needs school privacy authorization | Meeting §8.1 |
 
 ## The blueprint's six-week campaign
 
