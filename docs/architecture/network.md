@@ -22,7 +22,7 @@ Internet ──HTTPS──▶ EC2 Nginx (TLS, ai.opencodingsociety.com)
 
 ## The OCS LAN
 
-As of 2026-10-23. Sources: the team's [rig routing playbook](../../evidence/sprint4/2026-10-16-rig-routing.md) (2026-10-16), the team's report of the router setup on 2026-10-23, and measurements on 2026-10-22/23 ([link speed](../../evidence/captures/2026-10-22-rig1-gigabit-link.md), [rig to rig](../../evidence/captures/2026-10-22-rig-to-rig-iperf3.md), [internet](../../evidence/captures/2026-10-23-rig-internet-throughput.md)).
+As of 2026-10-23. Sources: the [rig routing playbook](../../evidence/sprint4/2026-10-22-rig-routing.md) (done 2026-10-22), the team's report of the router setup on 2026-10-23, and measurements on 2026-10-22/23 ([link speed](../../evidence/captures/2026-10-22-rig1-gigabit-link.md), [rig to rig](../../evidence/captures/2026-10-22-rig-to-rig-iperf3.md), [internet](../../evidence/captures/2026-10-23-rig-internet-throughput.md)).
 
 The room's wall jacks don't work, so the rigs sit on a private LAN behind the school Wi-Fi:
 
@@ -42,8 +42,8 @@ GL.iNet Flint 2 (GL-MT6000): OCS LAN 192.168.8.0/24, admin 192.168.8.1
 - **Ports and Wi-Fi** are as the team reported on 2026-10-23. Rig 2 has been wired since at least 2026-10-20.
 - **Speeds:** each rig links at 1 Gb/s, rig to rig carries 934 Mb/s each way, and the router answers in ~0.5 ms. The internet is the bottleneck: ~60–90 Mb/s each way, **shared** by everything on the LAN (~84 Mb/s with both rigs at once). Every byte to the internet crosses the Mac mini's single Wi-Fi link. The hops behind the Flint weren't measured separately.
 - **The LAN is shared with other groups.** Their devices are on the same `192.168.8.0/24` as the rigs. The orchestrators bind `0.0.0.0:9000` with no host firewall, so those devices can likely reach them (inferred, not tested). A request still needs a key, but Rig 1 accepts the shared student key, so any student's key works from the LAN and skips the EC2 wait line ([hosts](../reference/hosts.md#ports), audit S2 in the [Sprint 5 plan](../project/roadmap.md#sprint-5-plan)).
-- **Planned, not built:** a WireGuard tunnel from the Flint to the EC2 relay (routing playbook Steps 6–10).
-- **Single points of failure** (routing playbook §12): the Mac mini, the pinned school access point, its out-of-tree `wl` Wi-Fi driver, and EC2.
+- **Planned, not built:** a WireGuard tunnel from the Flint to the EC2 relay ([pending playbook](../../evidence/pending-playbook.md), Sprint 5).
+- **Single points of failure** ([routing playbook](../../evidence/sprint4/2026-10-22-rig-routing.md#open-items)): the Mac mini, the pinned school access point, its out-of-tree `wl` Wi-Fi driver, and EC2.
 
 ## NetBird
 
