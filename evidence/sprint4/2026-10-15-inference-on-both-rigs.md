@@ -4,20 +4,20 @@ date: 2026-10-15
 title: Inference on both rigs, behind one chat
 subtitle: Rig 1 and Rig 2 both serve models, and ai.opencodingsociety.com shows all three in one model picker.
 sprint: 4
-state: in progress
+state: done
 ---
 
 # Inference on both rigs, behind one chat
 
-Sprint 4's goal is inference on both rigs, offered through one provider. The first half is done. Rig 2's worker was crash-looping until 2026-10-15, when we fixed it, gave Rig 2 its own orchestrator, and moved it to a faster mixture-of-experts model. We then connected Open WebUI to it as a second connection. On 2026-10-16 the model picker at `https://ai.opencodingsociety.com/` showed all three models to a regular user. The top two are served by Rig 1 and the bottom one by Rig 2. The second half is still open: the two rigs aren't yet behind **one** API. Open WebUI holds two separate connections, and the Rig 2 path skips the EC2 wait line.
+Sprint 4's goal is inference on both rigs, offered through one provider. The first half is done. Rig 2's worker was crash-looping until 2026-10-15, when we fixed it, gave Rig 2 its own orchestrator, and moved it to a faster mixture-of-experts model. We then connected Open WebUI to it as a second connection. On 2026-10-16 the model picker at `https://ai.opencodingsociety.com/` showed all three models to a regular user. The top two are served by Rig 1 and the bottom one by Rig 2. Sprint 4 closes here, on 2026-10-23: both rigs serve, and students reach every model from one chat. Putting both rigs behind **one** API, so Open WebUI needs one connection and Rig 2 goes through the EC2 wait line, moves to Sprint 5, which is about the orchestrator ([roadmap](../../docs/project/roadmap.md#sprint-5-plan)).
 
 ## At a glance
 
 | | |
 |---|---|
 | Goal | Both rigs serve inference through one provider |
-| Done so far | Both rigs serve. One Open WebUI shows all three models; users pick a model, not a rig |
-| Still open | One router that knows both rigs, so the public `/v1` API and Open WebUI both see one provider |
+| Outcome | Both rigs serve. One Open WebUI shows every model; users pick a model, not a rig. Since 2026-10-19, Rig 1 uses all 8 cards and Rig 2 all 9 ([step 7](#what-we-did)) |
+| Moved to Sprint 5 | One router that knows both rigs, so the public `/v1` API and Open WebUI both see one provider |
 | Where | Rig 2 (`100.75.127.192`): worker, orchestrator. Rig 1: Open WebUI container. NetBird: `rigs-to-rigs` |
 | Why | [Decision 0009](../../docs/decisions/0009-rig2-moe-behind-open-webui.md), **proposed** |
 
@@ -29,7 +29,7 @@ Sprint 4's goal is inference on both rigs, offered through one provider. The fir
 | `qwen2.5:0.5b` | Rig 1, Worker B (2 GPUs) | connection 0: same path | ~80–97 tok/s |
 | `qwen3.6:35b-a3b` | Rig 2, all 8 GPUs | connection 1: straight to Rig 2's orchestrator over NetBird | ~27 tok/s |
 
-Speeds come from single requests ([Rig 1 log](../captures/2026-09-18-rig1-deployment-log.md), [Rig 2 record](../captures/2026-10-15-rig2-inference-fix.md)). They aren't benchmarks.
+This is the layout on 2026-10-16. Speeds come from single requests ([Rig 1 log](../captures/2026-09-18-rig1-deployment-log.md), [Rig 2 record](../captures/2026-10-15-rig2-inference-fix.md)). They aren't benchmarks. The layout changed afterwards; see step 7.
 
 ## Before
 
@@ -76,6 +76,16 @@ All of this was done over NetBird SSH from an `outbound-only` operator peer ([Ne
 
 6. **Check it in a browser** (2026-10-16). Signed in as a regular user, the picker shows `qwen3.8:27b`, `qwen2.5:0.5b`, and `qwen3.6:35b-a3b` (screenshot above).
 
+7. **What changed by 2026-10-19.** Checked over SSH ([capture](../captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). The hardware side is its own playbook: [a ninth GPU, a driver that broke](./2026-10-19-rig-hardware-ninth-gpu-driver-580.md).
+
+   | Worker | 2026-10-16 | 2026-10-19 |
+   |---|---|---|
+   | Rig 1, Worker A | `qwen3.8:27b` on 5 GPUs | `qwen3.8:27b` on 4 GPUs |
+   | Rig 1, Worker B | `qwen2.5:0.5b` on 2 GPUs | `gemma4:26b` on 4 GPUs (config dated 2026-10-16; who changed it isn't recorded) |
+   | Rig 2 | `qwen3.6:35b-a3b` on 8 GPUs | Same model on 9 GPUs, 27.6–27.8 tok/s |
+
+   Rig 1's eighth card, an open question when this playbook started, is in use.
+
 > [!IMPORTANT]
 > Open WebUI 0.11.3 merges the model lists of its connections, but if two connections offer the **same model ID** it keeps only the first. That's why Rig 2 serves a *different* model instead of a second copy of `qwen3.8:27b`: two rigs with the same model name would never share load through Open WebUI.
 
@@ -101,14 +111,13 @@ All of this was done over NetBird SSH from an `outbound-only` operator peer ([Ne
 
 ## Open items
 
-This playbook stays `in progress` until these are settled.
+Sprint 4 is done. These carry over.
 
-- **One provider.** Put a router that knows both rigs in front of them: EC2's gateway for now, the planned Mac Mini later. Then the public `/v1` API serves Rig 2's model too, Open WebUI goes back to one connection, and `rigs-to-rigs` can be removed ([roadmap](../../docs/project/roadmap.md#planned-not-built)).
-- **Rig 2 skips the wait line.** Open WebUI → Rig 2 goes straight to the orchestrator. Only its reject threshold (16) and llama-server's 2 slots limit load.
-- **Benchmark Rig 2's config** against alternatives (fewer GPUs, `PARALLEL`, `-ub`). A `llama-bench` run was started and interrupted before it printed anything.
+- **One provider** (Sprint 5, orchestrator). Put a router that knows both rigs in front of them: the planned Mac minis, or EC2's gateway in the meantime. Then the public `/v1` API serves Rig 2's model too, Open WebUI goes back to one connection, and `rigs-to-rigs` can be removed ([Sprint 5 plan](../../docs/project/roadmap.md#sprint-5-plan)).
+- **Rig 2 skips the wait line** until then. Open WebUI → Rig 2 goes straight to the orchestrator. Only its reject threshold (16) and llama-server's 2 slots limit load.
+- **Benchmark both rigs' configs** (Sprint 5, benchmarking): Rig 2 against fewer GPUs, `PARALLEL`, `-ub`; Rig 1's new 4 + 4 split; `gemma4:26b`'s speed. A `llama-bench` run on Rig 2 was started and interrupted before it printed anything.
 - **Decide on 0009.** It's `proposed`. It also differs from the blueprint, which has Rig 2 as dev/test, not serving students.
 - **Leftovers from the `ai2` attempt:** a TLS cert and Nginx site on EC2 (answering `301` to itself), and `/home/ocs/ai2-site` on Rig 2.
-- **Rig 1's 8th GPU** has been working since the [Sprint 3](../../docs/project/roadmap.md#sprints) rebuild, as the team reported. The workers pin their GPUs by UUID, and their configs list seven, so it's probably idle. Nobody has checked Rig 1 live since 2026-09-18.
 
 ## Sources
 
@@ -116,4 +125,5 @@ This playbook stays `in progress` until these are settled.
 - [Open WebUI connected to Rig 2](../captures/2026-10-15-open-webui-rig2-connection.md)
 - [Decision 0009](../../docs/decisions/0009-rig2-moe-behind-open-webui.md)
 - Model picker screenshot: taken by the team on 2026-10-16, signed in as a regular user
+- [Rig 2: ninth GPU, driver 580](../captures/2026-10-19-rig2-ninth-gpu-driver-580.md), for step 7
 - Commits `3319c30` (Rig 2 inference), `598b477` (Open WebUI connection), `952e972` (docs), `c2ac00d` (`rigs-to-rigs`)

@@ -11,41 +11,15 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 **When it's written up,** the playbook's author moves the entries it covers into the playbook and deletes them here in the same commit.
 
-**Which sprint (proposed 2026-10-23, not yet agreed by the team).** "Rigs and hardware" and "Inference and models" feed Sprint 4. "Networking and access" and "Docs and process" feed Sprint 5, whose goal includes improving networking ([roadmap](../docs/project/roadmap.md#sprint-5-plan)). The platform inventory (2026-10-20) answers Sprint 3's "not recorded" items, but it fits a Sprint 4 write-up. Each entry below says which sprint it feeds.
+**Sprint 4 was written up on 2026-10-23.** Its hardware and inference entries moved into [the hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) and [the inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Everything below feeds Sprint 5 ([plan](../docs/project/roadmap.md#sprint-5-plan)).
 
 ## Week of 2026-10-19
 
-### Rigs and hardware
-
-#### 2026-10-19: Rig 2 gets a ninth GPU; the driver breaks and is moved to 580
-
-Feeds Sprint 4. Sprint 4 follow-up. Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md).
-
-- **Ninth card on Rig 2.** The team added a GTX 1070, so Rig 2 has 1 × GTX 1080 Ti + 8 × GTX 1070. The new card is `GPU-8e7ca25c…` at bus `0B:00.0`.
-- **Driver broke on reboot.** The reboot was the first into kernel 7.0.0-38, which an unattended upgrade had installed on 2026-10-15. Rig 2's prebuilt 550 driver had no module for it, so the worker loaded the model on CPU (`no usable GPU found`).
-- **Fix: driver 580 with DKMS**, the same packages Rig 1 already runs on the same kernel. No reboot was needed after `modprobe nvidia`. GRUB wasn't changed.
-- **Open:** unattended upgrades are still on for both rigs. DKMS should build the driver for the next kernel, but nobody has watched that happen.
-
-#### 2026-10-19: Rig 1's 8th GPU confirmed in use
-
-Feeds Sprint 4. Answers an open item in the [Sprint 4 inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md) (Rig 1 was checked read-only).
-
-- All 8 cards are in use, 4 per worker. Inventory with UUIDs: [hardware](../docs/architecture/hardware.md#gpu-inventory-rig-1).
-
-#### 2026-10-20: Platform inventory of both rigs
-
-Feeds Sprint 4. Fills the "not recorded" items in the [Sprint 3 playbook](./sprint3/2026-09-28-resolving-both-rigs.md). Proof: [capture](./captures/2026-10-20-rig-hardware-inventory.md) (read-only).
-
-- **Same platform on both:** ASUS B250 Mining Expert, Intel Celeron G3930 (2 cores), Corsair 8 GB DDR4 sticks at 2133 MT/s. Rig 1 has 2 sticks (16 GB), Rig 2 has 1 (8 GB). BIOS 0403 on Rig 1, 1001 on Rig 2.
-- **Cards:** every 1070 is an EVGA GTX 1070 FTW Hybrid (185 W limit). Rig 2's 1080 Ti is an EVGA SC Black Edition, air-cooled (250 W limit).
-- **Both rigs are on wired Ethernet now** (onboard Intel I219-V). Rig 1 links at only 100 Mb/s, Rig 2 at 1 Gb/s.
-- **Storage:** each OS sees one Samsung 860 EVO 250 GB. The team reports a second SSD in each (480 GB in Rig 1, 256 GB in Rig 2); neither shows up.
-- **Power (reported):** both 1800 W supplies are an unknown brand. Rig 2's EVGA is 850 W or 1300 W. Rig 2's ninth card is believed to be on the Antec, making its split 5 / 2 / 2.
-- **Open:** connect or check the second SSDs; ~~find out why Rig 1 links at 100 Mb/s~~ (fixed 2026-10-22, below); read the EVGA supply's label.
+### Networking and access
 
 #### 2026-10-22: Rig 1's Ethernet now links at 1 Gb/s
 
-Feeds Sprint 5 (networking): this and the throughput numbers are its measured baseline. Answers the 100 Mb/s open item from the 2026-10-20 inventory above. Proof: [capture](./captures/2026-10-22-rig1-gigabit-link.md) (read-only).
+Feeds Sprint 5 (networking): this and the throughput numbers are its measured baseline. Answers the 100 Mb/s open item from the [Sprint 4 hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md). Proof: [capture](./captures/2026-10-22-rig1-gigabit-link.md) (read-only).
 
 - **Was:** Rig 1 linked at 100 Mb/s on the onboard I219-V while Rig 2 got 1 Gb/s.
 - **Now:** `ethtool` shows 1000 Mb/s full duplex, and the switch side advertises 1000baseT/Full. The cable or switch port was changed (which one wasn't recorded).
@@ -54,22 +28,6 @@ Feeds Sprint 5 (networking): this and the throughput numbers are its measured ba
 - **Internet (2026-10-23):** both rigs reach the router (`192.168.8.1`) in 0.5 ms at 1 Gb/s, but get only about 60–90 Mb/s to the internet each way, and they share it: about 84 Mb/s combined when both download at once. The cap is upstream of the router (WAN port, line or plan); the router's WAN link speed wasn't read. Proof: [capture](./captures/2026-10-23-rig-internet-throughput.md).
 - **Where the cap is:** the team's [routing playbook](./sprint4/OCS_Rig_Routing_Playbook.pdf) has the Flint 2's WAN on Ethernet to a Mac mini, which reaches the internet over its built-in Wi-Fi on the school network. That single Wi-Fi link is the most likely cap. It wasn't measured hop by hop.
 - **Open:** measure each hop (rig → Flint → Mac mini → school Wi-Fi) to confirm where the cap is.
-
-### Inference and models
-
-#### 2026-10-19: Rig 2 serves `qwen3.6:35b-a3b` on all 9 cards
-
-Feeds Sprint 4. Proof: [capture](./captures/2026-10-19-rig2-ninth-gpu-driver-580.md).
-
-- `TENSOR_SPLIT=11,8,8,8,8,8,8,8,8`, all 9 UUIDs in `CUDA_VISIBLE_DEVICES`. Generation was 27.6 and 27.8 tok/s, the same as on 8 cards. With layer split the extra card adds memory, not speed.
-
-#### Rig 1 Worker B switched to `gemma4:26b` (seen 2026-10-19)
-
-Feeds Sprint 4.
-
-- Worker B serves `gemma4:26b` on 4 GPUs, not `qwen2.5:0.5b` on 2. The config file is dated 2026-10-16. Who made the change, why, and the model's speed aren't recorded.
-
-### Networking and access
 
 #### 2026-10-20: Fewer NetBird SSO prompts; EC2 SSH stops working
 
