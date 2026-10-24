@@ -9,13 +9,13 @@ The single place for machine names, addresses, ports, on-disk paths, and service
 
 ## Machines
 
-| Host | NetBird IP | Hostname | Role | OS / hardware |
-|---|---|---|---|---|
-| EC2 gateway | `100.75.172.167` | `ip-172-31-42-43` | Public TLS entry point, admission gateway | Ubuntu 24.04, AWS m5.large |
-| GPU rig (Rig 1) | `100.75.123.203` | `ocs-intelligence-rig` | llama.cpp workers, orchestrator, Open WebUI | Ubuntu 24.04.4, ASUS B250 Mining Expert, 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
-| GPU rig (Rig 2) | `100.75.127.192` | `ocs-intelligence-rig2` | One llama.cpp worker (`qwen3.6:35b-a3b`), orchestrator | Ubuntu 24.04.3, Python 3.12.3, ASUS B250 Mining Expert, 1 × GTX 1080 Ti + 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
+| Host | NetBird IP | LAN IP | Hostname | Role | OS / hardware |
+|---|---|---|---|---|---|
+| EC2 gateway | `100.75.172.167` | — | `ip-172-31-42-43` | Public TLS entry point, admission gateway | Ubuntu 24.04, AWS m5.large |
+| GPU rig (Rig 1) | `100.75.123.203` | `192.168.8.112` | `ocs-intelligence-rig` | llama.cpp workers, orchestrator, Open WebUI | Ubuntu 24.04.4, ASUS B250 Mining Expert, 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
+| GPU rig (Rig 2) | `100.75.127.192` | `192.168.8.213` | `ocs-intelligence-rig2` | One llama.cpp worker (`qwen3.6:35b-a3b`), orchestrator | Ubuntu 24.04.3, Python 3.12.3, ASUS B250 Mining Expert, 1 × GTX 1080 Ti + 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
 
-Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencodingsociety.com` also resolves to EC2 and has a cert there, but isn't used: [status](../status.md).) SSH to either host goes through NetBird ([how](../guides/netbird-access.md)).
+Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencodingsociety.com` also resolves to EC2 and has a cert there, but isn't used: [status](../status.md).) SSH to either host goes through NetBird ([how](../guides/netbird-access.md)). LAN IPs are DHCP leases from the Flint 2 on the OCS LAN, seen on both rigs' `enp0s31f6` on 2026-10-22 and 2026-10-23 ([network](../architecture/network.md#the-ocs-lan)); the routing playbook says they're reserved on the router.
 
 ## Ports
 
@@ -23,11 +23,11 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 |---|---|---:|---|---|
 | EC2 | `0.0.0.0` | 80, 443 | Nginx (`llm-relay` site) | Internet |
 | EC2 | `127.0.0.1` | 9100 | `ocs-gateway` (admission gateway) | EC2 only (Nginx) |
-| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)) |
+| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)), **and anything on the OCS LAN**, other class groups included: `ufw` was inactive on both rigs on 2026-10-22 |
 | Rig | `127.0.0.1` | 8081 | `ocs-llama-a` (Worker A, `qwen3.8:27b`, 4 GPUs) | Rig only |
 | Rig | `127.0.0.1` | 8082 | `ocs-llama-b` (Worker B, `gemma4:26b`, 4 GPUs, since 2026-10-16) | Rig only |
 | Rig | — | 3000 | Open WebUI (Docker). Its OpenAI connections: `https://ai.opencodingsociety.com/v1` (Rig 1 via the gateway) and `http://100.75.127.192:9000/v1` (Rig 2) | EC2 and `outbound-only` peers over NetBird (Nginx `/` proxies to it) |
-| Rig 2 | `0.0.0.0` | 9000 | `ocs-orchestrator` (one model) | EC2, Rig 1, and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)) |
+| Rig 2 | `0.0.0.0` | 9000 | `ocs-orchestrator` (one model) | EC2, Rig 1, and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)), **and anything on the OCS LAN** (same as Rig 1) |
 | Rig 2 | `127.0.0.1` | 8081 | `ocs-llama` (`qwen3.6:35b-a3b`, all 9 GPUs) | Rig 2 only |
 
 ## systemd services
