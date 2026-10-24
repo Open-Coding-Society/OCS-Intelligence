@@ -16,51 +16,63 @@ We plan in sprints, not fixed weeks, because some pieces of work take longer tha
 | 1 | 0–1 | Authorize discovery and prove one lane end to end (blueprint Weeks 0 and 1) | Playbooks in [`evidence/sprint1/`](../../evidence/evidence.md). Backlog [below](#sprint-1-backlog-as-presented-2026-09-28). |
 | 2 | 2–3 | VR-related work (owner: yashpatil321) | In progress. Playbook in [`evidence/sprint2/`](../../evidence/evidence.md): [the VR experience](../../evidence/sprint2/2026-09-16-vr-experience.md) (in progress: full arc passes in simulation; not yet run on a headset) |
 | 3 | 2–4 | Resolve both rigs after they were rebuilt and rewired | Done (reported 2026-10-16): both rigs boot with 8 GPUs. [Playbook](../../evidence/sprint3/2026-09-28-resolving-both-rigs.md) |
-| 4 | 3–5 | Get inference working on both rigs | In progress (week 5 is the current week as of 2026-10-14). **Proposed (2026-10-23):** close Sprint 4 on what it has shown, both rigs serving through one chat, and move its "one provider" open item into Sprint 5. The team hasn't decided this yet. Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (in progress: both rigs serve through one Open WebUI; one router still to come) |
-| 5 | 6– | Establish a stronger scheduling/orchestrator mechanism and improve networking systems | Started (week 6, from 2026-10-19). [Plan below](#sprint-5-plan). First material: networking measurements in the [pending playbook](../../evidence/pending-playbook.md) and a [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md) |
-| 6 | Projected | Prove it under classroom load, finish the security work, and make it ready to hand off | Projected. [Plan below](#sprint-6-plan) |
+| 4 | 3–5 | Get inference working on both rigs | **Done** (closed 2026-10-23). Both rigs serve through one chat; "one provider" moved to Sprint 5. Playbooks in [`evidence/sprint4/`](../../evidence/evidence.md): [NetBird lockdown](../../evidence/sprint4/2026-10-15-netbird-one-way-access.md) (done), [inference on both rigs](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md) (done), [a ninth GPU and driver 580](../../evidence/sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) (done), and the team's [rig routing playbook](../../evidence/sprint4/OCS_Rig_Routing_Playbook.pdf) (PDF; its VPN steps continue in Sprint 5) |
+| 5 | 6– | Establish a stronger scheduling/orchestrator mechanism and improve networking systems: orchestrator (Mac minis), networking (router and VPN), benchmarking | Started (week 6, from 2026-10-19). [Plan below](#sprint-5-plan). First material: networking measurements in the [pending playbook](../../evidence/pending-playbook.md) and a [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md) |
+| 6 | Projected | Security, cleaning up the solution, and the start of per-user access | Projected. [Plan below](#sprint-6-plan) |
+| — | Trimester 2 | Assignment grading on the system | [Below](#later-trimester-2) |
 
 ## Sprint 5 plan
 
 **Goal:** establish a stronger scheduling/orchestrator mechanism and improve networking systems.
 
-It answers the [2026-10-20 meeting](../sources/2026-10-20-mentor-meeting-notes.md) ("focus on developing a good orchestrator", failure procedures, closed-loop network) and takes the [audit](../sources/2026-10-14-mentor-audit.md) items that live in the orchestrator, the gateway, and the network. The audit's "Now" items go first even where they're off-theme, because each one is small and the rest of the sprint depends on them. No owners or end date are set yet.
+Three big tasks: **the orchestrator** (hosted on the Mac minis), **networking** (router and VPN config), and **benchmarking**. Sprint 5 answers the [2026-10-20 meeting](../sources/2026-10-20-mentor-meeting-notes.md) ("focus on developing a good orchestrator", failure procedures, classroom load, a closed-loop network). It also takes the [audit](../sources/2026-10-14-mentor-audit.md) items that live in the orchestrator, gateway, and network. No owners or end date are set yet.
 
 ### First: the audit's "Now" items
 
+Small, and the three tasks build on them.
+
 | Item | Done when | Source |
 |---|---|---|
-| CI | A GitHub Actions workflow runs `uv run pytest -q` and `python3 scripts/check_docs.py` on every push and PR | Audit D1 |
-| Changes through pull requests | Code changes land through a reviewed PR. The first one is the auth fix below | Audit D2 |
+| CI | A GitHub Actions workflow runs `uv run pytest -q` and `python3 scripts/check_docs.py` on every push | Audit D1 |
 | Open WebUI under management | A unit (or compose file) with a restart policy in `infra/`, deployed, plus an uptime check that alerts | Audit M1 |
 | Fail-closed auth | An empty key list rejects every request on both tiers; keys compared with `hmac.compare_digest`; tests for both | Audit S1, S4 |
 
-### Orchestrator and scheduling
+### Task 1: orchestrator (from the Mac minis)
 
 | Item | Done when | Source |
 |---|---|---|
-| One provider for both rigs | One API in front of both rigs. Open WebUI uses one connection, Rig 2 goes through the wait line, and the `rigs-to-rigs` NetBird rule is removed | [Sprint 4 open item](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md#open-items), [0009](../decisions/0009-rig2-moe-behind-open-webui.md) |
-| Where the orchestrator runs | A decision record comparing a Mac mini, a rig, and EC2 on availability, latency, and failure | Meeting §4.3 |
-| Health checks and failover | The router drops an unhealthy model or rig and sends eligible requests elsewhere. A model-down drill and a rig-down drill each pass once and are written up | Meeting §5, deck slides 07–08 |
+| Mac mini host | The orchestrator runs on the Mac minis, with a decision record on why (vs. a rig or EC2) and what happens when that host fails. Starting point: the team's [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md) | Meeting §4.3 |
+| One provider for both rigs | One API in front of both rigs. Open WebUI uses one connection, Rig 2 goes through the wait line, and the `rigs-to-rigs` NetBird rule is removed | [Sprint 4 carry-over](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md#open-items), [0009](../decisions/0009-rig2-moe-behind-open-webui.md) |
+| Scheduling | Requests go to the healthy, capable, least-busy worker, with separate priorities for interactive chat and long jobs (grading, later) | Meeting §4.1, deck slides 07–08 |
+| Health checks and failover | The orchestrator drops an unhealthy model or rig and sends eligible requests elsewhere. A model-down drill and a rig-down drill each pass once and are written up | Meeting §5 |
 | Streaming counted correctly | A streamed request holds its slot until the stream ends, with a test | Audit C1 |
-| Bad input returns 400 | Malformed JSON returns 400, not 500, in both services; the lane semaphore can't over-release | Audit C3, C4 |
+| Bad input returns 400 | Malformed JSON returns 400, not 500; the lane semaphore can't over-release | Audit C3, C4 |
 | Tests for auth, routing, health | Offline tests cover them | Audit coverage gap |
-| Timeouts sized to the work | One stuck request can't hold the quality slot for an hour | Audit (long timeouts) |
-| Worker speed decision | `llama-bench` on Rig 1's current 4 + 4 layout and Rig 2. Fix NCCL or accept the number, with a date | Audit, [status](../status.md#open-issue-worker-a-is-slower-than-baseline) |
-| Pinned services | Service dependencies locked like local dev ([0010](../decisions/0010-uv-for-local-dev.md)), the rig's version-floor gap closed or recorded, llama.cpp commit recorded per rig | Audit M2, M4, M5 |
+| Timeouts sized to the work | One stuck request can't hold a slot for an hour | Audit (long timeouts) |
+| Pinned services | Service dependencies locked like local dev ([0010](../decisions/0010-uv-for-local-dev.md)); the rig's version-floor gap closed or recorded; llama.cpp commit recorded per rig | Audit M2, M4, M5 |
 
-### Networking
+### Task 2: networking (router and VPN)
 
 | Item | Done when | Source |
 |---|---|---|
-| Measured baseline | Done 2026-10-22/23: both rigs link at 1 Gb/s, 934 Mb/s rig to rig, ~84 Mb/s shared to the internet ([pending playbook](../../evidence/pending-playbook.md)) | Meeting §3 |
-| Uplink throughput | The internet path goes Flint 2 → Mac mini → school Wi-Fi ([routing playbook](../../evidence/sprint4/OCS_Rig_Routing_Playbook.pdf)). Measure each hop and decide whether a wired uplink or a second path is needed | Routing playbook §12 |
-| WireGuard relay to EC2 | Routing playbook Steps 6–10 done and checked, or replaced by a decision | Routing playbook |
-| Orchestrator firewalled | Each rig's `:9000` accepts only the gateway (and the new router), enforced on the host | Audit S2 |
-| Closed-loop network, defined | A decision record that says what stays on the GPU LAN, what may leave, and why | Meeting §6 |
-| Latency side by side | The same request timed from a machine on the GPU LAN and from one over the internet | Mortensen, 2026-10-21 |
+| Measured baseline | Done 2026-10-22/23: both rigs at 1 Gb/s, 934 Mb/s rig to rig, ~84 Mb/s shared to the internet ([pending playbook](../../evidence/pending-playbook.md)) | Meeting §3 |
+| WireGuard relay to EC2 | [Routing playbook](../../evidence/sprint4/OCS_Rig_Routing_Playbook.pdf) Steps 6–10 done and checked: the Flint 2 tunnels to EC2, and EC2 reaches the rigs through it | Routing playbook |
+| Router config | The Flint 2's settings (LAN, DHCP reservations, Wi-Fi, VPN) written down and backed up; how the LAN is shared with other groups decided | [Network](../architecture/network.md#the-ocs-lan) |
+| Uplink | Measure each hop (Flint → Mac mini → school Wi-Fi) and decide whether a wired uplink or a second path is needed | Routing playbook §12 |
+| Orchestrator firewalled | Each rig's `:9000` accepts only the orchestrator host and EC2, enforced on the host. Other groups on the LAN can't reach it | Audit S2, [status](../status.md) |
+| Closed-loop network, defined | A decision record: what stays on the GPU LAN, what may leave, and why | Meeting §6 |
 | Source into the GPU LAN | A local mirror or cache so rigs don't pull models and source over the shared uplink | Mortensen, 2026-10-21 |
-| Operator access works | NetBird SSH to EC2 works again (likely the client MTU problem logged on 2026-10-23) | [pending playbook](../../evidence/pending-playbook.md) |
+| Operator access | NetBird SSH to EC2 works again (likely the client MTU problem in the [pending playbook](../../evidence/pending-playbook.md)) | — |
+
+### Task 3: benchmarking
+
+| Item | Done when | Source |
+|---|---|---|
+| Targets first | Written targets for classroom users, response time, tokens per second, and error rate, so every benchmark has a mark to hit | Meeting §9.2 |
+| Per-worker baseline | `llama-bench` and the [benchmark](../testing/benchmarks.md) on every worker: Rig 1's new 4 + 4 split (`qwen3.8:27b`, `gemma4:26b`) and Rig 2 (vs. fewer GPUs, `PARALLEL`, `-ub`). Decide on Worker A's speed (fix NCCL or accept the number) | Audit, [status](../status.md#open-issue-worker-a-is-slower-than-baseline), Sprint 4 carry-over |
+| Classroom load | Simulated concurrent students through the public API, starting at the charter's 8 sustained, with time to first token, queue wait, and errors recorded | Meeting §3.1, §9; blueprint §11–13 |
+| Latency side by side | The same request timed from a machine on the GPU LAN and from one over the internet | Mortensen, 2026-10-21 |
+| 4 GPUs per host | Current layout vs. 4 GPUs per host under the same load, before any hardware change | Meeting §3.2 |
 
 ### Record
 
@@ -69,26 +81,28 @@ It answers the [2026-10-20 meeting](../sources/2026-10-20-mentor-meeting-notes.m
 
 ## Sprint 6 plan
 
-**Proposed goal:** prove the system under classroom load, finish the security work, and make it ready to hand off. Not started; it depends on Sprint 5's orchestrator.
+**Goal:** security, cleaning up the solution, and the start of per-user access. Projected; it builds on Sprint 5's orchestrator.
 
 | Area | Items | Source |
 |---|---|---|
-| Load and failure proofs | 8-user sustained load, the 4-hour soak, the quality test set, the remaining failure drills (orchestrator host, network link, GPU OOM), against targets set first (users, response time, error rate) | Blueprint §11–13, audit fix order, meeting §9 |
-| Hardware experiment | Compare the current layout with 4 GPUs per host under the same load | Meeting §3.2 |
-| Security | Per-student keys with quotas and revocation; services as non-root users and per-person SSH; rate limits and request-size limits; security headers on Nginx; decide what stays out of the public repo | Audit S3, S5–S8, S10, M3 |
-| Raven | Evaluate in isolation once Revollo sends it | Meeting §2.2 |
-| Safety and upkeep | Safety guide (ESD, grounding, power-down), antistatic mat, dated diagrams on the wall, weekly inspection and cleaning checklist | Meeting §10–11 |
-| Handoff | Change log, handoff README, and the continuity drill: someone who didn't build it restores the service from the runbook | Meeting §12, audit D3 |
+| Security | Services run as non-root users; per-person SSH instead of root; rate limits and request-size limits on every path; security headers on Nginx (HSTS, no version); decide what stays out of the public repo (internal IPs, GPU IDs); evaluate Raven in isolation once Revollo sends it | Audit S5–S8, S10, M3; meeting §2.2 |
+| Per-user access | Start the design and the first version: per-student keys with quotas and revocation, so one leaked key doesn't expose everyone and usage can be attributed | Audit S3, blueprint §3, §10 |
+| Clean up the solution | Remove what's temporary: `rigs-to-rigs` (if Sprint 5 didn't), the `ai2` leftovers, Open WebUI's second connection, stale docs (`workers.md` and decision 0003 still describe the 5 + 2 split). Settle the `proposed` decisions | Sprint 4 carry-over, audit |
+| Prove it holds | The 4-hour soak, the remaining failure drills (orchestrator host, network link, GPU OOM), and the continuity drill: someone who didn't build it restores the service from the runbook | Blueprint §11–13, audit D3, meeting §5.3 |
+| Safety and upkeep | Safety guide (ESD, grounding, power-down), antistatic mat, dated diagrams on the wall above the rigs, weekly inspection and cleaning checklist | Meeting §10–11 |
+| Handoff | Change log and a handoff README for the next group | Meeting §12 |
 
-## Parked: outside the scope lock
+## Later: trimester 2
 
-The blueprint's [scope lock](#the-blueprints-six-week-campaign) rules out agents, vision, and school-system integrations during the campaign. These came up on 2026-10-20 and stay parked until a decision record (`status: proposed`, marking the blueprint difference) says otherwise.
+**Assignment grading is the main reason for the system.** It isn't plugged in yet; the plan is to start it at the beginning of trimester 2, on top of Sprint 5's orchestrator and Sprint 6's per-user access. It will connect to Gists, code runners, and submissions, use classroom rubrics, and have students and teachers review the grades (meeting §7).
 
-| Idea | Why it's parked | Source |
+The blueprint's [scope lock](#the-blueprints-six-week-campaign) rules out school-system integrations, agents, and vision during the campaign. So grading needs a decision record (`status: proposed`, marking the blueprint difference) before work starts. The same goes for the other ideas from 2026-10-20:
+
+| Idea | What it needs first | Source |
 |---|---|---|
-| AI assignment grading (Gists, code runners, rubrics, review) | A school-system integration. It was named the primary classroom use case, so it's the first candidate for a decision record | Meeting §7 |
-| Tool-call harness | An agent feature | Meeting §4.4 |
-| Jarvis images to a vision model | Vision, and it also needs school privacy authorization | Meeting §8.1 |
+| AI assignment grading | A decision record; the orchestrator's job priorities; per-user access | Meeting §7 |
+| Tool-call harness | A decision record (it's an agent feature) | Meeting §4.4 |
+| Jarvis images to a vision model | A decision record and school privacy authorization | Meeting §8.1 |
 
 ## The blueprint's six-week campaign
 

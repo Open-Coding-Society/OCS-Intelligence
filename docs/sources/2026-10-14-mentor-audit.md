@@ -55,7 +55,7 @@ Checked against the code on `main`. Where each one is scheduled: [roadmap](../pr
 |---|---|---|
 | S1 auth fails open | Open: `gateway/auth.py` and `orchestrator/auth.py` return the token when `PUBLIC_API_KEYS` is empty | 5 |
 | S2 orchestrator on all interfaces | Open in the units (`--host 0.0.0.0` in `infra/rig/` and `infra/rig2/`). The [one-way NetBird policies](../decisions/0008-one-way-netbird-policies.md) (2026-10-15) narrow who can reach it, but there's no host firewall | 5 |
-| S3 one shared key | Open | 6 |
+| S3 one shared key | Open | 6 (per-user access starts) |
 | S4 non-constant-time compare | Open: no `compare_digest` in either `auth.py` | 5 |
 | S5/S6 root services, root SSH | Open: no `User=` in any unit | 6 |
 | S7/S8/S10 | Open | 6 |
@@ -69,11 +69,11 @@ Checked against the code on `main`. Where each one is scheduled: [roadmap](../pr
 | C6 broken doc links | **Fixed** 2026-10-22: 0 problems | — |
 | No auth/routing/health tests | Open: 32 tests now, none on auth or routing | 5 |
 | D1 no CI | Open: no `.github/` | 5 (first) |
-| D2 no PRs | Open | 5 (first) |
+| D2 no PRs | Open. The team pushes straight to `main`; CI (D1) is the check | — |
 | D3 bus factor | Open | 6 (continuity drill) |
 | D4 record gap | Partly done: evidence and playbooks resumed 2026-10-15. Friday reports and `evidence/weekly/` still missing | 5 |
 | Worker A speed decision | Open, and the layout it was measured on has changed | 5 |
-| Load, soak, quality set, failure drills | Not run | 6 |
+| Load, soak, quality set, failure drills | Not run | 5 (load, model/rig drills), 6 (soak, other drills) |
 
 ## Where each part is handled in our docs
 
