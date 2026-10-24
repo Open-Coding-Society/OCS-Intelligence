@@ -23,7 +23,7 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 |---|---|---:|---|---|
 | EC2 | `0.0.0.0` | 80, 443 | Nginx (`llm-relay` site) | Internet |
 | EC2 | `127.0.0.1` | 9100 | `ocs-gateway` (admission gateway) | EC2 only (Nginx) |
-| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)), **and anything on the OCS LAN**, other class groups included: `ufw` was inactive on both rigs on 2026-10-22 |
+| Rig | `0.0.0.0` | 9000 | `ocs-orchestrator` | EC2 and `outbound-only` peers over NetBird ([policies](../architecture/network.md#access-policies)), **and, by inference, anything on the OCS LAN**, other class groups included: `0.0.0.0` bind and `ufw` inactive on 2026-10-22 (not tested from another device). Accepts the shared student key |
 | Rig | `127.0.0.1` | 8081 | `ocs-llama-a` (Worker A, `qwen3.8:27b`, 4 GPUs) | Rig only |
 | Rig | `127.0.0.1` | 8082 | `ocs-llama-b` (Worker B, `gemma4:26b`, 4 GPUs, since 2026-10-16) | Rig only |
 | Rig | — | 3000 | Open WebUI (Docker). Its OpenAI connections: `https://ai.opencodingsociety.com/v1` (Rig 1 via the gateway) and `http://100.75.127.192:9000/v1` (Rig 2) | EC2 and `outbound-only` peers over NetBird (Nginx `/` proxies to it) |
