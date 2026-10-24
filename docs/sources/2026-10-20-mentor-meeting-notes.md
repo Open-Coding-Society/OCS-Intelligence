@@ -35,7 +35,7 @@ last_verified: 2026-10-23
 |---|---|---|
 | §4 orchestrator, §5 failure | [roadmap: Sprint 5 orchestrator](../project/roadmap.md#task-1-orchestrator-from-the-mac-minis) | Hosted on the Mac minis; the choice still gets a decision record |
 | §3 capacity, §9 stress tests | [roadmap: Sprint 5 benchmarking](../project/roadmap.md#task-3-benchmarking), [test plan](../testing/test-plan.md) | Targets, baselines, classroom load, and the 4-GPU comparison in Sprint 5; the soak and remaining drills in Sprint 6 |
-| §6 closed-loop network, Mortensen's latency and source-mirror items | [roadmap: Sprint 5](../project/roadmap.md#sprint-5-plan), [network](../architecture/network.md) | Builds on the team's [rig routing playbook](../../evidence/sprint4/OCS_Rig_Routing_Playbook.pdf) |
+| §6 closed-loop network, Mortensen's latency and source-mirror items | [roadmap: Sprint 5](../project/roadmap.md#sprint-5-plan), [network](../architecture/network.md) | Builds on the team's [rig routing playbook](../../evidence/sprint4/2026-10-16-rig-routing.md) |
 | §7 grading, §4.4 tool harness, §8.1 Jarvis | [roadmap: trimester 2](../project/roadmap.md#later-trimester-2) | Grading is the system's main purpose, planned for the start of trimester 2. It and the other two fall under the blueprint's scope lock, so each needs a decision record first. Jarvis also needs privacy authorization |
 | §10–12 safety, maintenance, change logs | [roadmap: Sprint 6](../project/roadmap.md#sprint-6-plan) | |
 | §2.2 Raven | [roadmap: Sprint 6](../project/roadmap.md#sprint-6-plan) | Evaluate in isolation once it arrives |

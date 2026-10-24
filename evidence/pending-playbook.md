@@ -26,7 +26,7 @@ Feeds Sprint 5 (networking): this and the throughput numbers are its measured ba
 - **Watch:** the link dropped 6 times that morning, consistent with recabling. It had been up at 1 Gb/s for about 14 minutes when checked.
 - **Throughput:** `iperf3` (now installed on both rigs) measured 934 Mb/s each way between the rigs, and about 931 Mb/s in both directions at once, with 0 retransmits and a 0.23 ms ping. That's line rate. No new drops during the test. Proof: [capture](./captures/2026-10-22-rig-to-rig-iperf3.md).
 - **Internet (2026-10-23):** both rigs reach the router (`192.168.8.1`) in 0.5 ms at 1 Gb/s, but get only about 60–90 Mb/s to the internet each way, and they share it: about 84 Mb/s combined when both download at once. The cap is upstream of the router (WAN port, line or plan); the router's WAN link speed wasn't read. Proof: [capture](./captures/2026-10-23-rig-internet-throughput.md).
-- **Where the cap is:** the team's [routing playbook](./sprint4/OCS_Rig_Routing_Playbook.pdf) has the Flint 2's WAN on Ethernet to a Mac mini, which reaches the internet over its built-in Wi-Fi on the school network. That single Wi-Fi link is the most likely cap. It wasn't measured hop by hop.
+- **Where the cap is:** the team's [routing playbook](./sprint4/2026-10-16-rig-routing.md) has the Flint 2's WAN on Ethernet to a Mac mini, which reaches the internet over its built-in Wi-Fi on the school network. That single Wi-Fi link is the most likely cap. It wasn't measured hop by hop.
 - **Open:** measure each hop (rig → Flint → Mac mini → school Wi-Fi) to confirm where the cap is.
 
 #### 2026-10-20: Fewer NetBird SSO prompts; EC2 SSH stops working
