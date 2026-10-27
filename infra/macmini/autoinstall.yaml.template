@@ -1,0 +1,83 @@
+# Ubuntu Server autoinstall for the Mac minis (Macmini7,1). Not used directly:
+# build_iso.py fills in the @...@ placeholders and puts the result at the root
+# of the install ISO as /autoinstall.yaml. Guide: docs/operations/flash-mac-minis.md
+#
+# Reference: https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html
+autoinstall:
+  version: 1
+
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  timezone: America/Los_Angeles
+
+  # Install only from the packages on the stick. offline.invalid never resolves,
+  # so the mirror check fails fast and Subiquity falls back to an offline install.
+  # Updates and extra packages come later, over the network, with Ansible.
+  # late-commands below point apt back at the real archive.
+  apt:
+    geoip: false
+    mirror-selection:
+      primary:
+        - uri: http://offline.invalid/ubuntu
+    fallback: offline-install
+
+  # Wipe the largest disk (the 1 TB drive) and use all of it.
+  storage:
+    layout:
+      name: direct
+      match:
+        size: largest
+
+  # The hostname is a placeholder; late-commands replace it with one built from the serial.
+  identity:
+    realname: OCS
+    username: ocs
+    hostname: ocs-intelligence-unassigned
+    password: "@PASSWORD_HASH@"
+
+  # Key-only SSH. The password still works at the console and for sudo.
+  ssh:
+    install-server: true
+    allow-pw: false
+    authorized-keys:
+@SSH_KEYS@
+
+  late-commands:
+    # Name each machine after the serial number on the bottom of the box
+    # (ocs-intelligence-c07xxxxxxxxx), so every name is unique with no network.
+    # They're renamed to ocs-intelligence-macN later. Subiquity has already written
+    # the placeholder into /target/etc and the cloud-init seed, so replace it everywhere.
+    - |
+      set -eu
+      id=$(tr -cd 'A-Za-z0-9' < /sys/class/dmi/id/product_serial 2>/dev/null || true)
+      if [ -z "$id" ]; then
+        id=$(cat /sys/class/net/en*/address 2>/dev/null | head -n 1 | tr -cd '0-9a-f' || true)
+      fi
+      name=ocs-intelligence-$(echo "${id:-unknown}" | tr 'A-Z' 'a-z')
+      grep -rlZ ocs-intelligence-unassigned /target/etc /target/var/lib/cloud 2>/dev/null \
+        | xargs -0 -r sed -i "s/ocs-intelligence-unassigned/$name/g"
+      echo "$name" > /target/etc/hostname
+    # Point apt at the real archive, replacing the offline.invalid mirror.
+    - |
+      set -eu
+      . /target/etc/os-release
+      key=/usr/share/keyrings/ubuntu-archive-keyring.gpg
+      [ -e "/target$key" ] || key=/usr/share/keyrings/ubuntu-archive-keyring.pgp
+      grep -rl offline.invalid /target/etc/apt 2>/dev/null | while read -r f; do mv "$f" "$f.offline-install"; done
+      cat > /target/etc/apt/sources.list.d/ubuntu.sources <<EOF
+      Types: deb
+      URIs: http://archive.ubuntu.com/ubuntu/
+      Suites: $VERSION_CODENAME $VERSION_CODENAME-updates $VERSION_CODENAME-backports
+      Components: main restricted universe multiverse
+      Signed-By: $key
+
+      Types: deb
+      URIs: http://security.ubuntu.com/ubuntu/
+      Suites: $VERSION_CODENAME-security
+      Components: main restricted universe multiverse
+      Signed-By: $key
+      EOF
+
+  # Power off when done, so a finished machine is obvious and its stick can move on.
+  shutdown: poweroff

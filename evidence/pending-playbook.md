@@ -13,7 +13,19 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 **Sprint 4 was written up on 2026-10-23.** Its hardware and inference entries moved into [the hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) and [the inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Everything below feeds Sprint 5 ([plan](../docs/project/roadmap.md#sprint-5-plan)).
 
-## Week of 2026-10-19
+## Week of 2026-10-26
+
+### Rigs and hardware
+
+#### 2026-10-27: Autoinstall USB sticks for the Mac minis, tested in a VM
+
+Feeds Sprint 5 (orchestrator on the Mac minis). Follows [issue #30](https://github.com/Open-Coding-Society/OCS-Intelligence/issues/30) (PXE boot).
+
+- **Asked:** flash the remaining Mac minis (32 left after losses: `mac1` done, 31 to go; `Macmini7,1`, A1347 EMC 2840, 1 TB drive reported) with Ubuntu Server 26.04, user `ocs`, SSH, as quickly as possible. No network during the install; hostnames and packages later.
+- **Chosen:** autoinstall sticks, not PXE or Clonezilla ([decision 0011](../docs/decisions/0011-autoinstall-sticks-for-mac-minis.md)). Intel Macs netboot with Apple's BSDP, not standard PXE, and no report of it working on this model was found. Clonezilla clones share machine-id, SSH host keys and hostname, and fail on smaller disks.
+- **Built:** [`infra/macmini/`](../infra/macmini/): `build_iso.py` adds `/autoinstall.yaml` and the `autoinstall` kernel argument to the stock ISO. The install is offline, names the machine `ocs-intelligence-<serial>`, sets key-only SSH, and powers off. Guide: [flash the Mac minis](../docs/operations/flash-mac-minis.md).
+- **Tested (QEMU/KVM, OVMF, no network, the real `ubuntu-26.04.1-live-server-amd64.iso`, SHA-256 `cc8a95cd…`):** no prompts; install took 4.5 minutes and powered off. After boot: hostname `ocs-intelligence-c07test1g1j1` from the fake serial `C07TEST1G1J1`, in `/etc/hostname` and `/etc/hosts`; Ubuntu 26.04.1 LTS; apt sources on `archive.ubuntu.com` (`resolute`); key login worked; password login refused (`Permission denied (publickey)`); `en_US.UTF-8`, `America/Los_Angeles`; disk wiped into `/boot/efi` + `/`.
+- **Open:** not yet tried on a real Mac mini (boot picker "EFI Boot", Mac firmware, the real serial). Whether holding C boots the stick with no monitor. Whether any Mac mini has a Fusion Drive (two disks).
 
 ### Networking and access
 

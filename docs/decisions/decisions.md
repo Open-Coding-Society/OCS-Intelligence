@@ -19,6 +19,7 @@ Architecture decision records (ADRs): why we chose X over Y, so nobody has to ar
 | [0008](./0008-one-way-netbird-policies.md) | One-way, group-based NetBird policies instead of All ↔ All | proposed | 2026-10-15 | no (but §6 two-person review still owed) |
 | [0009](./0009-rig2-moe-behind-open-webui.md) | Rig 2 serves a MoE model (Qwen3.6-35B-A3B), reached through the one Open WebUI | proposed | 2026-10-15 | **yes** (Rig 2 is dev/test; model plan is `qwen3.8:27b`) |
 | [0010](./0010-uv-for-local-dev.md) | uv and a root `pyproject.toml` for local dev and tests, not `pip install` into the system Python | proposed | 2026-10-23 | no |
+| [0011](./0011-autoinstall-sticks-for-mac-minis.md) | Flash the Mac minis with autoinstall USB sticks, not netboot or Clonezilla | proposed | 2026-10-27 | no |
 
 ## Statuses
 

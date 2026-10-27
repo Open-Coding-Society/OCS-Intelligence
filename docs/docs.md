@@ -55,6 +55,7 @@ Start here. Every doc in the repo is linked from this page, either directly or t
 | [Runbook](./operations/runbook.md) | Day-to-day and emergency procedures |
 | [Deploy the rig](./operations/deploy-rig.md) | CUDA, llama.cpp, workers, orchestrator |
 | [Deploy EC2](./operations/deploy-ec2.md) | Admission gateway and Nginx |
+| [Flash the Mac minis](./operations/flash-mac-minis.md) | Ubuntu Server on the Mac minis from autoinstall USB sticks |
 
 ## Security and testing
 

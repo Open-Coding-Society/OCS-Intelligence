@@ -6,3 +6,4 @@ benchmark/results/
 netbird_data/
 evidence/**/*.html
 node_modules/
+infra/macmini/build/
