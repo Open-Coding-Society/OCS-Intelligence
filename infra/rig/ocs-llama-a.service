@@ -1,5 +1,5 @@
 [Unit]
-Description=OCS llama.cpp worker A — qwen3.8:27b on 5 GPUs
+Description=OCS llama.cpp worker A - qwen3.8:27b on 4 GPUs
 After=network-online.target netbird.service
 Wants=network-online.target
 

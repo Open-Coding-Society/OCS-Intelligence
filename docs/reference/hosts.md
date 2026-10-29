@@ -38,7 +38,7 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 | Rig | `ocs-llama-a.service` | [`infra/rig/ocs-llama-a.service`](../../infra/rig/ocs-llama-a.service) |
 | Rig | `ocs-llama-b.service` | [`infra/rig/ocs-llama-b.service`](../../infra/rig/ocs-llama-b.service) |
 | Rig | `ocs-orchestrator.service` | [`infra/rig/ocs-orchestrator.service`](../../infra/rig/ocs-orchestrator.service) |
-| Rig | `ollama.service` | not in repo; **stopped**, kept as the fallback path |
+| Rig | `ollama.service` (+ `ollama.service.d/override.conf`) | [`infra/rig/ollama.service`](../../infra/rig/ollama.service), [`infra/rig/ollama-override.conf`](../../infra/rig/ollama-override.conf); **stopped**, kept as the fallback path |
 | Rig 2 | `ocs-llama.service` | [`infra/rig2/ocs-llama.service`](../../infra/rig2/ocs-llama.service) |
 | Rig 2 | `ocs-orchestrator.service` | [`infra/rig2/ocs-orchestrator.service`](../../infra/rig2/ocs-orchestrator.service) |
 | Rig 2 | `ollama.service` | not in repo; disabled by `setup.sh` (it was only used to pull the model) |
@@ -54,6 +54,8 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 | `/var/lib/ocs-gateway/` | Gateway state dir |
 | `/etc/nginx/sites-available/llm-relay` | Live Nginx site (repo copy: [`infra/ec2/llm-relay-nginx.conf`](../../infra/ec2/llm-relay-nginx.conf)) |
 | `/etc/nginx/sites-available/llm-relay.bak.20260918T044602Z` | Nginx backup from before the gateway went live |
+| `/etc/nginx/sites-available/ai2` | Unused `ai2` site ([status](../status.md)); repo copy: [`infra/ec2/ai2-nginx.conf`](../../infra/ec2/ai2-nginx.conf) |
+| `/etc/nginx/conf.d/websocket-upgrade.conf` | The `$connection_upgrade` map `llm-relay` uses; repo copy: [`infra/ec2/nginx-websocket-upgrade.conf`](../../infra/ec2/nginx-websocket-upgrade.conf) |
 | `/etc/letsencrypt/live/ai.opencodingsociety.com/` | TLS certificate (Certbot) |
 
 ### Rig
@@ -69,6 +71,7 @@ Public name: `ai.opencodingsociety.com`, which resolves to EC2. (`ai2.opencoding
 | `/var/lib/ocs-intelligence/` | Worker state dir |
 | `/opt/ocs-orchestrator/` | Orchestrator code + `.venv` (`--system-site-packages`, Ubuntu packages) |
 | `/etc/ocs-orchestrator/orchestrator.env` | Orchestrator env, mode `0600` |
+| Docker container `open-webui` | Started by hand, no compose file. Equivalent `docker run`: [`infra/rig/open-webui.sh`](../../infra/rig/open-webui.sh) |
 | `/var/lib/docker/volumes/open-webui/_data/webui.db` | Open WebUI's database, including its connection settings (`config` table). Backup from before the Rig 2 connection: `webui.db.bak-20261015` next to it |
 | `/var/lib/ocs-orchestrator/` | Orchestrator state dir |
 

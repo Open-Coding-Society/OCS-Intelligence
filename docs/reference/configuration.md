@@ -26,7 +26,7 @@ Template: [`infra/ec2/gateway.env.template`](../../infra/ec2/gateway.env.templat
 | `UPSTREAM_URL` | `http://100.75.123.203:9000` | Rig orchestrator |
 | `PUBLIC_API_KEYS` | empty | Comma-separated student keys. **If empty, any Bearer token is accepted.** Always set it. |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model name for lane A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model name for lane B. Set it empty (`GROUP_B_MODEL_ALIAS=`) for no lane B (Rig 2) |
+| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model name for lane B. The template (and EC2, since 2026-10-16) uses `gemma4:26b`. Set it empty (`GROUP_B_MODEL_ALIAS=`) for no lane B (Rig 2) |
 | `GROUP_A_INFLIGHT` | `1` | Lane A requests running at once |
 | `GROUP_B_INFLIGHT` | `2` | Lane B requests running at once |
 | `MAX_WAITERS_PER_WORKER` | `4` | Waiting requests per lane before a 429 |
@@ -45,7 +45,7 @@ Templates: [`infra/rig/orchestrator.env.template`](../../infra/rig/orchestrator.
 | `GROUP_A_URL` | `http://127.0.0.1:8081` | Worker A |
 | `GROUP_B_URL` | `http://127.0.0.1:8082` | Worker B |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model served by A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model served by B. Set it empty to not register Worker B (Rig 2) |
+| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model served by B. The Rig 1 template uses `gemma4:26b`. Set it empty to not register Worker B (Rig 2) |
 | `WORKER_API_KEY` | empty | Secret the orchestrator sends to the workers (same value as in the worker env) |
 | `PUBLIC_API_KEYS` | empty | Student keys accepted. **If empty, any Bearer token is accepted.** |
 | `QUEUE_CAPACITY_PER_WORKER` | `16` | In-flight count above which the orchestrator returns 429 |
@@ -60,11 +60,11 @@ Templates: [`infra/rig/worker-a.env.template`](../../infra/rig/worker-a.env.temp
 
 | Variable | Worker A | Worker B | Meaning |
 |---|---|---|---|
-| `CUDA_VISIBLE_DEVICES` | GPUs 0–3 by UUID | GPUs 5–6 by UUID | Which cards the worker can use ([UUIDs](../architecture/hardware.md)) |
-| `DEFAULT_MODEL_GGUF` / `SPEED_MODEL_GGUF` | `…/qwen3.8-27b-q4_k_m.gguf` | `…/qwen2.5-0.5b.gguf` | Model file |
-| `DEFAULT_MODEL_ID` / `SPEED_MODEL_ID` | `qwen3.8:27b` | `qwen2.5:0.5b` | `--alias`, the public model name |
-| `CONTEXT_SIZE` | `163840` | `8192` | `--ctx-size` |
-| `TENSOR_SPLIT` | `1,1,1,1` | `1,1` | `--tensor-split` across the visible GPUs |
+| `CUDA_VISIBLE_DEVICES` | GPUs 1, 3, 5, 7 by UUID | GPUs 0, 2, 4, 6 by UUID | Which cards the worker can use ([UUIDs](../architecture/hardware.md)) |
+| `DEFAULT_MODEL_GGUF` / `SPEED_MODEL_GGUF` | `…/qwen3.8-27b-q4_k_m.gguf` | `…/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf` | Model file |
+| `DEFAULT_MODEL_ID` / `SPEED_MODEL_ID` | `qwen3.8:27b` | `gemma4:26b` | `--alias`, the public model name |
+| `CONTEXT_SIZE` | `163840` | `256000` | `--ctx-size` |
+| `TENSOR_SPLIT` | `1,1,1,1` | `1,1,1,1` | `--tensor-split` across the visible GPUs |
 | `WORKER_API_KEY` | secret | same secret | `--api-key` |
 
-Fixed flags in both units: `--n-gpu-layers 999 --split-mode layer --parallel 2 --cont-batching --flash-attn on --metrics --slots --warmup`. Why each worker is set up this way: [workers](../architecture/workers.md).
+Fixed flags in both units: `--n-gpu-layers 999 --split-mode layer --parallel 2 --cont-batching --slots --warmup`. Worker A also has `--flash-attn on --metrics`; Worker B has `--flash-attn auto` and no `--metrics` (as deployed since 2026-10-16). Why each worker is set up this way: [workers](../architecture/workers.md).

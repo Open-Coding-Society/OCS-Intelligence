@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-10-19
+last_verified: 2026-10-29
 ---
 
 # Pending playbook material
@@ -26,6 +26,17 @@ Feeds Sprint 5 (orchestrator on the Mac minis). Follows [issue #30](https://gith
 - **Built:** [`infra/macmini/`](../infra/macmini/): `build_iso.py` adds `/autoinstall.yaml` and the `autoinstall` kernel argument to the stock ISO. The install is offline, names the machine `ocs-intelligence-<serial>`, sets key-only SSH, and powers off. Guide: [flash the Mac minis](../docs/operations/flash-mac-minis.md).
 - **Tested (QEMU/KVM, OVMF, no network, the real `ubuntu-26.04.1-live-server-amd64.iso`, SHA-256 `cc8a95cd…`):** no prompts; install took 4.5 minutes and powered off. After boot: hostname `ocs-intelligence-c07test1g1j1` from the fake serial `C07TEST1G1J1`, in `/etc/hostname` and `/etc/hosts`; Ubuntu 26.04.1 LTS; apt sources on `archive.ubuntu.com` (`resolute`); key login worked; password login refused (`Permission denied (publickey)`); `en_US.UTF-8`, `America/Los_Angeles`; disk wiped into `/boot/efi` + `/`.
 - **Open:** not yet tried on a real Mac mini (boot picker "EFI Boot", Mac firmware, the real serial). Whether holding C boots the stick with no monitor. Whether any Mac mini has a Fusion Drive (two disks).
+
+### Docs and process
+
+#### 2026-10-29: Repo `infra/` copies re-synced with the three hosts
+
+- **Asked:** copy every deployed OCS config file into the repo.
+- **Compared (read-only, over NetBird SSH):** the systemd units, env files (secrets masked), Nginx sites, and the Open WebUI container on Rig 1, Rig 2 and EC2, against `infra/`.
+- **Already matched:** both orchestrator units, Rig 2's `ocs-llama.service`, `ocs-gateway.service`, the `llm-relay` Nginx site, Rig 2's orchestrator env.
+- **Had drifted (repo updated to match):** Rig 1 Worker B (`gemma4:26b` on 4 GPUs, `--flash-attn auto`, **no `--metrics`**, so its `/metrics` is off), Worker A's description, the `GROUP_B_MODEL_ALIAS` in Rig 1's orchestrator and EC2's gateway templates, Rig 2's worker env (`qwen3.6:35b-a3b`, 9 GPUs, `524288` context, `PARALLEL=2`, `-ub 1024`).
+- **Newly in the repo:** Rig 1's `ollama.service` and its override (`OLLAMA_HOST=0.0.0.0`), EC2's `ai2` site and `websocket-upgrade.conf`, and a `docker run` for Open WebUI rebuilt from `docker inspect`.
+- **Open:** whether Worker B dropping `--metrics` was on purpose.
 
 ### Networking and access
 

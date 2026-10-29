@@ -1,5 +1,5 @@
 [Unit]
-Description=OCS llama.cpp worker B — qwen2.5:0.5b on 2 GPUs
+Description=OCS llama.cpp worker B - gemma4:26b on 4 GPUs
 After=network-online.target netbird.service
 Wants=network-online.target
 
@@ -19,8 +19,7 @@ ExecStart=/opt/llama.cpp/bin/llama-server \
   --ctx-size ${CONTEXT_SIZE} \
   --parallel 2 \
   --cont-batching \
-  --flash-attn on \
-  --metrics \
+  --flash-attn auto \
   --slots \
   --warmup
 Restart=on-failure
