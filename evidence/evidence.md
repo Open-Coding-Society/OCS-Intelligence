@@ -50,5 +50,7 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-23 | [Both rigs: router link and internet throughput](./captures/2026-10-23-rig-internet-throughput.md): read-only. 1 Gb/s to the router (0.5 ms), but only ~60–90 Mb/s to the internet each way, shared by both rigs (~84 Mb/s combined). The cap is upstream of the router |
 | 2026-10-19 | [Playbook: a ninth GPU, a driver that broke, and what's in the rigs](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) ([PDF](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.pdf)), Sprint 4, done |
 | 2026-10-23 | [Mac mini golden master and ML cluster guide](./sprint5/macmini_golden_master_cluster_guide.md), Sprint 5: a step-by-step plan for imaging 20 Late 2014 Mac minis into a Slurm/Ray/llama.cpp-RPC cluster. Written by the team; not yet run or checked against the hardware |
+| 2026-10-29 | [EC2 gateway: Rig 2 lane](./captures/2026-10-29-ec2-gateway-rig2-lane.md): the gateway routes `qwen3.6:35b-a3b` to Rig 2 with Rig 2's Open WebUI key; all three models reachable with the student key |
+| 2026-10-29 | [Playbook: one API, both rigs](./sprint5/2026-10-29-one-api-both-rigs.md), Sprint 5, done: the Rig 2 lane, `infra/` re-synced with all three hosts (env files mirrored, keys as `CHANGE_ME`), and the student key found in public git history. PDF not rendered yet |
 
 Add a row for each new record, newest last. This week's work that a playbook should cover goes in [pending playbook material](./pending-playbook.md), sorted by week and category, until a playbook picks it up.
