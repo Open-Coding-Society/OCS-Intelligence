@@ -85,7 +85,7 @@ Same layout as Rig 1 for CUDA (`/usr/local/cuda-12.6/`), llama.cpp (`/opt/llama.
 | `/opt/ocs-orchestrator/.venv` | Installed from **PyPI**: Rig 2 can reach it, Rig 1 can't |
 | `/home/ocs/OCS-Intelligence/` | A clone of this repo, owned by user `ocs` |
 | `/srv/ocs-intelligence/models/qwen3.6-35b-a3b-ud-q4_k_xl.gguf` | The served model: a plain file from Hugging Face (`unsloth/Qwen3.6-35B-A3B-GGUF`, 22,360,456,160 B, SHA-256 `707a55a8…4f450`), not an Ollama blob |
-| `/root/ocs-deploy/` | The orchestrator bundle copied in on 2026-10-15, the temporary `PUBLIC_API_KEYS` value, and `worker.env.bak-qwen3.8` (the env from before the model switch) |
+| `/root/ocs-deploy/` | The orchestrator bundle copied in on 2026-10-15, the temporary `PUBLIC_API_KEYS` value, `worker.env.bak-qwen3.8` (the env from before the model switch), and `pull-moe.sh`, the model download script (repo copy: [`infra/rig2/pull-moe.sh`](../../infra/rig2/pull-moe.sh)) |
 
 ### Model files
 

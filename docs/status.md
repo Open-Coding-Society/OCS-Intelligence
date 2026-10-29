@@ -56,7 +56,7 @@ This is the one thing standing between "technically works" and "actually done." 
 
 In rough priority order. The full list is in the [roadmap](./project/roadmap.md#planned-not-built).
 
-1. **Rotate the student key:** the current shared key is a guessable string.
+1. **Rotate the student key:** the current shared key is a guessable string, and it is in this public repo's git history (`docs/archive/cursor-handoff.md`, redacted from the current file on 2026-10-29). Rotating means changing `PUBLIC_API_KEYS` on EC2 and Rig 1's orchestrator, and telling students.
 1. **NCCL / Worker A throughput:** deferred.
 2. **Per-student API keys:** still one shared Bearer key. Needed so one laptop can't fill the wait line.
 3. **Housekeeping:** `apt-get clean` on the rig.

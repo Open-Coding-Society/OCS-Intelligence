@@ -269,7 +269,7 @@ GROUP_B_URL=http://127.0.0.1:8082
 GROUP_A_MODEL_ALIAS=qwen3.8:27b
 GROUP_B_MODEL_ALIAS=qwen2.5:0.5b
 WORKER_API_KEY=YOUR_SECURE_WORKER_SECRET
-PUBLIC_API_KEYS=sk-ocs-student-copilot-key
+PUBLIC_API_KEYS=<redacted>
 QUEUE_CAPACITY_PER_WORKER=16
 CONNECT_TIMEOUT_SECONDS=5
 RESPONSE_HEADER_TIMEOUT_SECONDS=600
@@ -286,7 +286,7 @@ systemctl enable --now ocs-orchestrator.service
 
 # Test orchestrator locally on rig:
 curl http://127.0.0.1:9000/healthz
-curl -H "Authorization: Bearer sk-ocs-student-copilot-key" http://127.0.0.1:9000/v1/models
+curl -H "Authorization: Bearer <redacted>" http://127.0.0.1:9000/v1/models
 ```
 
 ### Step 6: Update EC2 Nginx (`root@100.75.172.167`)
@@ -330,11 +330,11 @@ From any development machine:
 ```bash
 # 1. Test model list
 curl -k https://ai.opencodingsociety.com/v1/models \
-  -H "Authorization: Bearer sk-ocs-student-copilot-key"
+  -H "Authorization: Bearer <redacted>"
 
 # 2. Test fast model (0.5b on 2 GPUs)
 curl -k -N https://ai.opencodingsociety.com/v1/chat/completions \
-  -H "Authorization: Bearer sk-ocs-student-copilot-key" \
+  -H "Authorization: Bearer <redacted>" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen2.5:0.5b",
@@ -344,7 +344,7 @@ curl -k -N https://ai.opencodingsociety.com/v1/chat/completions \
 
 # 3. Test quality model (27b on 5 GPUs)
 curl -k -N https://ai.opencodingsociety.com/v1/chat/completions \
-  -H "Authorization: Bearer sk-ocs-student-copilot-key" \
+  -H "Authorization: Bearer <redacted>" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.8:27b",
