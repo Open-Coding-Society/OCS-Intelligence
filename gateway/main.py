@@ -29,6 +29,14 @@ async def lifespan(app: FastAPI):
         settings.GROUP_B_INFLIGHT,
         settings.MAX_WAITERS_PER_WORKER,
     )
+    if settings.RIG2_MODEL_ALIAS:
+        logger.info(
+            "Rig 2 lane: upstream=%s model=%s inflight=%d key=%s",
+            settings.RIG2_UPSTREAM_URL,
+            settings.RIG2_MODEL_ALIAS,
+            settings.RIG2_INFLIGHT,
+            "set" if settings.RIG2_UPSTREAM_API_KEY else "MISSING",
+        )
     yield
     await close_client()
     logger.info("Admission gateway stopped")
@@ -71,15 +79,40 @@ async def healthz():
     return {"status": "ok"}
 
 
+def _upstream_key(lane: Lane, api_key: str) -> str:
+    """The key sent upstream: the lane's stored key (Rig 2), else the caller's."""
+    return lane.upstream_key or api_key
+
+
+async def _rig2_models() -> list[dict]:
+    """Rig 2's model entries, or [] if Rig 2 is off or not answering."""
+    lane = lanes.get(settings.RIG2_MODEL_ALIAS) if settings.RIG2_MODEL_ALIAS else None
+    if lane is None:
+        return []
+    try:
+        status, result = await proxy_get(
+            "/v1/models", _upstream_key(lane, ""), base_url=lane.upstream_url
+        )
+    except Exception:
+        logger.warning("Rig 2 /v1/models failed; listing Rig 1 only")
+        return []
+    if status != 200 or not isinstance(result, dict):
+        logger.warning("Rig 2 /v1/models returned %d; listing Rig 1 only", status)
+        return []
+    return result.get("data", [])
+
+
 @app.get("/v1/models")
 async def list_models(api_key: str = Depends(verify_api_key)):
-    """Proxy model list; does not occupy a GPU lane."""
+    """Proxy model list (Rig 1, plus Rig 2 if configured); does not occupy a GPU lane."""
     try:
         status, result = await proxy_get("/v1/models", api_key)
     except Exception:
         logger.exception("Upstream /v1/models failed")
         raise HTTPException(status_code=502, detail="Upstream communication failed")
     if isinstance(result, dict):
+        if status == 200:
+            result.setdefault("data", []).extend(await _rig2_models())
         return JSONResponse(status_code=status, content=result)
     return Response(content=result, status_code=status)
 
@@ -119,7 +152,10 @@ async def _handle_streaming(
                     break
                 yield item
             async for chunk in proxy_streaming(
-                "/v1/chat/completions", body, api_key
+                "/v1/chat/completions",
+                body,
+                _upstream_key(lane, api_key),
+                base_url=lane.upstream_url,
             ):
                 if await request.is_disconnected():
                     logger.info(
@@ -168,7 +204,10 @@ async def _handle_blocking(
 
     try:
         status, result = await proxy_blocking(
-            "/v1/chat/completions", body, api_key
+            "/v1/chat/completions",
+            body,
+            _upstream_key(lane, api_key),
+            base_url=lane.upstream_url,
         )
         if isinstance(result, dict):
             return JSONResponse(status_code=status, content=result)

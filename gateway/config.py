@@ -13,7 +13,15 @@ class Settings:
         if k.strip()
     ]
     GROUP_A_MODEL_ALIAS: str = os.environ.get("GROUP_A_MODEL_ALIAS", "qwen3.8:27b")
-    GROUP_B_MODEL_ALIAS: str = os.environ.get("GROUP_B_MODEL_ALIAS", "qwen2.5:0.5b")
+    GROUP_B_MODEL_ALIAS: str = os.environ.get("GROUP_B_MODEL_ALIAS", "gemma4:26b")
+    # Optional Rig 2 lane: its own orchestrator, reached with a key stored here, so
+    # callers only ever need a PUBLIC_API_KEYS key. Empty RIG2_MODEL_ALIAS = no lane.
+    RIG2_MODEL_ALIAS: str = os.environ.get("RIG2_MODEL_ALIAS", "")
+    RIG2_UPSTREAM_URL: str = os.environ.get(
+        "RIG2_UPSTREAM_URL", "http://100.75.127.192:9000"
+    ).rstrip("/")
+    RIG2_UPSTREAM_API_KEY: str = os.environ.get("RIG2_UPSTREAM_API_KEY", "")
+    RIG2_INFLIGHT: int = int(os.environ.get("RIG2_INFLIGHT", "2"))
     GROUP_A_INFLIGHT: int = int(os.environ.get("GROUP_A_INFLIGHT", "1"))
     GROUP_B_INFLIGHT: int = int(os.environ.get("GROUP_B_INFLIGHT", "2"))
     MAX_WAITERS_PER_WORKER: int = int(os.environ.get("MAX_WAITERS_PER_WORKER", "4"))

@@ -27,6 +27,18 @@ Feeds Sprint 5 (orchestrator on the Mac minis). Follows [issue #30](https://gith
 - **Tested (QEMU/KVM, OVMF, no network, the real `ubuntu-26.04.1-live-server-amd64.iso`, SHA-256 `cc8a95cd…`):** no prompts; install took 4.5 minutes and powered off. After boot: hostname `ocs-intelligence-c07test1g1j1` from the fake serial `C07TEST1G1J1`, in `/etc/hostname` and `/etc/hosts`; Ubuntu 26.04.1 LTS; apt sources on `archive.ubuntu.com` (`resolute`); key login worked; password login refused (`Permission denied (publickey)`); `en_US.UTF-8`, `America/Los_Angeles`; disk wiped into `/boot/efi` + `/`.
 - **Open:** not yet tried on a real Mac mini (boot picker "EFI Boot", Mac firmware, the real serial). Whether holding C boots the stick with no monitor. Whether any Mac mini has a Fusion Drive (two disks).
 
+### Gateway and API
+
+#### 2026-10-29: The public API serves Rig 2's `qwen3.6:35b-a3b` with the one student key
+
+Follows [0009](../docs/decisions/0009-rig2-moe-behind-open-webui.md)'s follow-up (a router that knows both rigs). Proof: [capture](./captures/2026-10-29-ec2-gateway-rig2-lane.md). Decision: [0012](../docs/decisions/0012-gateway-routes-rig2-with-stored-key.md).
+
+- **Asked:** reach Rig 2's model through EC2, with students needing only one key and no new keys.
+- **Was:** the gateway had one upstream (Rig 1) and forwarded the caller's key; Rig 2 returned 401 to the student key.
+- **Done:** a Rig 2 lane in the gateway with its own upstream and a stored key: Rig 2's existing Open WebUI key. Rig 2 unchanged.
+- **Result:** `/v1/models` lists all three models; `qwen3.6:35b-a3b` answered in 6.3 s and streamed; Rig 1 unaffected; wrong key 401.
+- **Open:** remove Open WebUI's direct Rig 2 connection so its chats get the wait line too.
+
 ### Docs and process
 
 #### 2026-10-29: Repo `infra/` copies re-synced with the three hosts

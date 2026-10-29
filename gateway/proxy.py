@@ -45,10 +45,10 @@ def _auth_headers(api_key: str) -> dict[str, str]:
 
 
 async def proxy_streaming(
-    path: str, body: dict, api_key: str
+    path: str, body: dict, api_key: str, base_url: str | None = None
 ) -> AsyncIterator[bytes]:
     client = await get_client()
-    url = f"{settings.UPSTREAM_URL}{path}"
+    url = f"{base_url or settings.UPSTREAM_URL}{path}"
     async with client.stream(
         "POST", url, json=body, headers=_auth_headers(api_key)
     ) as resp:
@@ -60,19 +60,21 @@ async def proxy_streaming(
 
 
 async def proxy_blocking(
-    path: str, body: dict, api_key: str
+    path: str, body: dict, api_key: str, base_url: str | None = None
 ) -> tuple[int, dict | bytes]:
     client = await get_client()
-    url = f"{settings.UPSTREAM_URL}{path}"
+    url = f"{base_url or settings.UPSTREAM_URL}{path}"
     resp = await client.post(url, json=body, headers=_auth_headers(api_key))
     if resp.headers.get("content-type", "").startswith("application/json"):
         return resp.status_code, resp.json()
     return resp.status_code, resp.content
 
 
-async def proxy_get(path: str, api_key: str) -> tuple[int, dict | bytes]:
+async def proxy_get(
+    path: str, api_key: str, base_url: str | None = None
+) -> tuple[int, dict | bytes]:
     client = await get_client()
-    url = f"{settings.UPSTREAM_URL}{path}"
+    url = f"{base_url or settings.UPSTREAM_URL}{path}"
     headers = {"Authorization": f"Bearer {api_key}"}
     resp = await client.get(url, headers=headers)
     if resp.headers.get("content-type", "").startswith("application/json"):

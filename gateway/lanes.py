@@ -43,8 +43,18 @@ async def _cancel_acquire(sem: asyncio.Semaphore, task: asyncio.Task) -> None:
 class Lane:
     """One wait line + in-flight cap for a single model alias."""
 
-    def __init__(self, name: str, inflight: int, max_waiters: int):
+    def __init__(
+        self,
+        name: str,
+        inflight: int,
+        max_waiters: int,
+        upstream_url: str | None = None,
+        upstream_key: str | None = None,
+    ):
         self.name = name
+        # None = settings.UPSTREAM_URL with the caller's own key (Rig 1).
+        self.upstream_url = upstream_url or settings.UPSTREAM_URL
+        self.upstream_key = upstream_key or None
         self.inflight_limit = inflight
         self.max_waiters = max_waiters
         self._sem = asyncio.Semaphore(inflight)
@@ -135,11 +145,20 @@ def _lanes() -> dict[str, Lane]:
         (settings.GROUP_A_MODEL_ALIAS, settings.GROUP_A_INFLIGHT),
         (settings.GROUP_B_MODEL_ALIAS, settings.GROUP_B_INFLIGHT),
     ]
-    return {
+    built = {
         alias: Lane(alias, inflight, settings.MAX_WAITERS_PER_WORKER)
         for alias, inflight in groups
         if alias
     }
+    if settings.RIG2_MODEL_ALIAS:
+        built[settings.RIG2_MODEL_ALIAS] = Lane(
+            settings.RIG2_MODEL_ALIAS,
+            settings.RIG2_INFLIGHT,
+            settings.MAX_WAITERS_PER_WORKER,
+            upstream_url=settings.RIG2_UPSTREAM_URL,
+            upstream_key=settings.RIG2_UPSTREAM_API_KEY,
+        )
+    return built
 
 
 lanes: dict[str, Lane] = _lanes()

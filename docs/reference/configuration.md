@@ -26,13 +26,17 @@ Template: [`infra/ec2/gateway.env.template`](../../infra/ec2/gateway.env.templat
 | `UPSTREAM_URL` | `http://100.75.123.203:9000` | Rig orchestrator |
 | `PUBLIC_API_KEYS` | empty | Comma-separated student keys. **If empty, any Bearer token is accepted.** Always set it. |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model name for lane A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model name for lane B. The template (and EC2, since 2026-10-16) uses `gemma4:26b`. Set it empty (`GROUP_B_MODEL_ALIAS=`) for no lane B (Rig 2) |
+| `GROUP_B_MODEL_ALIAS` | `gemma4:26b` | Model name for lane B. Set it empty (`GROUP_B_MODEL_ALIAS=`) for no lane B (Rig 2) |
 | `GROUP_A_INFLIGHT` | `1` | Lane A requests running at once |
 | `GROUP_B_INFLIGHT` | `2` | Lane B requests running at once |
 | `MAX_WAITERS_PER_WORKER` | `4` | Waiting requests per lane before a 429 |
 | `KEEPALIVE_INTERVAL_SECONDS` | `15` | How often waiting streams get `: queued` |
 | `CONNECT_TIMEOUT_SECONDS` | `5` | Connect timeout to the orchestrator |
 | `UPSTREAM_TIMEOUT_SECONDS` | `3600` | Read timeout to the orchestrator |
+| `RIG2_MODEL_ALIAS` | empty | Model name for the Rig 2 lane ([0012](../decisions/0012-gateway-routes-rig2-with-stored-key.md)). Empty means no Rig 2 lane. Template: `qwen3.6:35b-a3b` |
+| `RIG2_UPSTREAM_URL` | `http://100.75.127.192:9000` | Rig 2 orchestrator |
+| `RIG2_UPSTREAM_API_KEY` | empty | Key the gateway sends to Rig 2 **instead of the caller's**: Rig 2's existing Open WebUI key (one of Rig 2's `PUBLIC_API_KEYS`). Never give it to students |
+| `RIG2_INFLIGHT` | `2` | Rig 2 lane requests running at once (Rig 2's `PARALLEL`) |
 
 What the lane numbers mean in practice: [gateway capacity](../architecture/gateway.md#capacity-what-survive-concurrent-requests-actually-means).
 
