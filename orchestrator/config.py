@@ -7,7 +7,7 @@ class Settings:
     GROUP_A_URL: str = os.environ.get("GROUP_A_URL", "http://127.0.0.1:8081")
     GROUP_B_URL: str = os.environ.get("GROUP_B_URL", "http://127.0.0.1:8082")
     GROUP_A_MODEL_ALIAS: str = os.environ.get("GROUP_A_MODEL_ALIAS", "qwen3.8:27b")
-    GROUP_B_MODEL_ALIAS: str = os.environ.get("GROUP_B_MODEL_ALIAS", "qwen2.5:0.5b")
+    GROUP_B_MODEL_ALIAS: str = os.environ.get("GROUP_B_MODEL_ALIAS", "gemma4:26b")
     WORKER_API_KEY: str = os.environ.get("WORKER_API_KEY", "")
     PUBLIC_API_KEYS: list[str] = [
         k.strip()

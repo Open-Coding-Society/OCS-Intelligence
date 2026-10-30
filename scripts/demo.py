@@ -4,7 +4,7 @@
 Stdlib only. Reads OCS_BASE_URL and OCS_API_KEY from the repo .env
 (or the environment). Never prints the key.
 
-  python3 scripts/demo.py              # health, auth, models, 0.5b, queue
+  python3 scripts/demo.py              # health, auth, models, gemma4, queue
   python3 scripts/demo.py --pause      # wait for Enter between stages
   python3 scripts/demo.py --quality    # also hit the 27B model (slow)
   python3 scripts/demo.py --skip-queue # skip the 7-way concurrency blast
@@ -26,7 +26,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 CTX = ssl.create_default_context()
 
-FAST = "qwen2.5:0.5b"
+FAST = "gemma4:26b"
 QUALITY = "qwen3.8:27b"
 
 
@@ -227,7 +227,7 @@ def stage_models() -> None:
 
 
 def stage_fast() -> None:
-    banner(f"4. Fast lane  {FAST}  (2 GPUs)")
+    banner(f"4. Lane B  {FAST}  (4 GPUs)")
     t0 = time.monotonic()
     status, _, body = http(
         "POST",
@@ -242,7 +242,7 @@ def stage_fast() -> None:
 
 
 def stage_quality() -> None:
-    banner(f"5. Quality lane  {QUALITY}  (5 GPUs, ~9 tok/s)")
+    banner(f"5. Lane A  {QUALITY}  (4 GPUs, ~9 tok/s)")
     print("         This one thinks before it answers. Give it a moment.")
     t0 = time.monotonic()
     status, _, body = http(
@@ -262,7 +262,7 @@ def stage_quality() -> None:
 
 
 def stage_queue() -> None:
-    banner("6. Classroom stampede — 7 Copilot tabs on the fast model")
+    banner("6. Classroom stampede — 7 Copilot tabs on lane B")
     print("         Lane B: 2 running + 4 waiting = 6. The 7th must 429.")
     prompt = (
         "Write a long detailed essay about the history of mathematics. Keep going."

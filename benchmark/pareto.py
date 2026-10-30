@@ -19,8 +19,7 @@ CAPTION = (
     "Y is the published Artificial Analysis Intelligence Index for Qwen3.8 27B "
     "(medium), score 28 as of 2026-09-22. That score is their API evaluation, "
     "not a re-run of the index and not a measurement of this Q4_K_M quant. "
-    "qwen2.5:0.5b is omitted because Artificial Analysis does not publish an "
-    "Intelligence Index for it."
+    "gemma4:26b is omitted because no Intelligence Index is pinned for it."
 )
 
 

@@ -25,8 +25,8 @@ Never paste the key into issues, PRs, chat logs, or code.
 
 ## Pick a model
 
-- `qwen2.5:0.5b` is fast (~90 tok/s) but small. Good for quick questions.
-- `qwen3.8:27b` gives better answers but is slow (~9 tok/s). It **thinks before answering**, so give it `max_tokens` of 80 or more, or the whole budget can go to hidden `reasoning_content`.
+- `gemma4:26b` is the general-purpose model on lane B. Its speed hasn't been measured yet.
+- `qwen3.8:27b` is slow (~9 tok/s). It **thinks before answering**, so give it `max_tokens` of 80 or more, or the whole budget can go to hidden `reasoning_content`.
 
 ## curl
 
@@ -42,7 +42,7 @@ One completion:
 curl -sS "$OCS_BASE_URL/chat/completions" \
   -H "Authorization: Bearer $OCS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"model": "qwen2.5:0.5b",
+  -d '{"model": "gemma4:26b",
        "messages": [{"role": "user", "content": "Reply with exactly: ping-ok"}],
        "max_tokens": 32}'
 ```
@@ -55,7 +55,7 @@ The repo has two wrappers that read `.env` for you:
 ./scripts/request.sh "Explain recursion in one sentence."
 ./scripts/request.sh -m qwen3.8:27b --stream "Name two sorting algorithms."
 
-python3 scripts/demo.py --pause     # guided live walkthrough: health, auth, 0.5b, 7-way queue
+python3 scripts/demo.py --pause     # guided live walkthrough: health, auth, gemma4, 7-way queue
 python3 scripts/demo.py --quality   # also exercises the 27B model
 ```
 
@@ -69,7 +69,7 @@ from openai import OpenAI
 
 client = OpenAI(base_url=os.environ["OCS_BASE_URL"], api_key=os.environ["OCS_API_KEY"])
 reply = client.chat.completions.create(
-    model="qwen2.5:0.5b",
+    model="gemma4:26b",
     messages=[{"role": "user", "content": "What is a binary search?"}],
     max_tokens=120,
 )
@@ -82,7 +82,7 @@ In Copilot Chat's "Bring your own model" settings, add an OpenAI-compatible prov
 
 - **Base URL:** `https://ai.opencodingsociety.com/v1`
 - **API key:** your `OCS_API_KEY`
-- **Model:** `qwen2.5:0.5b` or `qwen3.8:27b`
+- **Model:** `gemma4:26b`, `qwen3.8:27b` or `qwen3.6:35b-a3b`
 
 > Nobody has signed Copilot Chat in against the API end to end yet ([status](../status.md)). The API path is verified. If you get it working, update this section with the exact menu steps.
 

@@ -7,6 +7,8 @@ supersedes: the 4+3 plan (archived, pre-dates this log)
 
 # 0003. Split Rig 1 into 5-GPU and 2-GPU workers
 
+> **Later change:** on 2026-10-16 Rig 1 became a 4 + 4 split, and Worker B now serves `gemma4:26b` instead of the 0.5B model described below ([status](../status.md)). This record is kept as written for the 2026-09-17 decision.
+
 ## Context
 
 Ollama spread one model across all 7 visible GPUs. Every generated token needed **6 sequential inter-GPU transfers** over PCIe Gen1 x1 risers (~250 MB/s). The result was ~12.5 tok/s, and only one request could effectively run at a time ([hardware](../architecture/hardware.md)).

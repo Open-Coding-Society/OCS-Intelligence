@@ -15,7 +15,7 @@ uv run python -m benchmark run --out benchmark/results/latest.json        # need
 uv run python -m benchmark plot --results benchmark/results/latest.json --out benchmark/results/pareto.png
 ```
 
-Options for `run`: `--repeats N` (default 5), `--max-output-tokens N`, `--models qwen2.5:0.5b qwen3.8:27b`.
+Options for `run`: `--repeats N` (default 5), `--max-output-tokens N`, `--models gemma4:26b qwen3.8:27b`.
 
 `benchmark/results/` is gitignored. **To keep a run, copy the JSON and PNG into `evidence/benchmarks/YYYY-MM-DD-…`** and add a line to the [evidence log](../../evidence/evidence.md).
 
@@ -36,11 +36,11 @@ The requests go through the public API. A sample that got a gateway `: queued` c
 
 ## Workloads
 
-Prompts of 1k, 10k, and 100k input tokens (o200k_base), built from original filler text ([`workloads.py`](../../benchmark/workloads.py)). A workload is **skipped, not shortened**, when input + `max_tokens` exceeds the model's context (4096 for 27B, 8192 for 0.5B), so today only 1k runs.
+Prompts of 1k, 10k, and 100k input tokens (o200k_base), built from original filler text ([`workloads.py`](../../benchmark/workloads.py)). A workload is **skipped, not shortened**, when input + `max_tokens` exceeds the model's context (set per model in [`models.py`](../../benchmark/models.py): 262144 for `qwen3.8:27b`, 256000 for `gemma4:26b`), so all three sizes run for both models today.
 
 ## The chart
 
-X is median output speed measured on our rig (1k input). Y is the **published** Artificial Analysis Intelligence Index for Qwen3.8 27B (score 28, published 2026-09-22). That score is their API evaluation, not a measurement of our Q4_K_M quant. Qwen2.5 0.5B has no published index. See [`models.py`](../../benchmark/models.py).
+X is median output speed measured on our rig (1k input). Y is the **published** Artificial Analysis Intelligence Index for Qwen3.8 27B (score 28, published 2026-09-22). That score is their API evaluation, not a measurement of our Q4_K_M quant. `gemma4:26b` has no index pinned in `models.py`, so it is measured but left off the chart. See [`models.py`](../../benchmark/models.py).
 
 ## Other speed tools
 

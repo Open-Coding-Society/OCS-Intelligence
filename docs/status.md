@@ -17,7 +17,7 @@ What is running **right now** and what's broken. This is the only page for time-
 | `llama.cpp` built with CUDA backend | ✅ Built. Rig 1 now has 8 GPUs, driver 580.178.04 (2026-10-19) |
 | Model symlinks (`/srv/ocs-intelligence/models/`) | ✅ Done |
 | Worker A (`qwen3.8:27b`, 4 GPUs, port 8081) | ✅ Running (2026-10-19) |
-| Worker B (`gemma4:26b`, 4 GPUs, port 8082) | ✅ Running (2026-10-19). Changed from `qwen2.5:0.5b` on 2 GPUs on 2026-10-16 (config file date); who changed it and its speed aren't recorded. Docs describing the 5 + 2 split ([workers](./architecture/workers.md), [0003](./decisions/0003-5-plus-2-gpu-split.md)) predate this |
+| Worker B (`gemma4:26b`, 4 GPUs, port 8082) | ✅ Running (2026-10-19). Replaced the earlier 0.5B model on 2 GPUs on 2026-10-16 (config file date); who changed it and its speed aren't recorded. The original 5 + 2 split is kept as history in [0003](./decisions/0003-5-plus-2-gpu-split.md) |
 | Ollama (old single-worker path) | 🛑 Stopped (freed for the two new workers) |
 | FastAPI orchestrator (on the rig, `:9000`) | ✅ Running, healthy; routes both models |
 | EC2 admission gateway (`127.0.0.1:9100`) | ✅ Running; auth + wait line, then proxy. Since 2026-10-29 it also routes `qwen3.6:35b-a3b` to Rig 2, sending Rig 2's Open WebUI key, so the one student key reaches all three models ([0012](./decisions/0012-gateway-routes-rig2-with-stored-key.md), [evidence](../evidence/captures/2026-10-29-ec2-gateway-rig2-lane.md)) |

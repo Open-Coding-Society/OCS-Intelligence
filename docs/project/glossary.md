@@ -38,4 +38,4 @@ Terms used in this repo. Plain-language definitions of the general terms come fr
 | **Tensor split / split mode `layer`** | How one model is divided across GPUs. `layer` gives each GPU a block of layers. |
 | **Tokens/sec (tok/s)** | How fast the model writes once it starts. |
 | **VRAM** | GPU memory. 8 GB per GTX 1070. |
-| **Worker** | A `llama-server` process pinned to a GPU group (Worker A: 27B on 5 GPUs; Worker B: 0.5B on 2) ([workers](../architecture/workers.md)). |
+| **Worker** | A `llama-server` process pinned to a GPU group (Worker A: `qwen3.8:27b` on 4 GPUs; Worker B: `gemma4:26b` on 4) ([workers](../architecture/workers.md)). |

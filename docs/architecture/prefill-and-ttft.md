@@ -41,7 +41,7 @@ The checked-in Worker A command already has Flash Attention enabled and uses lay
 
 ### 5. Use a smaller model when latency matters more than answer quality
 
-The project has a separate 0.5B Worker B. Routing short, simple tasks there may reduce prefill and first-token latency substantially, with an expected answer-quality tradeoff. This is a workload-routing choice, not a tuning change to the 27B worker; compare quality on representative requests before directing users to it.
+Worker B now serves `gemma4:26b`, a mixture-of-experts model, instead of the earlier 0.5B model ([status](../status.md)). Whether it answers short, simple tasks with lower prefill and first-token latency than the 27B hasn't been measured. This is a workload-routing choice, not a tuning change to the 27B worker; measure latency and compare quality on representative requests before directing users to it.
 
 ## A small, useful measurement plan
 
