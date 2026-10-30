@@ -29,7 +29,7 @@ python3 scripts/demo.py --pause      # live walkthrough: health, auth, a complet
 ./scripts/request.sh "Explain recursion in one sentence."
 ```
 
-Models: `qwen2.5:0.5b` (fast) and `qwen3.8:27b` (quality, reasoning, slower).
+Models: `qwen3.8:27b` (reasoning, slower), `gemma4:26b`, and `qwen3.6:35b-a3b` (Rig 2). The list is in the [API reference](./docs/reference/api.md#models).
 
 ## Repo layout
 

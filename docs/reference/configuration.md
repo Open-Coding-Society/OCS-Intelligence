@@ -49,7 +49,7 @@ Templates: [`infra/rig/orchestrator.env.template`](../../infra/rig/orchestrator.
 | `GROUP_A_URL` | `http://127.0.0.1:8081` | Worker A |
 | `GROUP_B_URL` | `http://127.0.0.1:8082` | Worker B |
 | `GROUP_A_MODEL_ALIAS` | `qwen3.8:27b` | Model served by A |
-| `GROUP_B_MODEL_ALIAS` | `qwen2.5:0.5b` | Model served by B. The Rig 1 template uses `gemma4:26b`. Set it empty to not register Worker B (Rig 2) |
+| `GROUP_B_MODEL_ALIAS` | `gemma4:26b` | Model served by B. Set it empty to not register Worker B (Rig 2) |
 | `WORKER_API_KEY` | empty | Secret the orchestrator sends to the workers (same value as in the worker env) |
 | `PUBLIC_API_KEYS` | empty | Student keys accepted. **If empty, any Bearer token is accepted.** |
 | `QUEUE_CAPACITY_PER_WORKER` | `16` | In-flight count above which the orchestrator returns 429 |

@@ -1,7 +1,8 @@
 """Model table for the two OCS workers.
 
 Intelligence is a published Artificial Analysis score, not something this
-suite measures. Qwen2.5 0.5B has no published Intelligence Index.
+suite measures. Gemma 4 26B has no Intelligence Index pinned here, so it is
+measured for speed but left off the chart.
 """
 
 from __future__ import annotations
@@ -34,13 +35,13 @@ QWEN38_INTELLIGENCE_NOTE = (
 
 MODELS: tuple[ModelSpec, ...] = (
     ModelSpec(
-        model_id="qwen2.5:0.5b",
-        context=8192,
+        model_id="gemma4:26b",
+        context=256000,
         temperature=0.0,
         reasoning=False,
         intelligence=None,
         intelligence_note=(
-            "Artificial Analysis does not publish an Intelligence Index for Qwen2.5 0.5B."
+            "No Artificial Analysis Intelligence Index is pinned for Gemma 4 26B."
         ),
     ),
     ModelSpec(

@@ -8,10 +8,21 @@ from pathlib import Path
 import pytest
 
 from benchmark.metrics import Chunk, measure, parse_sse_line
-from benchmark.models import MODELS, model_by_id
+from benchmark.models import ModelSpec, model_by_id
 from benchmark.pareto import CAPTION, Point, pareto_frontier, points_from_results, render
 from benchmark.runner import aggregate, run_benchmark
 from benchmark.workloads import WORKLOADS, Workload, build_prompt, skip_reason
+
+
+# The real models all have large windows, so skip logic needs a small stand-in.
+SMALL = ModelSpec(
+    model_id="small-context:test",
+    context=8192,
+    temperature=0.0,
+    reasoning=False,
+    intelligence=None,
+    intelligence_note="",
+)
 
 
 def encode_words(text: str) -> list[str]:
@@ -114,7 +125,7 @@ def test_single_chunk_has_no_output_speed():
 
 
 def test_context_skip_follows_each_workers_window():
-    small = model_by_id("qwen2.5:0.5b")
+    small = SMALL
     large = model_by_id("qwen3.8:27b")
     assert skip_reason(WORKLOADS[0], small, 1000) is None
     assert skip_reason(WORKLOADS[0], large, 1000) is None
@@ -150,7 +161,7 @@ def test_runner_skips_long_workloads_and_medians_without_queue():
 
     tiny = (Workload("1k", 64, 4),)
     payload = run_benchmark(
-        models=[model_by_id("qwen2.5:0.5b")],
+        models=[SMALL],
         repeats=3,
         max_output_tokens_override=None,
         stream_fn=stream_fn,
@@ -164,7 +175,7 @@ def test_runner_skips_long_workloads_and_medians_without_queue():
     assert median["used"] == 2
     assert median["output_tokens_per_second"] == 0.75
     assert median["ttft_s"] == 1.5
-    assert calls == ["qwen2.5:0.5b", "qwen2.5:0.5b", "qwen2.5:0.5b"]
+    assert calls == [SMALL.model_id] * 3
 
 
 def test_runner_does_not_call_the_model_for_skipped_shapes():
@@ -178,7 +189,7 @@ def test_runner_does_not_call_the_model_for_skipped_shapes():
         ]
 
     payload = run_benchmark(
-        models=list(MODELS),
+        models=[SMALL, model_by_id("qwen3.8:27b")],
         repeats=1,
         max_output_tokens_override=None,
         stream_fn=stream_fn,
@@ -186,13 +197,13 @@ def test_runner_does_not_call_the_model_for_skipped_shapes():
         workloads=WORKLOADS,
     )
     assert calls == [
-        "qwen2.5:0.5b:1000",
+        "small-context:test:1000",
         "qwen3.8:27b:1000",
         "qwen3.8:27b:1500",
         "qwen3.8:27b:2000",
     ]
     by_model = {row["model"]: {item["name"]: item for item in row["workloads"]} for row in payload["models"]}
-    small = by_model["qwen2.5:0.5b"]
+    small = by_model[SMALL.model_id]
     assert small["1k"]["status"] == "measured"
     assert small["10k"]["status"] == "skipped"
     assert small["100k"]["status"] == "skipped"
@@ -229,7 +240,7 @@ def test_chart_omits_the_unscored_small_model(tmp_path: Path):
     results = {
         "models": [
             {
-                "model": "qwen2.5:0.5b",
+                "model": "gemma4:26b",
                 "workloads": [
                     {
                         "name": "1k",
@@ -260,7 +271,7 @@ def test_chart_omits_the_unscored_small_model(tmp_path: Path):
     assert out.stat().st_size > 0
     assert "Q4_K_M" in CAPTION
     assert "28" in CAPTION
-    assert "qwen2.5:0.5b" in CAPTION
+    assert "gemma4:26b" in CAPTION
     assert "not Alibaba" in CAPTION
 
 

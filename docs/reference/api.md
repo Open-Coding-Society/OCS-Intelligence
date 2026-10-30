@@ -25,10 +25,11 @@ Anything else OpenAI offers (embeddings, completions, images, tools, …) isn't 
 
 | `model` | Worker | Context | Notes |
 |---|---|---:|---|
-| `qwen2.5:0.5b` | B | 8192 | Fast, small. |
-| `qwen3.8:27b` | A | 4096 | Quality. A **reasoning model**: it streams hidden `reasoning_content` before `content`, so set `max_tokens` to 80 or more or the answer may be empty. |
+| `qwen3.8:27b` | A (Rig 1) | 163840 | A **reasoning model**: it streams hidden `reasoning_content` before `content`, so set `max_tokens` to 80 or more or the answer may be empty. |
+| `gemma4:26b` | B (Rig 1) | 256000 | Mixture-of-experts model (`gemma-4-26B-A4B-it`). Its speed hasn't been measured yet ([status](../status.md)). |
+| `qwen3.6:35b-a3b` | Rig 2 | 524288, shared by 2 slots | Mixture-of-experts model on all 9 GPUs of Rig 2. |
 
-Context is per slot, set in the [worker env](./configuration.md#workers-rig-etcocs-intelligenceworker-env).
+Context is the `CONTEXT_SIZE` (`--ctx-size`) in the [worker env](./configuration.md#workers-rig-etcocs-intelligenceworker-env); for Rig 2, see [switching the model](../operations/deploy-rig.md#switching-rig-2s-model).
 
 ## Responses and errors
 

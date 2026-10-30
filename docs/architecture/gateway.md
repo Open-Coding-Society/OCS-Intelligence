@@ -5,7 +5,7 @@ last_verified: 2026-09-18
 
 # The admission gateway
 
-OCS Intelligence is a classroom API in front of seven GTX 1070s. Those cards can run **one** serious 27B completion at a time, or **two** tiny 0.5B ones. They cannot run a lab of Copilot tabs. The admission gateway is the piece that makes that hardware usable by many students anyway.
+OCS Intelligence is a classroom API in front of seven GTX 1070s. Those cards can run **one** serious 27B completion at a time on Worker A, plus two `gemma4:26b` ones on Worker B. They cannot run a lab of Copilot tabs. The admission gateway is the piece that makes that hardware usable by many students anyway.
 
 It sits on EC2, in front of the GPU rig. Students still speak ordinary OpenAI Chat Completions. The rig still only sees as many live inferences as it can actually serve. Everyone else waits in a fair line — or gets a clean 429 when the line is full.
 
@@ -51,7 +51,7 @@ If the line is full, the gateway answers immediately:
 {"detail":{"error":{"message":"Too many requests. Please retry later.","type":"rate_limit_error","code":"rate_limit_exceeded"}}}
 ```
 
-HTTP **429**, `Retry-After: 15`. Measured live on 2026-09-18: seventh concurrent `qwen2.5:0.5b` stream, with six already in the system.
+HTTP **429**, `Retry-After: 15`. Measured live on 2026-09-18: seventh concurrent stream on lane B, with six already in the system (lane B was a 0.5B model then; it is `gemma4:26b` now).
 
 Close the tab and you leave the line. You do not keep a GPU slot warm for a ghost.
 
@@ -63,8 +63,8 @@ Two independent lanes, one per model. They do not steal slots from each other.
 
 | Lane | Model | GPUs | In flight | Waiting | Total HTTP connections | 7th / 6th request |
 |---|---|---|---:|---:|---:|---|
-| A | `qwen3.8:27b` | 5 | **1** | **4** | 5 | 6th → 429 |
-| B | `qwen2.5:0.5b` | 2 | **2** | **4** | 6 | 7th → 429 |
+| A | `qwen3.8:27b` | 4 | **1** | **4** | 5 | 6th → 429 |
+| B | `gemma4:26b` | 4 | **2** | **4** | 6 | 7th → 429 |
 
 Live check, same day ([evidence](../../evidence/captures/2026-09-18-gateway-concurrency.md)):
 
@@ -95,7 +95,7 @@ flowchart TB
     subgraph rig [GPU_rig]
         Orch[Orchestrator_9000]
         A[llama_server_27B]
-        B[llama_server_0.5B]
+        B[llama_server_gemma4]
     end
     Copilot -->|"HTTPS /v1/chat/completions"| Nginx
     Nginx -->|"127.0.0.1:9100"| Gw
@@ -187,7 +187,7 @@ EC2 already has the only public IP students use. Putting the line there means:
 - A future second rig is another upstream behind the same gateway, not a new student-facing URL.
 - Auth, 429, and keepalives stay on a host that can reach PyPI and stay up independently of the mining board.
 
-The orchestrator on the rig remains the model router (`qwen3.8:27b` → port 8081, `qwen2.5:0.5b` → 8082) and still injects the worker-only API key. Two thin layers, two jobs.
+The orchestrator on the rig remains the model router (`qwen3.8:27b` → port 8081, `gemma4:26b` → 8082) and still injects the worker-only API key. Two thin layers, two jobs.
 
 ---
 
@@ -197,7 +197,7 @@ Without the gateway, “lots of concurrent Copilot requests” means overlapping
 
 With it:
 
-- At most **one** 27B and **two** 0.5B generations touch silicon at once.
+- At most **one** 27B and **two** `gemma4:26b` generations touch silicon at once.
 - Up to four classmates per model have a real place in line, not a dropped TCP connection.
 - Past that, Copilot gets a standard 429 instead of a mystery timeout.
 - Closing a tab is polite: the next person moves up.

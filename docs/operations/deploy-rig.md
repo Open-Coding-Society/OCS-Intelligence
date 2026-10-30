@@ -93,14 +93,15 @@ Record the commit (`git rev-parse --short HEAD`). Rig 1 runs `972d231`. **Keep `
 
 ## 3. Model files
 
-Symlink Ollama's blobs instead of copying ~17 GB. Blob hashes: [hosts](../reference/hosts.md#model-files).
+Worker A's model: symlink Ollama's blob instead of copying ~17 GB. Blob hash: [hosts](../reference/hosts.md#model-files).
 
 ```bash
 mkdir -p /srv/ocs-intelligence/models /var/lib/ocs-intelligence /etc/ocs-intelligence
 B=/usr/share/ollama/.ollama/models/blobs
 ln -sf $B/sha256-f5f1dd8920d417aac2718b0bda3403da274301efdd6760b4f0f4b864ff2ad57d /srv/ocs-intelligence/models/qwen3.8-27b-q4_k_m.gguf
-ln -sf $B/sha256-c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515 /srv/ocs-intelligence/models/qwen2.5-0.5b.gguf
 ```
+
+Worker B's model (`gemma4:26b`) is a plain GGUF, not an Ollama blob: `/srv/ocs-intelligence/models/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf`, the file `infra/rig/worker-b.env.template` points at. Where it was downloaded from wasn't recorded. Download it into that directory (mode `0644`) and check its SHA-256 against its Hugging Face page, as in [switching Rig 2's model](#switching-rig-2s-model).
 
 ## 4. Workers
 

@@ -92,4 +92,5 @@ Same layout as Rig 1 for CUDA (`/usr/local/cuda-12.6/`), llama.cpp (`/opt/llama.
 | Symlink in `/srv/ocs-intelligence/models/` | Ollama blob | Size |
 |---|---|---|
 | `qwen3.8-27b-q4_k_m.gguf` | `sha256-f5f1dd8920d417aac2718b0bda3403da274301efdd6760b4f0f4b864ff2ad57d` | 16,810,714,464 B |
-| `qwen2.5-0.5b.gguf` | `sha256-c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515` | ~380 MB |
+
+Worker B's `gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf` is a plain file in the same directory, not an Ollama blob. Its source and size weren't recorded.

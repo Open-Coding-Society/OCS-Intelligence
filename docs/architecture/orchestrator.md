@@ -10,7 +10,7 @@ A small FastAPI service on the rig that turns "a request for model X" into "a re
 ## What it does
 
 1. **Authenticates** the student Bearer key against `PUBLIC_API_KEYS` ([`auth.py`](../../orchestrator/auth.py)). This is a second check: the gateway already checked the key, but anyone who reaches `:9000` directly over NetBird is still checked here.
-2. **Routes** by the `model` field ([`routing.py`](../../orchestrator/routing.py)): `qwen3.8:27b` → Worker A (`:8081`), `qwen2.5:0.5b` → Worker B (`:8082`). An unknown model gets a 404.
+2. **Routes** by the `model` field ([`routing.py`](../../orchestrator/routing.py)): `qwen3.8:27b` → Worker A (`:8081`), `gemma4:26b` → Worker B (`:8082`). An unknown model gets a 404.
 3. **Swaps keys.** It sends the worker-only `WORKER_API_KEY` to `llama-server` ([`proxy.py`](../../orchestrator/proxy.py)). Students never see the worker secret.
 4. **Polls worker health** every `HEALTH_INTERVAL_SECONDS` via llama.cpp's `/health` ([`health.py`](../../orchestrator/health.py)). `ok`, `loading model`, and `no slot available` all count as healthy. Anything else, or no answer, is unhealthy, and requests get 503.
 5. **Passes SSE through** without buffering, and stops streaming if the client disconnects.

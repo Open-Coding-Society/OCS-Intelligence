@@ -19,7 +19,7 @@ fi
 : "${OCS_BASE_URL:=https://ai.opencodingsociety.com/v1}"
 : "${OCS_API_KEY:?Set OCS_API_KEY in .env (see .env.example)}"
 
-MODEL="qwen2.5:0.5b"
+MODEL="gemma4:26b"
 STREAM=false
 MAX_TOKENS=80
 
