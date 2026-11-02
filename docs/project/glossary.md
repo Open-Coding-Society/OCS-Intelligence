@@ -21,6 +21,7 @@ Terms used in this repo. Plain-language definitions of the general terms come fr
 | **Lane** | The gateway's per-model line: an in-flight cap plus a waiting cap. |
 | **Latency / TTFT** | Time to first token: how long until the first word appears. "P95 ≤ 15 s" means 95 of 100 requests start within 15 s. |
 | **llama.cpp / `llama-server`** | The inference engine we run. `llama-server` is its OpenAI-compatible HTTP server. |
+| **`mastermac`** | The only Mac mini with a UI, and the one the corner's monitor and keyboard are for ([hardware](../architecture/hardware.md#mac-minis)). |
 | **NetBird** | WireGuard-based private overlay network connecting EC2, the rig, and operators. |
 | **NCCL** | NVIDIA's library for fast multi-GPU communication. Missing from our llama.cpp build. |
 | **OpenAI-compatible API** | Speaks the same HTTP format as OpenAI's Chat Completions, so Copilot and the OpenAI SDKs work unchanged. |

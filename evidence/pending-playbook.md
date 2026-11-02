@@ -25,7 +25,16 @@ Feeds Sprint 5 (orchestrator on the Mac minis). Follows [issue #30](https://gith
 - **Chosen:** autoinstall sticks, not PXE or Clonezilla ([decision 0011](../docs/decisions/0011-autoinstall-sticks-for-mac-minis.md)). Intel Macs netboot with Apple's BSDP, not standard PXE, and no report of it working on this model was found. Clonezilla clones share machine-id, SSH host keys and hostname, and fail on smaller disks.
 - **Built:** [`infra/macmini/`](../infra/macmini/): `build_iso.py` adds `/autoinstall.yaml` and the `autoinstall` kernel argument to the stock ISO. The install is offline, names the machine `ocs-intelligence-<serial>`, sets key-only SSH, and powers off. Guide: [flash the Mac minis](../docs/operations/flash-mac-minis.md).
 - **Tested (QEMU/KVM, OVMF, no network, the real `ubuntu-26.04.1-live-server-amd64.iso`, SHA-256 `cc8a95cd…`):** no prompts; install took 4.5 minutes and powered off. After boot: hostname `ocs-intelligence-c07test1g1j1` from the fake serial `C07TEST1G1J1`, in `/etc/hostname` and `/etc/hosts`; Ubuntu 26.04.1 LTS; apt sources on `archive.ubuntu.com` (`resolute`); key login worked; password login refused (`Permission denied (publickey)`); `en_US.UTF-8`, `America/Los_Angeles`; disk wiped into `/boot/efi` + `/`.
-- **Open:** not yet tried on a real Mac mini (boot picker "EFI Boot", Mac firmware, the real serial). Whether holding C boots the stick with no monitor. Whether any Mac mini has a Fusion Drive (two disks).
+- **Open:** not yet tried on a real Mac mini (boot picker "EFI Boot", Mac firmware, the real serial). Whether holding C boots the stick with no monitor. Whether any Mac mini has a Fusion Drive (two disks). The flashing is logged in the next entry.
+
+#### 2026-10-29: All Mac minis flashed; on 2026-10-30 most went on power in their own corner
+
+Feeds Sprint 5 (orchestrator on the Mac minis). Follows the entry above. All of this is reported by the team. Nobody captured it from the machines.
+
+- **Flashed:** the team started on Wednesday 2026-10-28 and finished all of the Mac minis on Thursday 2026-10-29 (31 to go by the 2026-10-27 count).
+- **Power:** on Friday 2026-10-30 the team connected them to power, all but 6.
+- **Space:** the same day, the team cleared a corner of the room. It now holds only the Mac minis, plus a monitor and keyboard for the `mastermac`, the only Mac mini with a UI.
+- **Open:** connect the last 6. Not recorded: whether holding C booted the sticks without a monitor, whether every hostname came out as `ocs-intelligence-<serial>` from the real serial, and whether any machine had a Fusion Drive. Network cabling isn't reported, so SSH key login on a real Mac mini is still unchecked. The serial → `macN` list and the renames are still to do ([guide](../docs/operations/flash-mac-minis.md#5-rename-them-later)).
 
 ### Networking and access
 

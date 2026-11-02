@@ -81,6 +81,10 @@ From `nvidia-smi` on 2026-10-19 ([evidence](../../evidence/captures/2026-10-19-r
 | 7 | GTX 1070 | `GPU-64ccc864-2ced-25a4-64bc-f23cd1f108dc` | `0F:00.0` |
 | 8 | GTX 1070 | `GPU-a512d941-05b9-654c-b47c-8cc3b03bfa1a` | `10:00.0` |
 
+## Mac minis
+
+As reported by the team on 2026-10-30. Not checked on the machines. The Mac minis have their own corner of the room, which holds only them plus a monitor and keyboard for the `mastermac`, the only one with a UI. How they were installed: [flash the Mac minis](../operations/flash-mac-minis.md). How far along they are: [status](../status.md).
+
 ## Why the hardware matters
 
 - **8 GB per card** limits model size. A 27B Q4 model (~16.8 GB) needs several cards.

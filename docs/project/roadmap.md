@@ -41,7 +41,7 @@ Small, and the three tasks build on them.
 
 | Item | Done when | Source |
 |---|---|---|
-| Mac mini host | The orchestrator runs on the Mac minis, with a decision record on why (vs. a rig or EC2) and what happens when that host fails. Starting point: the team's [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md) | Meeting §4.3 |
+| Mac mini host | The orchestrator runs on the Mac minis, with a decision record on why (vs. a rig or EC2) and what happens when that host fails. Starting point: the team's [Mac mini cluster guide](../../evidence/sprint5/macmini_golden_master_cluster_guide.md). So far: all flashed, most on power ([status](../status.md)) | Meeting §4.3 |
 | One provider for both rigs | One API in front of both rigs. Open WebUI uses one connection, Rig 2 goes through the wait line, and the `rigs-to-rigs` NetBird rule is removed | [Sprint 4 carry-over](../../evidence/sprint4/2026-10-15-inference-on-both-rigs.md#open-items), [0009](../decisions/0009-rig2-moe-behind-open-webui.md) |
 | Scheduling | Requests go to the healthy, capable, least-busy worker, with separate priorities for interactive chat and long jobs (grading, later) | Meeting §4.1, deck slides 07–08 |
 | Health checks and failover | The orchestrator drops an unhealthy model or rig and sends eligible requests elsewhere. A model-down drill and a rig-down drill each pass once and are written up | Meeting §5 |

@@ -7,7 +7,7 @@ last_verified: 2026-10-27
 
 By the end, every Mac mini runs Ubuntu Server 26.04.1 with user `ocs`, key-only SSH, and nothing else installed. Each one is named after its serial number for now, and gets renamed to `ocs-intelligence-macN` later. Packages come later too, with Ansible. Why sticks and not netboot or Clonezilla: [decision 0011](../decisions/0011-autoinstall-sticks-for-mac-minis.md). The kit is in [`infra/macmini/`](../../infra/macmini/).
 
-**Draft:** tested end to end in a QEMU VM, but not yet on a real Mac mini. Do [step 3](#3-test-one-mac-mini-with-a-monitor) before the rest.
+**Draft:** tested end to end in a QEMU VM. The team reports flashing all the Mac minis on 2026-10-28/29, but the results on real machines weren't recorded: whether holding C works without a monitor is still unknown, so keep using Option with a monitor until someone tries it. Log: [pending playbook](../../evidence/pending-playbook.md).
 
 ## How it works
 
