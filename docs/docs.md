@@ -56,6 +56,7 @@ Start here. Every doc in the repo is linked from this page, either directly or t
 | [Deploy the rig](./operations/deploy-rig.md) | CUDA, llama.cpp, workers, orchestrator |
 | [Deploy EC2](./operations/deploy-ec2.md) | Admission gateway and Nginx |
 | [Flash the Mac minis](./operations/flash-mac-minis.md) | Ubuntu Server on the Mac minis from autoinstall USB sticks |
+| [Tune Rig 1 speed](./operations/tune-rig1-speed.md) | Measure and tune the workers' llama.cpp settings using the GGUFs already on the rig |
 
 ## Security and testing
 
