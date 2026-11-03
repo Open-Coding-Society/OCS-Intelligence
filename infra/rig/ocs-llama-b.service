@@ -21,7 +21,8 @@ ExecStart=/opt/llama.cpp/bin/llama-server \
   --cont-batching \
   --flash-attn auto \
   --slots \
-  --warmup
+  --warmup \
+  $LLAMA_EXTRA_ARGS
 Restart=on-failure
 RestartSec=5
 TimeoutStartSec=300

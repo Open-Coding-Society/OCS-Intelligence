@@ -1,13 +1,13 @@
 ---
-status: draft
-last_verified: 2026-11-02
+status: current
+last_verified: 2026-11-03
 ---
 
 # How to tune Rig 1 inference speed
 
 By the end, Rig 1's two workers will run the fastest settings you measured, using the GGUFs already on the rig and with no new downloads or rebuilds.
 
-Checked against the repo's unit and env copies on 2026-11-02. **None of this has been run on the rig yet.** Flag names and log strings come from upstream llama.cpp and may differ on the commit Rig 1 runs ([deploy the rig](./deploy-rig.md)), so step 1 checks them. Treat every expected gain here as a hypothesis until you've measured it.
+First run on Rig 1 on 2026-11-03 ([results](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)), on commit `972d231`, and stopped early. Steps 2, 5 and 6 were applied, step 3 wasn't needed, and step 4 was rejected on Worker A. Not yet run: step 4 and step 6 on Worker B, and step 7. To retune, start from the [settings now in `infra/rig/`](../../infra/rig/). Treat any gain you haven't measured as a hypothesis.
 
 ## What limits speed
 
@@ -18,7 +18,7 @@ Checked against the repo's unit and env copies on 2026-11-02. **None of this has
 | Prompt prefill | This is where layer split can use several cards at once (pipeline parallelism), if VRAM allows it | This is probably the biggest gain, and it shortens the wait for the first token |
 | Rig CPU and RAM ([hardware](../architecture/hardware.md#platform)) | Two cores and 16 GB are shared by both workers, the orchestrator, and Open WebUI | Don't let host caches or thread counts fight each other |
 
-`gemma4:26b` isn't bound by the same ceiling. Its A4B name suggests a mixture-of-experts model that reads only part of its weights per token. Its speed has [never been recorded](../status.md#components), so measure it before comparing the two.
+`gemma4:26b` isn't bound by the same ceiling. Its A4B name suggests a mixture-of-experts model that reads only part of its weights per token. It generates about [27 tok/s](../../evidence/captures/2026-11-03-rig1-speed-tuning.md).
 
 ## Before you start
 
@@ -113,6 +113,8 @@ Checked against the repo's unit and env copies on 2026-11-02. **None of this has
 
 ### 2. Add a place for extra flags
 
+Already done on Rig 1 and in the [repo's units](../../infra/rig/) since 2026-11-03. These commands show what changed, and you don't need to run them again there.
+
 The Rig 1 units have no `$LLAMA_EXTRA_ARGS` hook, unlike [Rig 2's](../../infra/rig2/ocs-llama.service). Add one:
 
 ```bash
@@ -152,7 +154,7 @@ Context size only changes memory use, so this helps speed by freeing VRAM. The c
 
 ### 4. Increase the prefill batch size
 
-Do this only if the cards have VRAM to spare. It should raise `prefill_tok_s` and leave `gen_tok_s` alone.
+Do this only if the cards have VRAM to spare. It may raise `prefill_tok_s`, but measure it first: on Worker A, `-ub 1024` *lowered* prefill at both 1.8k and 7.8k prompt tokens, and caused the pipeline fallback at `CONTEXT_SIZE=163840` ([results](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)). Worker B is untested.
 
 ```bash
 LLAMA_EXTRA_ARGS=-ub 1024
@@ -162,10 +164,10 @@ If that helps and VRAM still has room, try `-ub 2048 -b 2048`. Reject a value if
 
 ### 5. Tune the prompt cache
 
-Coding agents resend a long prefix on every turn, so this affects them most. The upstream default lets each worker keep up to 8 GB of prompt states in host RAM, which is too much for two workers on this rig. Add these flags to whatever you kept from the earlier steps:
+Coding agents resend a long prefix on every turn, so this affects them most. The upstream default lets each worker keep up to 8 GB of prompt states in host RAM, which is too much for two workers on this rig. Each 20k-token state on Worker A takes about 1.7 GB, so 2 GB holds only one of them. `--cache-reuse` is skipped because this build disables it on these contexts. Add this flag to whatever you kept from the earlier steps:
 
 ```bash
-LLAMA_EXTRA_ARGS=--cache-ram 2048 --cache-reuse 256
+LLAMA_EXTRA_ARGS=--cache-ram 4096
 ```
 
 The normal benchmark turns caching off, so use cache mode here:
@@ -177,19 +179,19 @@ sudo python3 /root/bench-worker.py a 20000 cache
 | Line | Good result |
 |---|---|
 | `A repeat` | Few `prompt_tokens`, and `prompt_ms` far below `A cold`. Otherwise the cache isn't being reused |
-| `A after B` | Below `A cold`. `B cold` evicted A from Worker A's only slot, so this measures restoring from RAM |
+| `A after B` | Few `prompt_tokens`. `B cold` evicted A from Worker A's only slot, so this measures restoring from RAM |
 
-Then repeat on Worker A with `--cache-ram 0`. Restoring a large cached state crosses the PCIe ×1 risers, so it can cost more than prefilling again when students take turns. Keep whichever gives the lower `A after B`. Worker B has two slots, so B may land in the other slot and this eviction test tells you less there.
+**Don't judge a restore by `prompt_ms`.** It leaves out the time to copy the saved state back over the PCIe ×1 risers. On Worker A at 20k tokens it showed 1.9 s when the request really took 19.3 s, so time the whole request ([the script used](../../evidence/captures/2026-11-03-rig1-speed-tuning.md#wall-clock-cache-script)). That's still about 3.4× faster than the 66 s a cold prompt takes. Worker B has two slots, so B may land in the other slot and this eviction test tells you less there.
 
 ### 6. Try speculative decoding
 
 This needs no extra model, and it suits code rewrites and edits, which repeat text already in the prompt. Add to what you kept:
 
 ```bash
-LLAMA_EXTRA_ARGS=--spec-type ngram-mod --spec-ngram-size-n 24 --draft-min 48 --draft-max 64
+LLAMA_EXTRA_ARGS=--spec-type ngram-mod --spec-ngram-mod-n-match 24 --spec-ngram-mod-n-min 48 --spec-ngram-mod-n-max 64
 ```
 
-`echo` should jump. Keep this only if `new` drops by less than about 5%, because wasted drafts slow normal generation.
+`echo` should jump. Keep this only if free generation drops by less than about 5%, because wasted drafts slow normal generation. **`new` can't show that on its own:** its prompt is repetitive, so its text gets drafted too (it rose from 8.7 to 12.8 tok/s on Worker A). Compare with and without the flag on varied prompts at a non-zero temperature ([the script used](../../evidence/captures/2026-11-03-rig1-speed-tuning.md#varied-prompt-script)).
 
 ### 7. Test CPU threads
 

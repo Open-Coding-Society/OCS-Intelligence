@@ -22,7 +22,8 @@ ExecStart=/opt/llama.cpp/bin/llama-server \
   --flash-attn on \
   --metrics \
   --slots \
-  --warmup
+  --warmup \
+  $LLAMA_EXTRA_ARGS
 Restart=on-failure
 RestartSec=5
 TimeoutStartSec=600
