@@ -33,17 +33,19 @@ The split started as 5 + 2 GPUs with a 0.5B model on Worker B. On 2026-10-16 the
 |---|---|
 | `--split-mode layer --tensor-split …` | Layers are spread evenly across the group's GPUs |
 | `--n-gpu-layers 999` | Everything on the GPU |
-| `--parallel 2 --cont-batching` | 2 slots per worker. The gateway still admits only 1 (A) or 2 (B) at a time. |
+| `--parallel 1` (A), `--parallel 2` (B), `--cont-batching` | Slots per worker. The gateway admits 1 (A) or 2 (B) at a time. |
 | `--flash-attn on` | **Must have a value** in this llama.cpp version. A bare `--flash-attn` swallowed `--metrics` as its value and crash-looped the service. |
 | `--api-key ${WORKER_API_KEY}` | Only the orchestrator knows this secret |
 | `--metrics --slots` | Prometheus metrics and slot inspection, for future monitoring |
+| `--cache-ram 4096` | Caps each worker's saved prompts in host RAM. The 8 GB default on both workers can exceed the rig's 16 GB, and the kernel's OOM killer stopped `llama-server` 8 times from 2026-10-20 to 2026-11-02 ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)) |
+| `--spec-type ngram-mod …` (A only) | Drafts tokens by matching earlier text, with no extra model. It speeds up copying and editing existing code and didn't slow free generation in the same test ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)) |
 | `UnsetEnvironment=GGML_CUDA_P2P` | Makes sure forced CUDA peer-to-peer isn't turned on. Some motherboard/IOMMU combinations fail or corrupt output with it. Only enable it after P2P tests pass for every GPU pair and a correctness soak passes ([original plan](../archive/inference-orchestrator-deployment-4plus3.md)). |
 
 ## Performance
 
 Measured numbers: [deployment log](../../evidence/captures/2026-09-18-rig1-deployment-log.md#measured-performance-live-worker-direct) (worker-direct) and [e2e capture](../../evidence/captures/2026-09-17-public-api-e2e.md) (through the public API). The short version:
 
-- **Worker B (`gemma4:26b`) has no recorded speed yet.** The 80–97 tok/s in the logs below were measured on the old 0.5B model, so they don't describe it ([status](../status.md)).
-- **Worker A is slower than the baseline.** About 8.6–8.7 tok/s vs 12.5, even though it has fewer hops. This is an **open issue**. The suspects are the missing NCCL and too few measurements ([status](../status.md#open-issue-worker-a-is-slower-than-baseline)). Research ideas from the deck (slide 20): speculative decoding, quantization levels, YaRN.
+- **Worker B (`gemma4:26b`):** 27.4 tok/s generation and about 440 tok/s prefill on a 1.9k-token prompt, worker-direct, 2026-11-03 ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)). The 80–97 tok/s in the older logs were measured on the old 0.5B model.
+- **Worker A is slower than the baseline.** About 8.6–8.7 tok/s vs 12.5, even though it has fewer hops. A repeat measurement on 2026-11-03 gave the same 8.7 tok/s for free generation (8.3 at 7.8k prompt tokens), and 37.2 tok/s when copying text with speculative decoding on ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)). This is an **open issue**. The suspects are the missing NCCL and too few measurements ([status](../status.md#open-issue-worker-a-is-slower-than-baseline)). Research ideas from the deck (slide 20): speculative decoding, quantization levels, YaRN.
 
 `qwen3.8:27b` is a reasoning model. It emits `reasoning_content` before `content`, which uses up `max_tokens` ([API](../reference/api.md#models)).

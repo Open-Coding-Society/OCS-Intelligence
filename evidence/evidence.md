@@ -52,5 +52,6 @@ Create `benchmarks/` and `weekly/` when you add their first file.
 | 2026-10-23 | [Mac mini golden master and ML cluster guide](./sprint5/macmini_golden_master_cluster_guide.md), Sprint 5: a step-by-step plan for imaging 20 Late 2014 Mac minis into a Slurm/Ray/llama.cpp-RPC cluster. Written by the team; not yet run or checked against the hardware |
 | 2026-10-29 | [EC2 gateway: Rig 2 lane](./captures/2026-10-29-ec2-gateway-rig2-lane.md): the gateway routes `qwen3.6:35b-a3b` to Rig 2 with Rig 2's Open WebUI key; all three models reachable with the student key |
 | 2026-10-29 | [Playbook: one API, both rigs](./sprint5/2026-10-29-one-api-both-rigs.md) ([PDF](./sprint5/2026-10-29-one-api-both-rigs.pdf)), Sprint 5, done: the Rig 2 lane, `infra/` re-synced with all three hosts (env files mirrored, keys as `CHANGE_ME`), and the student key found in public git history |
+| 2026-11-03 | [Rig 1 speed tuning](./captures/2026-11-03-rig1-speed-tuning.md): baselines for both workers, 4 GB prompt cache caps, speculative decoding on Worker A (37.2 tok/s copying text, free generation unchanged); `-ub 1024` rejected |
 
 Add a row for each new record, newest last. This week's work that a playbook should cover goes in [pending playbook material](./pending-playbook.md), sorted by week and category, until a playbook picks it up.

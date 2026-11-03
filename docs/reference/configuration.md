@@ -69,6 +69,7 @@ Templates: [`infra/rig/worker-a.env.template`](../../infra/rig/worker-a.env.temp
 | `DEFAULT_MODEL_ID` / `SPEED_MODEL_ID` | `qwen3.8:27b` | `gemma4:26b` | `--alias`, the public model name |
 | `CONTEXT_SIZE` | `163840` | `256000` | `--ctx-size` |
 | `TENSOR_SPLIT` | `1,1,1,1` | `1,1,1,1` | `--tensor-split` across the visible GPUs |
+| `LLAMA_EXTRA_ARGS` | `--cache-ram 4096 --spec-type ngram-mod --spec-ngram-mod-n-match 24 --spec-ngram-mod-n-min 48 --spec-ngram-mod-n-max 64` | `--cache-ram 4096` | Extra `llama-server` flags, split into separate arguments. Chosen by measurement ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)) |
 | `WORKER_API_KEY` | secret | same secret | `--api-key` |
 
-Fixed flags in both units: `--n-gpu-layers 999 --split-mode layer --parallel 2 --cont-batching --slots --warmup`. Worker A also has `--flash-attn on --metrics`; Worker B has `--flash-attn auto` and no `--metrics` (as deployed since 2026-10-16). Why each worker is set up this way: [workers](../architecture/workers.md).
+Fixed flags in both units: `--n-gpu-layers 999 --split-mode layer --cont-batching --slots --warmup $LLAMA_EXTRA_ARGS`. Worker A also has `--parallel 1 --flash-attn on --metrics`; Worker B has `--parallel 2 --flash-attn auto` and no `--metrics` (as deployed since 2026-10-16). Why each worker is set up this way: [workers](../architecture/workers.md).

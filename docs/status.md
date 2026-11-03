@@ -1,11 +1,11 @@
 ---
 status: current
-last_verified: 2026-10-19
+last_verified: 2026-11-03
 ---
 
 # Status
 
-What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. EC2 was last checked and changed over NetBird SSH on **2026-10-29** (gateway Rig 2 lane, [evidence](../evidence/captures/2026-10-29-ec2-gateway-rig2-lane.md)). Rig 1 was inspected read-only and Rig 2 was checked and changed over NetBird SSH on **2026-10-19** ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). Rig 1's network link was checked read-only on **2026-10-22**.
+What is running **right now** and what's broken. This is the only page for time-sensitive state. Everything else lives in the linked docs. EC2 was last checked and changed over NetBird SSH on **2026-10-29** (gateway Rig 2 lane, [evidence](../evidence/captures/2026-10-29-ec2-gateway-rig2-lane.md)). Rig 1 was inspected read-only and Rig 2 was checked and changed over NetBird SSH on **2026-10-19** ([evidence](../evidence/captures/2026-10-19-rig2-ninth-gpu-driver-580.md)). Rig 1's network link was checked read-only on **2026-10-22**. Rig 1's workers were benchmarked and retuned on **2026-11-03** ([evidence](../evidence/captures/2026-11-03-rig1-speed-tuning.md)).
 
 **How it works:** [architecture overview](./architecture/overview.md) · **Where things are:** [hosts](./reference/hosts.md), [configuration](./reference/configuration.md), [hardware](./architecture/hardware.md) · **How we got here:** [deployment log](../evidence/captures/2026-09-18-rig1-deployment-log.md) · **What's next:** [roadmap](./project/roadmap.md)
 
@@ -16,8 +16,8 @@ What is running **right now** and what's broken. This is the only page for time-
 | CUDA 12.6 toolkit on rig (`sm_61`/Pascal support) | ✅ Installed, verified |
 | `llama.cpp` built with CUDA backend | ✅ Built. Rig 1 now has 8 GPUs, driver 580.178.04 (2026-10-19) |
 | Model symlinks (`/srv/ocs-intelligence/models/`) | ✅ Done |
-| Worker A (`qwen3.8:27b`, 4 GPUs, port 8081) | ✅ Running (2026-10-19) |
-| Worker B (`gemma4:26b`, 4 GPUs, port 8082) | ✅ Running (2026-10-19). Replaced the earlier 0.5B model on 2 GPUs on 2026-10-16 (config file date); who changed it and its speed aren't recorded. The original 5 + 2 split is kept as history in [0003](./decisions/0003-5-plus-2-gpu-split.md) |
+| Worker A (`qwen3.8:27b`, 4 GPUs, port 8081) | ✅ Running (2026-11-03). 8.7 tok/s generation, about 194 tok/s prefill on a 1.8k-token prompt. Since 2026-11-03: 4 GB prompt cache cap and speculative decoding, 37.2 tok/s when copying text ([evidence](../evidence/captures/2026-11-03-rig1-speed-tuning.md)) |
+| Worker B (`gemma4:26b`, 4 GPUs, port 8082) | ✅ Running (2026-11-03). 27.4 tok/s generation, about 440 tok/s prefill on a 1.9k-token prompt. Since 2026-11-03: 4 GB prompt cache cap ([evidence](../evidence/captures/2026-11-03-rig1-speed-tuning.md)). Replaced the earlier 0.5B model on 2 GPUs on 2026-10-16 (config file date); who changed it isn't recorded. The original 5 + 2 split is kept as history in [0003](./decisions/0003-5-plus-2-gpu-split.md) |
 | Ollama (old single-worker path) | 🛑 Stopped (freed for the two new workers) |
 | FastAPI orchestrator (on the rig, `:9000`) | ✅ Running, healthy; routes both models |
 | EC2 admission gateway (`127.0.0.1:9100`) | ✅ Running; auth + wait line, then proxy. Since 2026-10-29 it also routes `qwen3.6:35b-a3b` to Rig 2, sending Rig 2's Open WebUI key, so the one student key reaches all three models ([0012](./decisions/0012-gateway-routes-rig2-with-stored-key.md), [evidence](../evidence/captures/2026-10-29-ec2-gateway-rig2-lane.md)) |
@@ -36,10 +36,11 @@ This is the one thing standing between "technically works" and "actually done." 
 1. **Missing NCCL.** The build warned that without NCCL, multi-GPU reductions fall back to a slower path. Installing NCCL would need ~474 MB of downloads, and only CUDA 13.3/13.4-linked packages are available, not CUDA 12.6 (a version-mismatch risk). **NCCL is deferred** until after the public `/v1/` path is live.
 2. **One short, cold request isn't representative.** Only one very short prompt went through Worker A. `llama-bench` (already built and installed) would give a cleaner, repeatable number that separates decode speed from prompt processing and warm-up.
 
-**Neither has been tried yet.** Until this is resolved, the 5+2 split is a regression on the model most students will actually use ([decision 0003](./decisions/0003-5-plus-2-gpu-split.md)).
+**Update, 2026-11-03:** the second explanation is ruled out. Repeated worker-direct runs on the current 4-GPU Worker A give the same 8.7 tok/s ([evidence](../evidence/captures/2026-11-03-rig1-speed-tuning.md)), so the number is real. NCCL still hasn't been tried. During those runs Worker A's cards intermittently reported the software power cap (`0x4`, about 190 W). Whether that limits speed hasn't been tested. Until this is resolved, Worker A remains below the baseline for free generation ([decision 0003](./decisions/0003-5-plus-2-gpu-split.md)).
 
 ## Other things worth knowing
 
+- **Rig 1 ran out of host memory repeatedly.** The kernel's OOM killer stopped `llama-server` 8 times from 2026-10-20 to 2026-11-02, dropping any requests in progress each time. Both workers now cap their prompt cache at 4 GB (2026-11-03). That's the likely fix, but it hasn't been proven under real load: check `journalctl -k | grep 'Out of memory'` after the next busy class ([evidence](../evidence/captures/2026-11-03-rig1-speed-tuning.md)).
 - **NetBird SSH to EC2 works again** (2026-10-29, from a macOS client on NetBird 0.82.0; it failed on 2026-10-20 from 0.77.1). `scp` doesn't (`Received message too long`): copy files with `tar -cf - … | ssh … 'tar -xf - -C …'`.
 - **Mac minis: all flashed, all but 6 on power** (reported by the team, 2026-10-30, not checked on the machines; [log](../evidence/pending-playbook.md)). Flashing finished on 2026-10-29. Network cabling isn't reported. Where they are: [hardware](./architecture/hardware.md#mac-minis).
 - **Both rigs' Ethernet links at 1 Gb/s.** Rig 1 was at 100 Mb/s on 2026-10-20 and was at 1 Gb/s on 2026-10-22, after six link drops that morning ([evidence](../evidence/captures/2026-10-22-rig1-gigabit-link.md)). Rig to rig, `iperf3` measures line rate, 934 Mb/s each way ([evidence](../evidence/captures/2026-10-22-rig-to-rig-iperf3.md)). **Internet is the bottleneck:** about 60–90 Mb/s each way, shared by both rigs, capped upstream of the router, most likely at the Mac mini's Wi-Fi link to the school network (2026-10-23, [evidence](../evidence/captures/2026-10-23-rig-internet-throughput.md), [network](./architecture/network.md#the-ocs-lan)).

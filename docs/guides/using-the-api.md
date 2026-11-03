@@ -25,7 +25,7 @@ Never paste the key into issues, PRs, chat logs, or code.
 
 ## Pick a model
 
-- `gemma4:26b` is the general-purpose model on lane B. Its speed hasn't been measured yet.
+- `gemma4:26b` is the general-purpose model on lane B. It generates about 27 tok/s, about three times `qwen3.8:27b` ([evidence](../../evidence/captures/2026-11-03-rig1-speed-tuning.md)).
 - `qwen3.8:27b` is slow (~9 tok/s). It **thinks before answering**, so give it `max_tokens` of 80 or more, or the whole budget can go to hidden `reasoning_content`.
 
 ## curl

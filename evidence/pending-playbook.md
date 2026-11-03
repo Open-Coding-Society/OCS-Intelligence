@@ -13,6 +13,21 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 **Sprint 4 was written up on 2026-10-23.** Its hardware and inference entries moved into [the hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) and [the inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Everything below feeds Sprint 5 ([plan](../docs/project/roadmap.md#sprint-5-plan)).
 
+## Week of 2026-11-02
+
+### Inference and models
+
+#### 2026-11-03: Rig 1 speed tuning, and the cause of its OOM kills
+
+Feeds the next playbook on inference. Followed [the tuning guide](../docs/operations/tune-rig1-speed.md), and cut short at the operator's request. Proof: [capture](./captures/2026-11-03-rig1-speed-tuning.md).
+
+- **Asked:** run the tuning guide on Rig 1, with no new downloads or rebuilds.
+- **Found:** Worker A generates 8.7 tok/s and Worker B 27.4 tok/s, the first recorded speed for `gemma4:26b`. The kernel's OOM killer stopped `llama-server` 8 times from 2026-10-20 to 2026-11-02. A restart of Worker A freed about 7.5 GB of host RAM.
+- **Changed:** added a `$LLAMA_EXTRA_ARGS` hook to both units. Both workers: `--cache-ram 4096` (down from the 8 GB default). Worker A: `ngram-mod` speculative decoding.
+- **Result:** Worker A copies text at 37.2 tok/s, up from 8.6, and free generation is unchanged (8.83 vs 8.75 tok/s). The 4 GB cap restored an evicted 20k-token prompt in 19.3 s, the same as the 8 GB default and against about 66 s cold. A 2 GB cap holds only one state that size, so it fell back to a full 66 s.
+- **Rejected:** `-ub 1024` on Worker A: prefill fell from 194 to 138 tok/s (1.8k tokens) and from 335 to 286 tok/s (7.8k tokens). `--cache-reuse`: this build disables it on this context.
+- **Open:** not tested: `-ub` changes on Worker A below 512, Worker B batch size and speculative decoding, CPU threads, `--flash-attn on` on Worker B. Whether the cap ends the OOM kills needs a busy class to show. Worker A's speculative gain on real agent traffic isn't measured.
+
 ## Week of 2026-10-26
 
 ### Rigs and hardware
