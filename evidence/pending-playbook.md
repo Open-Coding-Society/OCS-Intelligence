@@ -45,8 +45,13 @@ Follows the 2026-11-12 entry below.
     - the setup key was on the command line (now `--setup-key-file`, a root-only file that's deleted afterwards)
     - `%` in a `.env` value would break the lookup
 - **Rename:** `macmini_number: 25` in `host_vars`, then `--tags hostname` (briefly `macmini-0` by mistake; the mastermac is a different machine, Post-it 0). cloud-init is disabled on the installed system (`/etc/cloud/cloud-init.disabled`), so it can't reset the name. NetBird keeps the name a peer joined with, so the peer was renamed through the API (`ocs-intelligence-macmini-25.netbird.cloud`). Machines named by the FIX stick before joining won't need that.
+- **Reboot over Wi-Fi only:** rebooted with the cable out. It came back on its own in 83 s on Wi-Fi at the **same** address (.187), so the MAC-based client ID kept it. Name, NetBird (`100.75.4.11`), the power-on service, mbpfan, zram and Ray were all fine after.
+- **Router (read-only):** logged into the Flint over SSH. Its DHCP pool is `.100`–`.249`, and the rigs already have reservations at `.112` and `.213` ([network](../docs/architecture/network.md#dhcp-on-the-flint)). Plan, agreed in principle but not applied: reserve Mac mini N at `.10+N` wired and `.50+N` Wi-Fi, outside the pool, generated from a serial-to-number table the team is writing. Three other Mac minis are on the LAN running Ubuntu 24.04 (`ubuntu-macmini` ×2, `intelligence-Macmini7-1`). They refuse the stick's key, so they aren't stick-installed.
+- **Naming:** silver's Post-it is 25. The mastermac is a different machine, Post-it 0.
 - **Open:**
-  - reboot and power-cut tests with the cable out
+  - power-cut test with the cable out
+  - serial-to-number table, so the playbook names machines without the stick's prompt
+  - router reservations from it
   - a Ray cluster (head node on the mastermac, `macmini-0`, plus worker services)
   - wired vs Wi-Fi for Ray traffic
   - an apt and Python package cache before the other 30 run

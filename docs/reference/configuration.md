@@ -16,6 +16,8 @@ Copy [`.env.example`](../../.env.example) to `.env`. Read by `scripts/demo.py`, 
 | `OCS_BASE_URL` | `https://ai.opencodingsociety.com/v1` | API base URL |
 | `OCS_API_KEY` | — (required) | Student key. Ask an operator. |
 | `NETBIRD_API_TOKEN` | — (operators only) | NetBird personal access token for the management API (`https://api.netbird.io`). Read by [`infra/netbird/apply.py`](../../infra/netbird/apply.py). Needs an **admin** service user; a `user`-role token gets 403 on writes. |
+| `MACMINI_SUDO_PASSWORD`, `MACMINI_WIFI_SSID`, `MACMINI_WIFI_PASSWORD`, `NETBIRD_MACMINI_SETUP_KEY` | — (operators only) | Read by the Mac mini playbook ([set up the Mac minis](../operations/set-up-mac-minis.md)): `ocs`'s sudo password, the `OCS_Intel` Wi-Fi the Mac minis join, and the NetBird setup key they join with. |
+| `FLINT_ADMIN_PASSWORD` | — (operators only) | Admin password of the GL.iNet Flint 2 (web UI at `http://192.168.8.1`, and SSH as `root`). See [network: DHCP on the Flint](../architecture/network.md#dhcp-on-the-flint). |
 
 ## Admission gateway (EC2, `/etc/ocs-gateway/gateway.env`)
 

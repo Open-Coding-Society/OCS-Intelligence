@@ -43,6 +43,21 @@ GL.iNet Flint 2 (GL-MT6000): OCS LAN 192.168.8.0/24, admin 192.168.8.1
 - **Speeds:** each rig links at 1 Gb/s, rig to rig carries 934 Mb/s each way, and the router answers in ~0.5 ms. The internet is the bottleneck: ~60–90 Mb/s each way, **shared** by everything on the LAN (~84 Mb/s with both rigs at once). Every byte to the internet crosses the Mac mini's single Wi-Fi link. The hops behind the Flint weren't measured separately.
 - **The LAN is shared with other groups.** Their devices are on the same `192.168.8.0/24` as the rigs. The orchestrators bind `0.0.0.0:9000` with no host firewall, so those devices can likely reach them (inferred, not tested). A request still needs a key, but Rig 1 accepts the shared student key, so any student's key works from the LAN and skips the EC2 wait line ([hosts](../reference/hosts.md#ports), audit S2 in the [Sprint 5 plan](../project/roadmap.md#sprint-5-plan)).
 - **Planned, not built:** a WireGuard tunnel from the Flint to the EC2 relay ([pending playbook](../../evidence/pending-playbook.md), Sprint 5).
+### DHCP on the Flint
+
+Read from the router over SSH on 2026-11-13 (firmware 4.9.0), nothing changed:
+
+| Setting | Value |
+|---|---|
+| LAN | `192.168.8.1/24` (netmask `255.255.255.0`) |
+| DHCP pool | `.100`–`.249` (`start 100`, `limit 150`), 12 h leases |
+| Reserved | Rig 1 `.112`, Rig 2 `.213` (by MAC; who set them isn't recorded) |
+| Free, outside the pool | `.2`–`.99` |
+
+- **Access:** web UI `http://192.168.8.1`, or `ssh root@192.168.8.1`. Both take `FLINT_ADMIN_PASSWORD` ([configuration](../reference/configuration.md)). It's OpenWrt underneath: DHCP is `uci show dhcp`, current leases are `/tmp/dhcp.leases`.
+- **Changing it:** back up first (`uci export dhcp > /root/dhcp.backup-<date>`), only add entries, and reload with `/etc/init.d/dnsmasq reload`, which keeps current leases. This router carries the rigs and other groups' devices.
+- **Planned, not applied:** reserve Mac mini N at `.10+N` wired and `.50+N` Wi-Fi (`.10`–`.40` and `.50`–`.80`). That's outside the pool, so the router never hands these addresses to anything else. The list will be generated from the serial-to-number table and the MACs that `inventory.py` reads, not typed. Widening the LAN to a /23 or /22 would give more room, but it isn't needed (31 × 2 = 62 addresses) and would change every device on the LAN.
+
 - **Single points of failure** ([routing playbook](../../evidence/sprint4/2026-10-22-rig-routing.md#open-items)): the Mac mini, the pinned school access point, its out-of-tree `wl` Wi-Fi driver, and EC2.
 
 ## NetBird
