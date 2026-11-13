@@ -1,6 +1,11 @@
 # Settings for every Mac mini. Secrets are read from the repo-root .env (gitignored),
 # never written here.
 ocs_env_file: "{{ playbook_dir }}/../../../.env"
+# Host keys checked by machine name, not IP (addresses move). inventory.py keeps the file.
+ansible_ssh_common_args: >-
+  -o HostKeyAlias={{ inventory_hostname }}
+  -o UserKnownHostsFile=~/.ssh/known_hosts_ocs_macminis
+  -o StrictHostKeyChecking=yes
 ansible_become_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_SUDO_PASSWORD', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
 ocs_wifi_ssid: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_SSID', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
 ocs_wifi_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_PASSWORD', type='properties', file=ocs_env_file, default='', interpolation=false) }}"

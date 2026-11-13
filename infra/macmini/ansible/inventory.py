@@ -6,6 +6,12 @@ log in as ocs with your key, and keep the machines that report Macmini7,1.
 Each one is named by its hostname, and Ansible connects to its wired address
 when it has one (the Wi-Fi address otherwise), as reported by the machine.
 
+Host keys are remembered by machine name, not IP, in ~/.ssh/known_hosts_ocs_macminis
+(DHCP moves addresses between machines, so an IP-keyed entry would go stale).
+A machine's key is trusted on first sight; after that, a machine claiming a
+known name with a different key (reflashed, or not ours) is left out and
+reported. To accept a reflashed one, delete its line from that file.
+
   ./inventory.py --list            # what Ansible sees (JSON)
   ./inventory.py --table           # the same, readable
 
@@ -22,11 +28,14 @@ import re
 import socket
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 LAN = os.environ.get("OCS_LAN", "192.168.8.0/24")
 USER = "ocs"
 MODEL = "Macmini7,1"
+KNOWN = Path(os.environ.get("OCS_KNOWN_HOSTS", Path.home() / ".ssh/known_hosts_ocs_macminis"))
 # hostname, model, then "iface addr/prefix" for each IPv4 address
 PROBE = (
     "hostname; cat /sys/class/dmi/id/product_name; "
@@ -42,34 +51,93 @@ def ssh_open(ip: str) -> bool:
         return False
 
 
-def probe(ip: str) -> dict | None:
+def load_known() -> dict[str, tuple[str, str]]:
+    """name -> (key type, key) from KNOWN."""
+    known = {}
+    if KNOWN.exists():
+        for line in KNOWN.read_text().splitlines():
+            parts = line.split()
+            if len(parts) == 3 and not line.startswith("#"):
+                known[parts[0]] = (parts[1], parts[2])
+    return known
+
+
+def keyscan(ip: str) -> tuple[str, str] | None:
     try:
-        out = subprocess.run(
-            ["ssh", "-n", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=accept-new", "-o", "LogLevel=ERROR",
-             f"{USER}@{ip}", PROBE],
-            capture_output=True, text=True, timeout=15).stdout.splitlines()
+        out = subprocess.run(["ssh-keyscan", "-T", "3", "-t", "ed25519", ip],
+                             capture_output=True, text=True, timeout=10).stdout
     except subprocess.TimeoutExpired:
         return None
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and not line.startswith("#"):
+            return parts[1], parts[2]
+    return None
+
+
+def probe(ip: str, name_of_key: dict[str, str]) -> dict | None:
+    """The Mac mini at ip, or None (not a Mac mini, our key refused, or no answer).
+
+    Connects pinned to the key ssh-keyscan just saw, so what it reports came
+    from the machine holding that key. Whether the key is trusted for that name
+    is decided afterwards, in discover().
+    """
+    key = keyscan(ip)
+    if not key:
+        return None
+    alias = name_of_key.get(key[1], f"unverified-{ip}")
+    with tempfile.NamedTemporaryFile("w", suffix=".known_hosts") as kh:
+        kh.write(f"{alias} {key[0]} {key[1]}\n")
+        kh.flush()
+        try:
+            out = subprocess.run(
+                ["ssh", "-n", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                 "-o", "StrictHostKeyChecking=yes", "-o", f"UserKnownHostsFile={kh.name}",
+                 "-o", "GlobalKnownHostsFile=/dev/null", "-o", f"HostKeyAlias={alias}",
+                 "-o", "LogLevel=ERROR", f"{USER}@{ip}", PROBE],
+                capture_output=True, text=True, timeout=15).stdout.splitlines()
+        except subprocess.TimeoutExpired:
+            return None
     if len(out) < 2 or out[1].strip() != MODEL:
         return None
     addrs = dict(line.split()[:2] for line in out[2:] if len(line.split()) >= 2)
     wired = [a.split("/")[0] for i, a in addrs.items() if i.startswith("en")]
     wifi = [a.split("/")[0] for i, a in addrs.items() if i.startswith("wl")]
-    return {"name": out[0].strip(), "found_at": ip,
+    return {"name": out[0].strip(), "found_at": ip, "key": key,
             "ansible_host": (wired or wifi or [ip])[0],
             "wired_ip": wired[0] if wired else None,
             "wifi_ip": wifi[0] if wifi else None}
 
 
 def discover() -> dict[str, dict]:
+    known = load_known()
+    name_of_key = {k: n for n, (_, k) in known.items()}
     ips = [str(h) for h in ipaddress.ip_network(LAN).hosts()]
     with ThreadPoolExecutor(64) as pool:
         open_ips = [ip for ip, ok in zip(ips, pool.map(ssh_open, ips)) if ok]
-        found = [h for h in pool.map(probe, open_ips) if h]
+        found = [h for h in pool.map(lambda ip: probe(ip, name_of_key), open_ips) if h]
     hosts: dict[str, dict] = {}
+    refused = []
     for h in found:  # a machine on wired and Wi-Fi answers twice; keep one
-        hosts.setdefault(h["name"], h)
+        name, key = h["name"], h["key"]
+        if name in known and known[name] != key:
+            refused.append(f"{name} at {h['found_at']}")
+            continue
+        old = name_of_key.get(key[1])
+        if old and old != name:  # renamed (e.g. by the FIX stick or --tags hostname)
+            known.pop(old, None)
+        known[name] = key
+        hosts.setdefault(name, h)
+    KNOWN.parent.mkdir(mode=0o700, exist_ok=True)
+    KNOWN.write_text("".join(f"{n} {t} {k}\n" for n, (t, k) in sorted(known.items())))
+    if refused:
+        print(f"LEFT OUT, host key differs from the one remembered for that name: {', '.join(refused)}. "
+              f"If it was reflashed, delete its line from {KNOWN}.", file=sys.stderr)
+    if "--table" in sys.argv:
+        seen = {h["found_at"] for h in found}
+        others = [ip for ip in open_ips if ip not in seen]
+        print(f"SSH open but not a Mac mini of ours (other device, or our key refused): "
+              f"{' '.join(others) or '-'}", file=sys.stderr)
     return hosts
 
 

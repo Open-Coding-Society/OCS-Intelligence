@@ -7,7 +7,7 @@ last_verified: 2026-11-12
 
 By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS LAN over Wi-Fi with wired as backup, has joined NetBird, and runs the same baseline: build tools, Docker, uv, Python 3.12, and Ray 2.60.0. The same playbook sets them all up, so a change is made once, in [`infra/macmini/ansible/`](../../infra/macmini/ansible/), and rerun.
 
-**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-25` ("silver"), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. The FIX stick's rename prompt and reboot or power-cut recovery aren't tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
+**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-0` ("silver", the mastermac), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. The FIX stick's rename prompt and reboot or power-cut recovery aren't tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
 
 ## Before you start
 
@@ -41,6 +41,8 @@ cd infra/macmini/ansible
 ```
 
 A machine named `ocs-intelligence-macmini-N` gets `macmini_number` from its name. To name one the FIX stick missed, create `host_vars/<its current hostname>.yml` with `macmini_number: 7`. Run `--tags hostname`, then delete that file (the new name carries the number). If it has already joined NetBird, rename its peer in the NetBird dashboard too: NetBird keeps the name a machine joined with.
+
+Host keys are remembered by machine name in `~/.ssh/known_hosts_ocs_macminis`, so a moved address doesn't break SSH. A Mac mini whose key doesn't match the one remembered for its name is left out, and `--table` says so. After reflashing one, delete its line from that file.
 
 Both netplans use `dhcp-identifier: mac`, so the router sees the same client after a reboot and usually hands back the same address. It's still DHCP.
 
