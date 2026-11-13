@@ -1,0 +1,126 @@
+- name: Wait for unattended-upgrades, then finish any interrupted package install
+  ansible.builtin.shell: |
+    while fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 5; done
+    dpkg --configure -a
+  register: dpkg_fix
+  changed_when: dpkg_fix.stdout | length > 0
+  timeout: 1800
+
+- name: Update and upgrade packages
+  ansible.builtin.apt:
+    lock_timeout: 1800   # unattended-upgrades often holds the lock on a fresh machine
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: dist
+
+- name: Install the baseline packages
+  ansible.builtin.apt:
+    lock_timeout: 1800   # unattended-upgrades often holds the lock on a fresh machine
+    name: "{{ ocs_apt_packages + ['linux-headers-' + ansible_kernel] }}"
+    state: present
+
+- name: Reboot if the upgrade asks for it (new kernel; DKMS has built wl for it)
+  ansible.builtin.stat: {path: /var/run/reboot-required}
+  register: reboot_required
+
+- name: Reboot
+  ansible.builtin.reboot: {reboot_timeout: 600}
+  when: reboot_required.stat.exists
+
+- name: Refresh facts after a reboot
+  ansible.builtin.setup:
+  when: reboot_required.stat.exists
+
+- name: ocs can use Docker
+  ansible.builtin.user: {name: ocs, groups: docker, append: true}
+
+- name: Raise open-file limits (Ray opens many sockets and files)
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/90-ocs.conf
+    content: |
+      *    soft nofile 65536
+      *    hard nofile 65536
+      root soft nofile 65536
+      root hard nofile 65536
+    mode: "0644"
+
+- name: Raise open-file limits for services
+  ansible.builtin.copy:
+    dest: /etc/systemd/system.conf.d/90-ocs.conf
+    content: |
+      [Manager]
+      DefaultLimitNOFILE=65536
+    mode: "0644"
+  notify: Reload sysctl
+
+- name: Kernel settings for a cluster node
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/90-ocs-cluster.conf
+    content: |
+      # Network buffers and backlog for Ray / gRPC traffic between nodes
+      net.core.somaxconn = 4096
+      net.core.netdev_max_backlog = 4096
+      net.core.rmem_max = 16777216
+      net.core.wmem_max = 16777216
+      net.ipv4.tcp_rmem = 4096 87380 16777216
+      net.ipv4.tcp_wmem = 4096 65536 16777216
+      # Wired and Wi-Fi share 192.168.8.0/24: each interface answers ARP only for its own address
+      net.ipv4.conf.all.arp_ignore = 1
+      net.ipv4.conf.all.arp_announce = 2
+      # zram swap is cheap compared with running out of RAM
+      vm.swappiness = 100
+      vm.max_map_count = 262144
+      fs.inotify.max_user_watches = 524288
+      fs.inotify.max_user_instances = 1024
+    mode: "0644"
+  notify: Reload sysctl
+
+- name: zram swap, zstd, half of RAM
+  ansible.builtin.copy:
+    dest: /etc/default/zramswap
+    content: |
+      ALGO=zstd
+      PERCENT=50
+      PRIORITY=100
+    mode: "0644"
+  notify: Restart zramswap
+
+- name: Fan control (cluster guide settings)
+  ansible.builtin.lineinfile:
+    path: /etc/mbpfan.conf
+    regexp: "^#?\\s*{{ item.key }}\\s*="
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - {key: min_fan1_speed, value: 2000}
+    - {key: max_temp, value: 78}
+  notify: Restart mbpfan
+
+- name: Power on by itself after a power cut (Macmini7,1 LPC register)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/macmini-autoresume.service
+    content: |
+      [Unit]
+      Description=Power on automatically after AC power loss (Macmini7,1)
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/setpci -s 00:1f.0 0xa4.b=0
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: "0644"
+
+- name: Services on at boot
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop: [macmini-autoresume, mbpfan, chrony, avahi-daemon, prometheus-node-exporter, docker, zramswap]
+
+- name: Never sleep (headless node)
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    masked: true
+  loop: [sleep.target, suspend.target, hibernate.target, hybrid-sleep.target]

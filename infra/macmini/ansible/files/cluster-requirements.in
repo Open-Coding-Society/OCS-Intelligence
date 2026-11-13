@@ -1,0 +1,18 @@
+# Python packages for every Mac mini, installed into /opt/ocs/venv (Python 3.12).
+# Ray needs the same Ray and Python minor version on every node and on any
+# laptop that connects as a driver, so everything here is locked.
+# Re-lock after editing:
+#   uv pip compile infra/macmini/ansible/files/cluster-requirements.in \
+#     --python-version 3.12 --python-platform x86_64-manylinux_2_28 \
+#     -o infra/macmini/ansible/files/cluster-requirements.txt
+ray[default,data,train,tune,serve]==2.60.0
+numpy
+pandas
+pyarrow
+scipy
+scikit-learn
+psutil
+requests
+httpx
+fastapi
+uvicorn[standard]

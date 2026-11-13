@@ -1,0 +1,11 @@
+- name: Name it ocs-intelligence-macmini-N (N = macmini_number from the inventory)
+  when: macmini_number is defined
+  block:
+    - name: Set the hostname
+      ansible.builtin.hostname:
+        name: "ocs-intelligence-macmini-{{ macmini_number }}"
+    - name: Match /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 ocs-intelligence-macmini-{{ macmini_number }}"

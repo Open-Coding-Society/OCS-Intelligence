@@ -1,0 +1,22 @@
+# Managed by Ansible (infra/macmini/ansible). Wi-Fi is the main link; wired is the backup.
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ ocs_wired_if }}:
+      dhcp4: true
+      optional: true
+      dhcp4-overrides:
+        route-metric: {{ ocs_wired_metric }}
+{% if ocs_wifi_on | bool %}
+  wifis:
+    {{ ocs_wifi_if }}:
+      dhcp4: true
+      optional: true
+      regulatory-domain: {{ ocs_wifi_regdomain }}
+      dhcp4-overrides:
+        route-metric: {{ ocs_wifi_metric }}
+      access-points:
+        {{ ocs_wifi_ssid | to_json }}:
+          password: {{ ocs_wifi_password | to_json }}
+{% endif %}

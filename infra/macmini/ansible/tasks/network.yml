@@ -1,0 +1,67 @@
+- name: Load the wl Wi-Fi driver
+  ansible.builtin.command: modprobe wl
+  changed_when: false
+
+- name: Find the wired and Wi-Fi interfaces
+  ansible.builtin.setup: {gather_subset: [network]}
+
+- name: Pick them
+  ansible.builtin.set_fact:
+    ocs_wired_if: "{{ ansible_interfaces | select('match', '^en') | sort | first | default('') }}"
+    ocs_wifi_if: "{{ ansible_interfaces | select('match', '^wl') | sort | first | default('') }}"
+    ocs_wifi_on: "{{ ocs_wifi_ssid | length > 0 and ocs_wifi_password | length > 0 }}"
+
+- name: Wired interface found
+  ansible.builtin.assert:
+    that: ocs_wired_if | length > 0
+    fail_msg: "No en* interface: {{ ansible_interfaces }}"
+
+- name: Wi-Fi interface found (wl driver loaded)
+  ansible.builtin.assert:
+    that: ocs_wifi_if | length > 0
+    fail_msg: "No wl* interface. Check `dkms status` and `lsmod | grep wl`: {{ ansible_interfaces }}"
+  when: ocs_wifi_on | bool
+
+- name: Write the netplan (Wi-Fi main, wired backup)
+  ansible.builtin.template:
+    src: 01-ocs.yaml.j2
+    dest: /etc/netplan/01-ocs.yaml
+    mode: "0600"
+  no_log: true   # holds the Wi-Fi password
+  register: netplan_file
+
+- name: Remove the stick's wired-only netplan (now in 01-ocs.yaml)
+  ansible.builtin.file: {path: /etc/netplan/01-wired.yaml, state: absent}
+  register: netplan_old
+
+- name: Check the netplan is valid
+  ansible.builtin.command: netplan generate
+  changed_when: false
+
+- name: Apply it (in the background, so a blip on the wired link doesn't kill the session)
+  ansible.builtin.shell: sleep 2 && netplan apply
+  async: 60
+  poll: 0
+  when: netplan_file.changed or netplan_old.changed
+
+- name: Wait to reconnect
+  ansible.builtin.wait_for_connection: {delay: 10, timeout: 120}
+  when: netplan_file.changed or netplan_old.changed
+
+- name: Wi-Fi has an address
+  ansible.builtin.command: ip -4 -br addr show {{ ocs_wifi_if }}
+  register: wifi_addr
+  until: "'192.168.' in wifi_addr.stdout"
+  retries: 20
+  delay: 3
+  changed_when: false
+  when: ocs_wifi_on | bool
+
+- name: Routes
+  ansible.builtin.command: ip -4 route
+  register: routes
+  changed_when: false
+
+- name: Show the result
+  ansible.builtin.debug:
+    msg: "{{ (wifi_addr.stdout | default('Wi-Fi off')) }} | {{ routes.stdout_lines | select('match', '^default') | list }}"

@@ -30,6 +30,9 @@ def test_rendered_autoinstall_is_valid_yaml():
     assert cfg["apt"]["fallback"] == "offline-install"
     assert cfg["storage"]["layout"] == {"name": "direct", "match": {"size": "largest"}}
     assert cfg["shutdown"] == "poweroff"
+    # Installs run with no cable; an explicit DHCP config keeps the wired port enabled.
+    wired = cfg["network"]["ethernets"]["wired"]
+    assert wired == {"match": {"name": "en*"}, "dhcp4": True, "optional": True}
     assert "/sys/class/dmi/id/product_serial" in cfg["late-commands"][0]
     # The heredoc terminator must land at column 0 once YAML strips the indent.
     assert "\nEOF\n" in cfg["late-commands"][1]
@@ -67,3 +70,31 @@ def test_update_md5sums_replaces_only_that_entry():
                                 "ccc  ./boot/grub/grub.cfg.bak"]
     with pytest.raises(ValueError):
         build.update_md5sums(stock, "./nope", b"")
+
+
+def test_fix_network_names_the_machine_and_enables_dhcp(tmp_path):
+    """The FIX stick script, in its test mode (ROOT set): no live changes."""
+    import subprocess
+    (tmp_path / "etc" / "netplan").mkdir(parents=True)
+    (tmp_path / "etc" / "hostname").write_text("ocs-intelligence-c07test\n")
+    (tmp_path / "etc" / "hosts").write_text("127.0.0.1 localhost\n127.0.1.1 ocs-intelligence-c07test\n")
+    installer = tmp_path / "etc" / "netplan" / "00-installer-config.yaml"
+    installer.write_text("network:\n  version: 2\n  ethernets:\n    enp3s0f0:\n      dhcp4: false\n")
+    subprocess.run(["sh", str(KIT / "fix-network.sh")], input="abc\n7\n", text=True, check=True,
+                   env={"ROOT": str(tmp_path), "PATH": "/usr/bin:/bin"}, capture_output=True)
+    assert (tmp_path / "etc" / "hostname").read_text() == "ocs-intelligence-macmini-7\n"
+    assert "127.0.1.1 ocs-intelligence-macmini-7" in (tmp_path / "etc" / "hosts").read_text()
+    assert not installer.exists() and (tmp_path / "etc" / "netplan.installer" / installer.name).exists()
+    wired = yaml.safe_load((tmp_path / "etc" / "netplan" / "01-wired.yaml").read_text())
+    assert wired["network"]["ethernets"]["enp3s0f0"]["dhcp4"] is True
+
+
+def test_ansible_files_parse_and_ray_is_pinned():
+    ans = KIT / "ansible"
+    for f in [ans / "site.yml", ans / "group_vars" / "macminis.yml", *sorted((ans / "tasks").glob("*.yml"))]:
+        assert yaml.safe_load(f.read_text()) is not None, f
+    gv = yaml.safe_load((ans / "group_vars" / "macminis.yml").read_text())
+    assert "password" not in str({k: v for k, v in gv.items() if "lookup" not in str(v)}).lower()
+    locked = (ans / "files" / "cluster-requirements.txt").read_text()
+    assert "\nray==2.60.0" in locked
+    assert "ray[default,data,train,tune,serve]==2.60.0" in (ans / "files" / "cluster-requirements.in").read_text()

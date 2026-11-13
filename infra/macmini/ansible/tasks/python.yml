@@ -1,0 +1,61 @@
+- name: /opt/ocs belongs to ocs
+  ansible.builtin.file: {path: "{{ ocs_root }}", state: directory, owner: ocs, group: ocs, mode: "0755"}
+
+- name: Installed uv version
+  ansible.builtin.command: /usr/local/bin/uv --version
+  register: uv_have
+  failed_when: false
+  changed_when: false
+
+- name: Install uv with Astral's installer (pinned version, into /usr/local/bin)
+  when: ocs_uv_version not in (uv_have.stdout | default(''))
+  block:
+    - name: Download the installer
+      ansible.builtin.get_url:
+        url: "https://astral.sh/uv/{{ ocs_uv_version }}/install.sh"
+        dest: /tmp/uv-install.sh
+        mode: "0755"
+        force: true
+    - name: Run it
+      ansible.builtin.command: sh /tmp/uv-install.sh
+      environment: {UV_INSTALL_DIR: /usr/local/bin, UV_NO_MODIFY_PATH: "1"}
+      changed_when: true
+
+- name: Shell environment for uv, Python and Ray
+  ansible.builtin.copy:
+    dest: /etc/profile.d/ocs.sh
+    content: |
+      # Managed by Ansible. The cluster's Python and Ray live in {{ ocs_venv }}.
+      export UV_PYTHON_INSTALL_DIR={{ ocs_root }}/python
+      export RAY_USAGE_STATS_ENABLED=0
+      case ":$PATH:" in *:{{ ocs_venv }}/bin:*) ;; *) export PATH="$PATH:{{ ocs_venv }}/bin" ;; esac
+    mode: "0644"
+
+- name: Python {{ ocs_python_version }} managed by uv
+  ansible.builtin.command: /usr/local/bin/uv python install {{ ocs_python_version }}
+  become_user: ocs
+  environment: {UV_PYTHON_INSTALL_DIR: "{{ ocs_root }}/python"}
+  register: uv_py
+  changed_when: "'Installed' in uv_py.stderr"
+
+- name: The cluster venv
+  ansible.builtin.command: >-
+    /usr/local/bin/uv venv {{ ocs_venv }} --python {{ ocs_python_version }} --python-preference only-managed
+  args: {creates: "{{ ocs_venv }}/bin/python"}
+  become_user: ocs
+  environment: {UV_PYTHON_INSTALL_DIR: "{{ ocs_root }}/python"}
+
+- name: Copy the locked requirements
+  ansible.builtin.copy:
+    src: cluster-requirements.txt
+    dest: "{{ ocs_root }}/cluster-requirements.txt"
+    owner: ocs
+    group: ocs
+    mode: "0644"
+
+- name: Install exactly the locked packages (uv pip sync)
+  ansible.builtin.command: >-
+    /usr/local/bin/uv pip sync {{ ocs_root }}/cluster-requirements.txt --python {{ ocs_venv }}/bin/python
+  become_user: ocs
+  register: uv_sync
+  changed_when: "'Installed' in uv_sync.stderr or 'Uninstalled' in uv_sync.stderr"

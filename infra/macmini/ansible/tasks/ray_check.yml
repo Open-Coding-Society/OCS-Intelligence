@@ -1,0 +1,19 @@
+- name: Ray runs a task on this node (local, throwaway cluster)
+  ansible.builtin.command:
+    argv:
+      - "{{ ocs_venv }}/bin/python"
+      - -c
+      - |
+        import os, ray, sys
+        ray.init(num_cpus=2, include_dashboard=False, log_to_driver=False)
+        @ray.remote
+        def f(x): return x * x
+        print("ray", ray.__version__, "python", sys.version.split()[0], "result", sum(ray.get([f.remote(i) for i in range(10)])))
+        ray.shutdown()
+  become_user: ocs
+  environment: {RAY_USAGE_STATS_ENABLED: "0"}
+  register: ray_out
+  changed_when: false
+
+- name: Ray result
+  ansible.builtin.debug: {var: ray_out.stdout_lines}

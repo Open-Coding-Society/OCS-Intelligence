@@ -1,0 +1,57 @@
+- name: NetBird's apt key
+  ansible.builtin.get_url:
+    url: https://pkgs.netbird.io/debian/public.key
+    dest: /etc/apt/keyrings/netbird.asc
+    mode: "0644"
+
+- name: NetBird's apt repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/netbird.sources
+    content: |
+      Types: deb
+      URIs: https://pkgs.netbird.io/debian
+      Suites: stable
+      Components: main
+      Signed-By: /etc/apt/keyrings/netbird.asc
+    mode: "0644"
+  register: nb_repo
+
+- name: Install NetBird
+  ansible.builtin.apt:
+    lock_timeout: 1800   # unattended-upgrades often holds the lock on a fresh machine
+    name: netbird
+    update_cache: "{{ nb_repo.changed }}"
+
+- name: NetBird runs as a service
+  ansible.builtin.command: netbird service install
+  args: {creates: /etc/systemd/system/netbird.service}
+
+- name: Start it at boot
+  ansible.builtin.systemd_service: {name: netbird, enabled: true, state: started, daemon_reload: true}
+
+- name: NetBird status
+  ansible.builtin.command: netbird status
+  register: nb_status
+  changed_when: false
+  failed_when: false
+
+- name: Join with the Mac mini setup key (adds it to the ocs-macminis group)
+  ansible.builtin.command: netbird up --setup-key {{ ocs_netbird_setup_key }}
+  no_log: true
+  when:
+    - "'Management: Connected' not in nb_status.stdout"
+    - ocs_netbird_setup_key | length > 0
+  changed_when: true
+
+- name: NetBird address
+  ansible.builtin.shell: netbird status | grep -E 'Management:|NetBird IP:|FQDN:'
+  register: nb_after
+  changed_when: false
+  retries: 10
+  delay: 3
+  until: "'Management: Connected' in nb_after.stdout"
+  when: ocs_netbird_setup_key | length > 0
+
+- name: Show it
+  ansible.builtin.debug: {var: nb_after.stdout_lines}
+  when: ocs_netbird_setup_key | length > 0

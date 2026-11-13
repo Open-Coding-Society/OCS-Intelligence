@@ -13,6 +13,23 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 **Sprint 4 was written up on 2026-10-23.** Its hardware and inference entries moved into [the hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) and [the inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Everything below feeds Sprint 5 ([plan](../docs/project/roadmap.md#sprint-5-plan)).
 
+## Week of 2026-11-09
+
+### Rigs and hardware
+
+#### 2026-11-12: Flashed Mac minis had no network; fixed with a stick, and an Ansible baseline started
+
+Feeds Sprint 5 (orchestrator on the Mac minis). Follows the 2026-10-29 entry below.
+
+- **Wrong:** all Mac minis were reported on power. One of them, `ocs-intelligence-c07rx0cwg1j1`, was wired to the Flint but `ping 192.168.8.1` said "Network is unreachable" (reported). A ping sweep of `192.168.8.0/24` from an operator laptop on `OCS_Intel` found 7 hosts: both rigs, two Ubuntu 24.04 machines with Apple MAC prefixes that refuse the stick's SSH key (`OpenSSH_9.6p1 Ubuntu-3ubuntu13.20`, so not stick-installed), and two others. No stick-installed Mac mini answered.
+- **Cause:** the autoinstall had no `network:` section. Ubuntu's autoinstall reference says the default "disables any interface that does not receive an address", applied "during installation as well as in the installed system". The installs ran with no cable, so the wired port was left disabled. The 2026-10-27 QEMU test didn't catch it, apparently because its VM still had a virtual network card that got an address.
+- **Fix (installed machines):** a FIX stick script ([`infra/macmini/fix-network.sh`](../infra/macmini/fix-network.sh)) moves the installer's netplan to `/etc/netplan.installer/` and writes DHCP for the wired port. On `c07rx0cwg1j1` it got `192.168.8.156/24` from the Flint, a default route via `192.168.8.1`, and `archive.ubuntu.com` answered HTTP 200 in 0.3 s. Checked over SSH with the stick's key. The script now also asks for the Post-it number and names the machine `ocs-intelligence-macmini-N`. That part is tested offline only.
+- **Fix (future ISOs):** the template now writes DHCP on `en*` explicitly ([`autoinstall.yaml.template`](../infra/macmini/autoinstall.yaml.template)). Not test-installed yet.
+- **Wi-Fi:** the card is present (`14e4:43a0`, BCM4360), but there's no Wi-Fi interface: only `b43` loaded, which doesn't drive this card, and `wpasupplicant` isn't installed. Unplugging the cable takes the machine offline until the `wl` driver is installed.
+- **Ansible baseline ([decision 0013](../docs/decisions/0013-ansible-baseline-with-ray-for-mac-minis.md), proposed):** [`infra/macmini/ansible/`](../infra/macmini/ansible/) covers packages, Mac fan and power-on settings, zram, Wi-Fi as the main link (wired as backup), uv 0.13.5 from Astral's installer, Python 3.12 managed by uv, Ray 2.60.0 and 88 other locked packages in `/opt/ocs/venv`, and NetBird. Guide: [set up the Mac minis](../docs/operations/set-up-mac-minis.md). Every apt package was checked as available in 26.04 first (`dnsutils` is `bind9-dnsutils` there). SSH and sudo worked on the silver Mac mini. Both runs stopped in the first upgrade step: the first because unattended-upgrades held the dpkg lock, the second because the operator laptop's Wi-Fi switched off `OCS_Intel` mid-upgrade. The playbook now waits for the lock and repairs an interrupted install first. Nothing past the upgrade has run yet.
+- **NetBird:** new group `ocs-macminis` and policy `operators-to-macminis` (operators → Mac minis, all ports, one way), created with `apply.py apply`. A reusable setup key that never expires and adds peers to `ocs-macminis` is in the operator's `.env`. A separate admin service user for the Mac minis wasn't created (it needs the dashboard).
+- **Open:** finish the playbook run on the silver Mac mini, then the rest. FIX-stick every other Mac mini. Measure Wi-Fi vs. wired for Ray traffic. Weak `ocs` password and secrets in `.env` (Sprint 6).
+
 ## Week of 2026-11-02
 
 ### Inference and models
