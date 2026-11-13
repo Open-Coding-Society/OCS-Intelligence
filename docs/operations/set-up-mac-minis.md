@@ -7,7 +7,7 @@ last_verified: 2026-11-12
 
 By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS LAN over Wi-Fi with wired as backup, has joined NetBird, and runs the same baseline: build tools, Docker, uv, Python 3.12, and Ray 2.60.0. The same playbook sets them all up, so a change is made once, in [`infra/macmini/ansible/`](../../infra/macmini/ansible/), and rerun.
 
-**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-0` ("silver", the mastermac), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. The FIX stick's rename prompt and reboot or power-cut recovery aren't tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
+**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-25` ("silver"), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. The FIX stick's rename prompt and reboot or power-cut recovery aren't tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
 
 ## Before you start
 

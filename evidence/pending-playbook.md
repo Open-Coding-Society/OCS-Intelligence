@@ -17,11 +17,11 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 ### Rigs and hardware
 
-#### 2026-11-13: First Mac mini fully set up by Ansible (`ocs-intelligence-macmini-0`, the mastermac), and the playbook hardened
+#### 2026-11-13: First Mac mini fully set up by Ansible (`ocs-intelligence-macmini-25`), and the playbook hardened
 
 Follows the 2026-11-12 entry below.
 
-- **Done:** the playbook ran to the end on the silver Mac mini, the mastermac (the one with the monitor), now `ocs-intelligence-macmini-0` (its Post-it says 25): `ok=52 changed=26 failed=0`. Checked on the machine, not only in the log:
+- **Done:** the playbook ran to the end on the silver Mac mini, now `ocs-intelligence-macmini-25` (Post-it 25; a monitor was plugged in for the test): `ok=52 changed=26 failed=0`. Checked on the machine, not only in the log:
   - default route over Wi-Fi (`wlp2s0`, metric 100), wired as the backup (metric 200)
   - NetBird Management and Signal connected, `100.75.4.11`, in `ocs-macminis`
   - uv 0.13.5, Python 3.12.15, Ray 2.60.0; the local Ray test returned 285
@@ -44,11 +44,10 @@ Follows the 2026-11-12 entry below.
     - a race between loading `wl` and reading the interfaces
     - the setup key was on the command line (now `--setup-key-file`, a root-only file that's deleted afterwards)
     - `%` in a `.env` value would break the lookup
-- **Rename:** first to `macmini-25` from its Post-it, then to `macmini-0` once it was confirmed as the mastermac: `macmini_number` in `host_vars`, then `--tags hostname`. cloud-init is disabled on the installed system (`/etc/cloud/cloud-init.disabled`), so it can't reset the name. NetBird keeps the name a peer joined with, so the peer was renamed through the API (`ocs-intelligence-macmini-0.netbird.cloud`). Machines named by the FIX stick before joining won't need that.
+- **Rename:** `macmini_number: 25` in `host_vars`, then `--tags hostname` (briefly `macmini-0` by mistake; the mastermac is a different machine, Post-it 0). cloud-init is disabled on the installed system (`/etc/cloud/cloud-init.disabled`), so it can't reset the name. NetBird keeps the name a peer joined with, so the peer was renamed through the API (`ocs-intelligence-macmini-25.netbird.cloud`). Machines named by the FIX stick before joining won't need that.
 - **Open:**
   - reboot and power-cut tests with the cable out
   - a Ray cluster (head node on the mastermac, `macmini-0`, plus worker services)
-  - the mastermac is a headless Server install; whether it needs a desktop is still to decide
   - wired vs Wi-Fi for Ray traffic
   - an apt and Python package cache before the other 30 run
   - a full-fleet run currently needs `--limit` per machine, because Claude Code's auto mode blocked an unlimited run

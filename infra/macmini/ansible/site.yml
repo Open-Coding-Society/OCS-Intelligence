@@ -1,4 +1,4 @@
-# Set up every Mac mini the same way. The first one set up (ocs-intelligence-macmini-0,
+# Set up every Mac mini the same way. The first one set up (ocs-intelligence-macmini-25,
 # "silver") is the reference. inventory.py finds them on the LAN each run.
 #   cd infra/macmini/ansible
 #   uv run --group ansible ansible-playbook site.yml                 # all Mac minis
