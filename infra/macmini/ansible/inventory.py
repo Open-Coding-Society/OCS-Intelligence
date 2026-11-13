@@ -36,11 +36,36 @@ LAN = os.environ.get("OCS_LAN", "192.168.8.0/24")
 USER = "ocs"
 MODEL = "Macmini7,1"
 KNOWN = Path(os.environ.get("OCS_KNOWN_HOSTS", Path.home() / ".ssh/known_hosts_ocs_macminis"))
-# hostname, model, then "iface addr/prefix" for each IPv4 address
+# The team's Post-it table: number,serial. Gitignored (serials identify the school's
+# hardware, and the repo is public); see macminis.example.csv.
+TABLE = Path(os.environ.get("OCS_MACMINI_TABLE", Path(__file__).resolve().parent.parent / "macminis.csv"))
+# hostname, model, then "mac iface addr" for each card, then "iface addr/prefix" per IPv4 address
 PROBE = (
     "hostname; cat /sys/class/dmi/id/product_name; "
+    "for i in /sys/class/net/en* /sys/class/net/wl*; do [ -e $i/address ] && "
+    "echo mac ${i##*/} $(cat $i/address); done; "
     "ip -o -4 addr show scope global | awk '{print $2, $4}'"
 )
+
+
+def load_table() -> dict[str, int]:
+    """serial (lowercase) -> Post-it number, from TABLE if it exists."""
+    numbers: dict[str, int] = {}
+    if TABLE.exists():
+        for line in TABLE.read_text().splitlines():
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 2 and parts[0].isdigit() and parts[1]:
+                numbers[parts[1].lower()] = int(parts[0])
+    return numbers
+
+
+def number_of(name: str, table: dict[str, int]) -> int | None:
+    """Post-it number: from a renamed hostname, or from the table for a serial-named one."""
+    m = re.fullmatch(r"ocs-intelligence-macmini-(\d+)", name)
+    if m:
+        return int(m.group(1))
+    m = re.fullmatch(r"ocs-intelligence-([a-z0-9]+)", name)
+    return table.get(m.group(1)) if m else None
 
 
 def ssh_open(ip: str) -> bool:
@@ -100,13 +125,17 @@ def probe(ip: str, name_of_key: dict[str, str]) -> dict | None:
             return None
     if len(out) < 2 or out[1].strip() != MODEL:
         return None
-    addrs = dict(line.split()[:2] for line in out[2:] if len(line.split()) >= 2)
+    macs = {p[1]: p[2] for p in (line.split() for line in out[2:]) if len(p) == 3 and p[0] == "mac"}
+    addrs = dict(line.split()[:2] for line in out[2:]
+                 if len(line.split()) == 2 and not line.startswith("mac "))
     wired = [a.split("/")[0] for i, a in addrs.items() if i.startswith("en")]
     wifi = [a.split("/")[0] for i, a in addrs.items() if i.startswith("wl")]
     return {"name": out[0].strip(), "found_at": ip, "key": key,
             "ansible_host": (wired or wifi or [ip])[0],
             "wired_ip": wired[0] if wired else None,
-            "wifi_ip": wifi[0] if wifi else None}
+            "wifi_ip": wifi[0] if wifi else None,
+            "wired_mac": next((m for i, m in sorted(macs.items()) if i.startswith("en")), None),
+            "wifi_mac": next((m for i, m in sorted(macs.items()) if i.startswith("wl")), None)}
 
 
 def discover() -> dict[str, dict]:
@@ -141,13 +170,14 @@ def discover() -> dict[str, dict]:
     return hosts
 
 
-def inventory(hosts: dict[str, dict]) -> dict:
+def inventory(hosts: dict[str, dict], table: dict[str, int] | None = None) -> dict:
+    table = load_table() if table is None else table
     hostvars = {}
     for name, h in hosts.items():
-        v = {k: h[k] for k in ("ansible_host", "wired_ip", "wifi_ip")}
-        m = re.fullmatch(r"ocs-intelligence-macmini-(\d+)", name)
-        if m:
-            v["macmini_number"] = int(m.group(1))
+        v = {k: h.get(k) for k in ("ansible_host", "wired_ip", "wifi_ip", "wired_mac", "wifi_mac")}
+        n = number_of(name, table)
+        if n is not None:
+            v["macmini_number"] = n
         hostvars[name] = v
     return {"macminis": {"hosts": sorted(hosts)}, "_meta": {"hostvars": hostvars}}
 
@@ -159,9 +189,12 @@ def main() -> None:
         return
     hosts = discover()
     if arg == "--table":
+        table = load_table()
         for name in sorted(hosts):
             h = hosts[name]
-            print(f"{name:40} wired={h['wired_ip'] or '-':16} wifi={h['wifi_ip'] or '-'}")
+            n = number_of(name, table)
+            print(f"{'#' + str(n) if n is not None else '#?':4} {name:36} "
+                  f"wired={h['wired_ip'] or '-':15} wifi={h['wifi_ip'] or '-'}")
         print(f"{len(hosts)} Mac mini(s) on {LAN}", file=sys.stderr)
         return
     print(json.dumps(inventory(hosts), indent=2))

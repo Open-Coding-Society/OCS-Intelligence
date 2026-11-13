@@ -7,3 +7,6 @@ netbird_data/
 evidence/**/*.html
 node_modules/
 infra/macmini/build/
+
+# Mac mini serial -> number table (serials identify school hardware; repo is public)
+infra/macmini/macminis.csv

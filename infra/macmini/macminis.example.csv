@@ -1,0 +1,5 @@
+# Post-it number -> serial (from the bottom of the box). Copy to macminis.csv (gitignored)
+# and fill in the real serials; inventory.py reads it to number machines still named by serial.
+number,serial
+0,C07XXXXXXXX0
+25,C07XXXXXXX25

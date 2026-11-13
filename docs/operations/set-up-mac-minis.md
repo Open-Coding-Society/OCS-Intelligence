@@ -40,7 +40,7 @@ cd infra/macmini/ansible
 ./inventory.py --table     # about 5 s: one line per Mac mini, with its wired and Wi-Fi addresses
 ```
 
-A machine named `ocs-intelligence-macmini-N` gets `macmini_number` from its name. To name one the FIX stick missed, create `host_vars/<its current hostname>.yml` with `macmini_number: 7`. Run `--tags hostname`, then delete that file (the new name carries the number). If it has already joined NetBird, rename its peer in the NetBird dashboard too: NetBird keeps the name a machine joined with.
+A machine named `ocs-intelligence-macmini-N` gets `macmini_number` from its name. One still named by its serial gets it from `infra/macmini/macminis.csv` (`number,serial`, one row per Post-it; template [`macminis.example.csv`](../../infra/macmini/macminis.example.csv)), and the playbook renames it. That file is gitignored: serials identify the school's hardware, and the repo is public. To name one the FIX stick missed, create `host_vars/<its current hostname>.yml` with `macmini_number: 7`. Run `--tags hostname`, then delete that file (the new name carries the number). If it has already joined NetBird, rename its peer in the NetBird dashboard too: NetBird keeps the name a machine joined with.
 
 Host keys are remembered by machine name in `~/.ssh/known_hosts_ocs_macminis`, so a moved address doesn't break SSH. A Mac mini whose key doesn't match the one remembered for its name is left out, and `--table` says so. After reflashing one, delete its line from that file.
 

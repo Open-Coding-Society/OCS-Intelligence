@@ -56,7 +56,13 @@ Read from the router over SSH on 2026-11-13 (firmware 4.9.0), nothing changed:
 
 - **Access:** web UI `http://192.168.8.1`, or `ssh root@192.168.8.1`. Both take `FLINT_ADMIN_PASSWORD` ([configuration](../reference/configuration.md)). It's OpenWrt underneath: DHCP is `uci show dhcp`, current leases are `/tmp/dhcp.leases`.
 - **Changing it:** back up first (`uci export dhcp > /root/dhcp.backup-<date>`), only add entries, and reload with `/etc/init.d/dnsmasq reload`, which keeps current leases. This router carries the rigs and other groups' devices.
-- **Planned, not applied:** reserve Mac mini N at `.10+N` wired and `.50+N` Wi-Fi (`.10`–`.40` and `.50`–`.80`). That's outside the pool, so the router never hands these addresses to anything else. The list will be generated from the serial-to-number table and the MACs that `inventory.py` reads, not typed. Widening the LAN to a /23 or /22 would give more room, but it isn't needed (31 × 2 = 62 addresses) and would change every device on the LAN.
+- **Mac mini reservations:** Mac mini N gets `.10+N` wired and `.50+N` Wi-Fi, for N up to 39 (`.10`–`.49` and `.50`–`.89`). That's outside the pool, so the router never hands these addresses to anything else. [`reservations.py`](../../infra/macmini/ansible/reservations.py) generates the entries from the LAN scan (MACs) and the Post-it numbers, not by hand:
+  - With no flag, it shows them and checks for clashes with existing reservations (read-only).
+  - `--apply` backs up, adds only its own sections (`ocs_mmN_wired`, `ocs_mmN_wifi`), verifies, and prints the undo command.
+  - A machine moves to its reserved address at its next lease renewal.
+  - Backup taken 2026-11-13, before any change: `/root/dhcp.backup-2026-11-13` on the router.
+  - Status: not applied yet.
+- **Router clock:** it read July 3 on 2026-11-13, so it isn't keeping time (not investigated). Widening the LAN to a /23 or /22 would give more room, but it isn't needed (31 × 2 = 62 addresses) and would change every device on the LAN.
 
 - **Single points of failure** ([routing playbook](../../evidence/sprint4/2026-10-22-rig-routing.md#open-items)): the Mac mini, the pinned school access point, its out-of-tree `wl` Wi-Fi driver, and EC2.
 

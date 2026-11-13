@@ -119,3 +119,45 @@ def test_inventory_names_hosts_and_reads_number_from_name():
 def test_netbird_setup_key_never_on_the_command_line():
     text = (Path(__file__).resolve().parent.parent / "infra/macmini/ansible/tasks/netbird.yml").read_text()
     assert "--setup-key {{" not in text and "--setup-key-file" in text
+
+
+def _ansible_module(name):
+    import importlib.util
+    import sys
+    d = Path(__file__).resolve().parent.parent / "infra/macmini/ansible"
+    sys.path.insert(0, str(d))
+    try:
+        spec = importlib.util.spec_from_file_location(name, d / f"{name}.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+    finally:
+        sys.path.remove(str(d))
+
+
+def test_serial_table_numbers_unrenamed_machines(tmp_path):
+    inv = _ansible_module("inventory")
+    t = tmp_path / "macminis.csv"
+    t.write_text("# comment\nnumber,serial\n7,C07ABC123\n")
+    inv.TABLE = t
+    table = inv.load_table()
+    assert inv.number_of("ocs-intelligence-c07abc123", table) == 7
+    assert inv.number_of("ocs-intelligence-macmini-3", table) == 3
+    assert inv.number_of("ocs-intelligence-c07zzz", table) is None
+
+
+def test_reservations_layout_and_clash_detection():
+    res = _ansible_module("reservations")
+    hosts = {"ocs-intelligence-macmini-25": {"wired_mac": "38:c9:86:56:ed:f3", "wifi_mac": "2c:f0:a2:f0:72:64"},
+             "ocs-intelligence-c07unknown": {"wired_mac": "aa:bb:cc:dd:ee:ff", "wifi_mac": None}}
+    es, skipped = res.entries(hosts, {})
+    assert [(e["section"], e["ip"]) for e in es] == [("ocs_mm25_wired", "192.168.8.35"), ("ocs_mm25_wifi", "192.168.8.75")]
+    assert len(skipped) == 1
+    # every reserved address stays below the router's pool (.100)
+    assert res.WIFI_BASE + res.MAX_NUMBER < 100 and res.WIRED_BASE + res.MAX_NUMBER < res.WIFI_BASE
+    dump = ("dhcp.cfg01=host\ndhcp.cfg01.mac='18:31:BF:26:3B:47'\ndhcp.cfg01.ip='192.168.8.112'\n"
+            "dhcp.ocs_mm25_wifi=host\ndhcp.ocs_mm25_wifi.mac='2C:F0:A2:F0:72:64'\ndhcp.ocs_mm25_wifi.ip='192.168.8.75'\n")
+    current = res.existing(dump)
+    assert res.conflicts(es, current) == []           # our own section isn't a clash (re-apply is fine)
+    clash = res.conflicts([{**es[0], "ip": "192.168.8.112"}], current)
+    assert len(clash) == 1 and "192.168.8.112" in clash[0]
