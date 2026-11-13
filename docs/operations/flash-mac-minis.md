@@ -5,7 +5,7 @@ last_verified: 2026-10-27
 
 # How to flash the Mac minis with Ubuntu Server (autoinstall sticks)
 
-By the end, every Mac mini runs Ubuntu Server 26.04.1 with user `ocs`, key-only SSH, and nothing else installed. Each one is named after its serial number for now, and gets renamed to `ocs-intelligence-macN` later. Packages come later too, with Ansible. Why sticks and not netboot or Clonezilla: [decision 0011](../decisions/0011-autoinstall-sticks-for-mac-minis.md). The kit is in [`infra/macmini/`](../../infra/macmini/).
+By the end, every Mac mini runs Ubuntu Server 26.04.1 with user `ocs`, key-only SSH, and nothing else installed. Each one is named after its serial number at install, and renamed to `ocs-intelligence-macmini-N` (the number on its Post-it) afterwards. Packages come later too, with Ansible. Why sticks and not netboot or Clonezilla: [decision 0011](../decisions/0011-autoinstall-sticks-for-mac-minis.md). The kit is in [`infra/macmini/`](../../infra/macmini/).
 
 **Draft:** tested end to end in a QEMU VM. The team reports flashing all the Mac minis on 2026-10-28/29, but the results on real machines weren't recorded: whether holding C works without a monitor is still unknown, so keep using Option with a monitor until someone tries it. Log: [pending playbook](../../evidence/pending-playbook.md).
 
@@ -72,17 +72,11 @@ For each Mac mini: stick in, power on while holding Option (or C), pick **EFI Bo
 
 The Option or C key is needed because these Mac minis still have macOS on the internal disk, so the firmware boots that unless told otherwise.
 
-### 5. Rename them later
+### 5. Name them and set them up
 
-Once a machine is on the network, from the Mac mini (or over SSH, with its IP from the router's client list):
+Next: [set up the Mac minis](./set-up-mac-minis.md). Its FIX stick asks for the number on each machine's Post-it and names it `ocs-intelligence-macmini-N`, then Ansible does the rest.
 
-```bash
-sudo hostnamectl set-hostname ocs-intelligence-macN
-sudo sed -i "s/ocs-intelligence-[a-z0-9]*/ocs-intelligence-macN/g" /etc/hosts
-sudo reboot
-```
-
-Keep a list of serial → `macN` so the stickers and names match.
+ISOs built before 2026-11-12 left the wired port disabled after the install, because the install runs with no cable. The FIX stick repairs that. The template now writes DHCP for the wired port explicitly; that change hasn't been through a test install yet.
 
 ## Check it worked
 
@@ -98,6 +92,7 @@ The QEMU run is logged in the [pending playbook](../../evidence/pending-playbook
 | No **EFI Boot** in the Option picker | Stick written in ISO/file mode, or a bad stick | Rewrite it as a raw image (Etcher, or Rufus in DD mode) |
 | The installer asks questions | `autoinstall.yaml` missing or invalid | Check `autoinstall.yaml` in the out-dir; rebuild; check the kernel line in `grub.cfg` has `autoinstall` |
 | Installer stops with an error | Usually a late-command | Switch to a shell (Alt+F2) and read `/var/log/installer/subiquity-server-debug.log` |
-| Hostname is `ocs-intelligence-unknown` or a MAC address | Firmware gave no serial | Rename it (step 5) |
+| Hostname is `ocs-intelligence-unknown` or a MAC address | Firmware gave no serial | The FIX stick renames it (step 5) |
+| `ping` says "Network is unreachable" after the install | ISO built before 2026-11-12: the wired port was left disabled | Run the FIX stick ([set up the Mac minis](./set-up-mac-minis.md)) |
 | Installed on the wrong disk | A model with two internal disks (Fusion Drive) | `lsblk` on mac1; set `storage.layout.match` in the template to a `serial` or `ssd` match |
 | `apt update` fails after install | No internet yet | Expected until it's on a network with internet |

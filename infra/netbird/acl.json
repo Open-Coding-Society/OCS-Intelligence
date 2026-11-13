@@ -3,32 +3,55 @@
   "groups": {
     "outbound-only": {
       "description": "Operator machines. They can reach the servers; nothing can reach them. Add new operators in the dashboard.",
-      "peers": ["Yash WSL", "adi-dell"]
+      "peers": [
+        "Yash WSL",
+        "adi-dell"
+      ]
     },
     "ocs-gateway": {
       "description": "The EC2 admission gateway.",
-      "peers": ["ip-172-31-42-43"]
+      "peers": [
+        "ip-172-31-42-43"
+      ]
     },
     "ocs-rigs": {
       "description": "GPU rigs running the orchestrator and Open WebUI.",
-      "peers": ["ocs-intelligence-rig", "ocs-intelligence-rig2"]
+      "peers": [
+        "ocs-intelligence-rig",
+        "ocs-intelligence-rig2"
+      ]
+    },
+    "ocs-macminis": {
+      "description": "The Mac minis. They join with a setup key that adds them here, so membership isn't listed (peers: null).",
+      "peers": null
     }
   },
   "policies": [
     {
       "name": "gateway-to-rigs",
       "description": "EC2 admission gateway -> rig orchestrator (9000) and Open WebUI (3000)",
-      "sources": ["ocs-gateway"],
-      "destinations": ["ocs-rigs"],
+      "sources": [
+        "ocs-gateway"
+      ],
+      "destinations": [
+        "ocs-rigs"
+      ],
       "protocol": "tcp",
-      "ports": ["9000", "3000"],
+      "ports": [
+        "9000",
+        "3000"
+      ],
       "bidirectional": false
     },
     {
       "name": "rigs-to-rigs",
       "description": "TEMPORARY: GPU rigs can reach each other both ways (Open WebUI on Rig 1 calling a model on Rig 2). Remove once a router (Mac Mini or EC2) sits between the rigs.",
-      "sources": ["ocs-rigs"],
-      "destinations": ["ocs-rigs"],
+      "sources": [
+        "ocs-rigs"
+      ],
+      "destinations": [
+        "ocs-rigs"
+      ],
       "protocol": "all",
       "ports": null,
       "bidirectional": true
@@ -36,8 +59,26 @@
     {
       "name": "outbound-only-to-infra",
       "description": "Peers in outbound-only can reach the servers; nothing can reach them",
-      "sources": ["outbound-only"],
-      "destinations": ["ocs-gateway", "ocs-rigs"],
+      "sources": [
+        "outbound-only"
+      ],
+      "destinations": [
+        "ocs-gateway",
+        "ocs-rigs"
+      ],
+      "protocol": "all",
+      "ports": null,
+      "bidirectional": false
+    },
+    {
+      "name": "operators-to-macminis",
+      "description": "Operator laptops (the outbound-only group) -> Mac minis, any port. Replies come back; the Mac minis can't open connections to the laptops",
+      "sources": [
+        "outbound-only"
+      ],
+      "destinations": [
+        "ocs-macminis"
+      ],
       "protocol": "all",
       "ports": null,
       "bidirectional": false

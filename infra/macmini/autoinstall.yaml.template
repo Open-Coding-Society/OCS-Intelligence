@@ -29,6 +29,19 @@ autoinstall:
       match:
         size: largest
 
+  # DHCP on the wired port, written explicitly. Without this, the installer's default
+  # disables any interface that gets no address during the install, and these
+  # installs run with no cable, so the installed system came up with no network
+  # (found 2026-11-12). optional: boot doesn't wait for a cable.
+  network:
+    version: 2
+    ethernets:
+      wired:
+        match:
+          name: "en*"
+        dhcp4: true
+        optional: true
+
   # The hostname is a placeholder; late-commands replace it with one built from the serial.
   identity:
     realname: OCS

@@ -16,7 +16,7 @@ ACL = json.loads((HERE / "acl.json").read_text())
 
 def live_from_acl(acl: dict) -> tuple[list[dict], list[dict]]:
     """Fake API responses that exactly match acl.json."""
-    groups = [{"id": f"g-{n}", "name": n, "peers": [{"name": p} for p in s["peers"]]} for n, s in acl["groups"].items()]
+    groups = [{"id": f"g-{n}", "name": n, "peers": [{"name": p} for p in s["peers"] or []]} for n, s in acl["groups"].items()]
     policies = [{"name": p["name"], "enabled": True, "rules": [{
         "sources": [{"name": g} for g in p["sources"]],
         "destinations": [{"name": g} for g in p["destinations"]],
@@ -72,3 +72,12 @@ def test_policy_payload_uses_group_ids_and_omits_ports_for_all():
     assert rule["sources"] == ["id-outbound-only"] and "ports" not in rule and rule["bidirectional"] is False
     tcp = nb.policy_payload(next(p for p in ACL["policies"] if p["name"] == "gateway-to-rigs"), ids)
     assert tcp["rules"][0]["ports"] == ["9000", "3000"]
+
+
+def test_macminis_reachable_only_one_way_and_membership_not_compared():
+    rule = next(p for p in ACL["policies"] if p["name"] == "operators-to-macminis")
+    assert rule["destinations"] == ["ocs-macminis"] and rule["bidirectional"] is False
+    assert ACL["groups"]["ocs-macminis"]["peers"] is None
+    groups, policies = live_from_acl(ACL)
+    next(g for g in groups if g["name"] == "ocs-macminis")["peers"] = [{"name": "ocs-intelligence-c07test"}]
+    assert nb.diff(ACL, groups, policies) == []

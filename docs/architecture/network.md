@@ -59,7 +59,8 @@ NetBird's built-in `Default` policy (every peer reaches every peer, both ways) i
 |---|---|---|---|
 | `ocs-gateway` | EC2 | `ocs-rigs` on TCP 9000, 3000 | `outbound-only`; anyone via NetBird SSH |
 | `ocs-rigs` | Rig 1, Rig 2 | each other, all ports | each other; `ocs-gateway` (9000, 3000); `outbound-only`; anyone via NetBird SSH |
-| `outbound-only` | operator machines | `ocs-gateway`, `ocs-rigs`, all ports | **nobody** |
+| `ocs-macminis` | the Mac minis (joined with a setup key that adds them to this group) | nothing | `outbound-only`, all ports |
+| `outbound-only` | operator machines | `ocs-gateway`, `ocs-rigs`, `ocs-macminis`, all ports | **nobody** |
 
 "Anyone via NetBird SSH" is the `SSH Access` policies that NetBird's SSH feature created (source `All`, one per server). Policies are stateful: replies to a connection come back even though the rule is one-way. The rigs talk to each other both ways (`rigs-to-rigs`) so that Open WebUI on one rig can call a model served by the other. **This is temporary:** once a router (the planned Mac Mini, or EC2) sits between the rigs, traffic goes through it and `rigs-to-rigs` is removed.
 

@@ -4,6 +4,10 @@
   python3 infra/netbird/apply.py check        # report differences from acl.json (read-only)
   python3 infra/netbird/apply.py apply        # create missing groups and policies
   python3 infra/netbird/apply.py default off  # disable the built-in All<->All policy ("on" to roll back)
+  python3 infra/netbird/apply.py setup-key ocs-macminis   # new reusable, non-expiring setup key; prints only the key
+
+A group with "peers": null gets its members from a setup key, so `check` doesn't
+compare its membership.
 
 Needs NETBIRD_API_TOKEN (environment or repo-root .env) from an admin service user.
 `apply` only creates. It never deletes, never edits existing policies, and never
@@ -77,6 +81,8 @@ def diff(acl: dict, groups: list[dict], policies: list[dict]) -> list[str]:
     for name, spec in acl["groups"].items():
         if name not in live_groups:
             out.append(f"group {name}: missing")
+        elif spec["peers"] is None:
+            continue
         elif live_groups[name] != sorted(spec["peers"]):
             out.append(f"group {name}: members are {live_groups[name]}, acl.json lists {sorted(spec['peers'])}")
     live_policies = {p["name"]: p for p in policies}
@@ -111,7 +117,7 @@ def apply(acl: dict) -> None:
     group_ids = {g["name"]: g["id"] for g in api("GET", "/groups")}
     for name, spec in acl["groups"].items():
         if name not in group_ids:
-            group_ids[name] = api("POST", "/groups", {"name": name, "peers": [peers[p] for p in spec["peers"]]})["id"]
+            group_ids[name] = api("POST", "/groups", {"name": name, "peers": [peers[p] for p in spec["peers"] or []]})["id"]
             print("created group", name)
     existing = {p["name"] for p in api("GET", "/policies")}
     for spec in acl["policies"]:
@@ -130,6 +136,18 @@ def set_default(enabled: bool) -> None:
     print("Default policy enabled =", enabled)
 
 
+def setup_key(group: str, days: int = 0, uses: int = 0) -> str:
+    """A reusable key that adds each peer it registers to `group`.
+    days=0: never expires; uses=0: unlimited. Revoke it in the dashboard if it leaks."""
+    group_ids = {g["name"]: g["id"] for g in api("GET", "/groups")}
+    if group not in group_ids:
+        sys.exit(f"group {group} doesn't exist yet: run `apply` first")
+    key = api("POST", "/setup-keys", {
+        "name": f"{group} ({f'{days} days' if days else 'no expiry'})", "type": "reusable", "expires_in": days * 86400,
+        "auto_groups": [group_ids[group]], "usage_limit": uses, "ephemeral": False})
+    return key["key"]
+
+
 def main(argv: list[str]) -> None:
     acl = json.loads((HERE / "acl.json").read_text())
     cmd = argv[0] if argv else "check"
@@ -139,6 +157,8 @@ def main(argv: list[str]) -> None:
         sys.exit(1 if problems else 0)
     elif cmd == "apply":
         apply(acl)
+    elif cmd == "setup-key" and len(argv) == 2:
+        print(setup_key(argv[1]))
     elif cmd == "default" and argv[1:] in (["on"], ["off"]):
         set_default(argv[1] == "on")
     else:
