@@ -12,6 +12,7 @@ The single place for machine names, addresses, ports, on-disk paths, and service
 | Host | NetBird IP | LAN IP | Hostname | Role | OS / hardware |
 |---|---|---|---|---|---|
 | EC2 gateway | `100.75.172.167` | — | `ip-172-31-42-43` | Public TLS entry point, admission gateway | Ubuntu 24.04, AWS m5.large |
+| GL.iNet Flint 2 (router) | — | `192.168.8.1` | — | OCS LAN router, DHCP `.100`–`.249`, Wi-Fi `OCS_Intel`. Admin web UI and SSH `root`, password `FLINT_ADMIN_PASSWORD` ([network](../architecture/network.md#dhcp-on-the-flint)) | GL-MT6000, firmware 4.9.0 (OpenWrt) |
 | GPU rig (Rig 1) | `100.75.123.203` | `192.168.8.112` | `ocs-intelligence-rig` | llama.cpp workers, orchestrator, Open WebUI | Ubuntu 24.04.4, ASUS B250 Mining Expert, 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
 | GPU rig (Rig 2) | `100.75.127.192` | `192.168.8.213` | `ocs-intelligence-rig2` | One llama.cpp worker (`qwen3.6:35b-a3b`), orchestrator | Ubuntu 24.04.3, Python 3.12.3, ASUS B250 Mining Expert, 1 × GTX 1080 Ti + 8 × GTX 1070 ([hardware](../architecture/hardware.md)) |
 | Mac mini 25 ("silver", first set up) | `100.75.4.11` | DHCP, changes: `infra/macmini/ansible/inventory.py --table` | `ocs-intelligence-macmini-25` (serial C07RX0CWG1J1) | Reference node for the Ansible baseline ([setup](../operations/set-up-mac-minis.md)) | Ubuntu 26.04.1, `Macmini7,1`, i5-4278U, 16 GB |
