@@ -7,7 +7,7 @@ last_verified: 2026-11-12
 
 By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS LAN over Wi-Fi with wired as backup, has joined NetBird, and runs the same baseline: build tools, Docker, uv, Python 3.12, and Ray 2.60.0. The same playbook sets them all up, so a change is made once, in [`infra/macmini/ansible/`](../../infra/macmini/ansible/), and rerun.
 
-**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-25` ("silver"), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. Reboot and power-cut recovery over Wi-Fi alone both worked (2026-11-13). The FIX stick's rename prompt isn't tested on a machine yet. See the [pending playbook](../../evidence/pending-playbook.md).
+**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-25` ("silver"), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. Reboot and power-cut recovery over Wi-Fi alone both worked (2026-11-13). The FIX stick's current version, which has no prompt, and naming from the serial table aren't tested on a new machine yet. See the [pending playbook](../../evidence/pending-playbook.md).
 
 ## Before you start
 
@@ -18,9 +18,11 @@ By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS 
 
 ## Steps
 
-### 1. FIX stick: name and network, at each Mac mini (about 20 s each)
+### 1. FIX stick: wired network, at each Mac mini (about 20 s each)
 
-Machines flashed before 2026-11-12 came up with no network: the install ran with no cable, so the installer disabled the wired port. ISOs built from the current template don't have this problem, but the stick also sets the name, so run it on every machine.
+Machines flashed before 2026-11-12 came up with no network: the install ran with no cable, so the installer disabled the wired port. ISOs built from the current template don't have this problem. The stick asks nothing and leaves the name alone: Ansible names each machine from its serial (step 2).
+
+**Keep the Ethernet cable in for the first playbook run.** Wi-Fi can't work yet: the BCM4360 needs the `wl` driver, which a fresh install doesn't have. The playbook builds the driver on each machine (it needs the internet for its packages and kernel headers), then switches to Wi-Fi. After that the cable is optional.
 
 1. Format a USB stick FAT32 with the label `FIX`. Copy [`infra/macmini/fix-network.sh`](../../infra/macmini/fix-network.sh) onto it as `f`.
 2. At the Mac mini, with a keyboard (a monitor helps for the first few), log in as `ocs`, then:
@@ -29,7 +31,7 @@ Machines flashed before 2026-11-12 came up with no network: the install ran with
    sudo mount -L FIX /mnt; sudo sh /mnt/f
    ```
 
-3. Type the number on the Post-it. It prints one line, for example `ocs-intelligence-macmini-7 (was ocs-intelligence-c07…)  enp3s0f0  carrier=1  ip=192.168.8.x/24`. Write the IP down. `carrier=0` means no link: check the cable and the port's light.
+3. It prints one line, for example `ocs-intelligence-c07rx0xxxg1j1  enp3s0f0  carrier=1  ip=192.168.8.x/24`. Write the IP down. `carrier=0` means no link: check the cable and the port's light.
 
 ### 2. Check Ansible finds them
 

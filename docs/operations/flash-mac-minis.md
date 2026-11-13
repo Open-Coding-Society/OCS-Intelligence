@@ -74,7 +74,7 @@ The Option or C key is needed because these Mac minis still have macOS on the in
 
 ### 5. Name them and set them up
 
-Next: [set up the Mac minis](./set-up-mac-minis.md). Its FIX stick asks for the number on each machine's Post-it and names it `ocs-intelligence-macmini-N`, then Ansible does the rest.
+Next: [set up the Mac minis](./set-up-mac-minis.md). Its FIX stick turns on the wired port. Ansible then renames each machine to `ocs-intelligence-macmini-N`, looking its serial up in the team's table, and does the rest.
 
 ISOs built before 2026-11-12 left the wired port disabled after the install, because the install runs with no cable. The FIX stick repairs that. The template now writes DHCP for the wired port explicitly; that change hasn't been through a test install yet.
 

@@ -53,6 +53,7 @@ Follows the 2026-11-12 entry below.
 - **Reservations applied (first one):** `reservations.py --apply` reserved #25 at `.35` wired (`38:C9:86:56:ED:F3`) and `.75` Wi-Fi (`2C:F0:A2:F0:72:64`). It took a backup first (`/root/dhcp.backup-2026-11-13-110421`, plus `/root/dhcp.backup-2026-11-13` from earlier), found no clashes, and checked each entry afterwards. The rigs, the router, dnsmasq and the leases were unaffected.
 - **Moving to the reserved address:** `networkctl renew` wasn't enough. The router answered `DHCPNAK ... static lease available`, but networkd kept `.187` and didn't ask again. `networkctl reconfigure wlp2s0` moved it to `.75` within 30 s (it drops the address, so run it in the background). A reboot would do it too.
 - **Scan reliability:** the scan missed the machine once while it was up, which would have dropped it from that run. `inventory.py` now retries probes that got no answer, twice. A scan takes about 8 s.
+- **FIX stick asks nothing now:** with the serial table in place, the stick only turns on the wired port. The playbook renames each machine from its serial, before NetBird joins, so the peer gets the final name too. Wi-Fi still needs the first playbook run over the cable, because the `wl` driver is built on each machine from the internet.
 - **Naming:** silver's Post-it is 25. The mastermac is a different machine, Post-it 0.
 - **Open:**
   - check the uncertain serials (#22 `406`, #27 `6ER`, #28, #32) against each machine's real hostname when it comes online
