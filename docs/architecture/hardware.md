@@ -83,7 +83,7 @@ From `nvidia-smi` on 2026-10-19 ([evidence](../../evidence/captures/2026-10-19-r
 
 ## Mac minis
 
-As reported by the team on 2026-10-30. Not checked on the machines. The Mac minis have their own corner of the room, which holds only them plus a monitor and keyboard for the `mastermac`, the only one with a UI. How they were installed: [flash the Mac minis](../operations/flash-mac-minis.md). How far along they are: [status](../status.md).
+As reported by the team on 2026-10-30. Not checked on the machines. The Mac minis have their own corner of the room, which holds only them plus a monitor and keyboard for the `mastermac`, the only one with a UI. There are **33**, numbered 0–32 on Post-its. #0 is the `mastermac`. The team's serial-to-number table, reported 2026-11-13, is kept local and gitignored (`infra/macmini/macminis.csv`). That count replaces the earlier "32, 31 left to flash". How they were installed: [flash the Mac minis](../operations/flash-mac-minis.md). How far along they are: [status](../status.md).
 
 ## Why the hardware matters
 

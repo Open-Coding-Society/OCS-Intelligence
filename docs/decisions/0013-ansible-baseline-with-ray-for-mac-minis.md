@@ -8,7 +8,7 @@ deciders:
 
 ## Context
 
-The 31 Mac minis are flashed with a bare Ubuntu Server ([0011](./0011-autoinstall-sticks-for-mac-minis.md)), and Sprint 5 puts the orchestrator and distributed compute on them ([roadmap](../project/roadmap.md#sprint-5-plan)). The team wants them ready for distributed compute and the orchestrator stack, set up once and the same everywhere, with "more installed rather than less". Each machine has a 2-core i5-4278U, 16 GB RAM, a BCM4360 Wi-Fi card that needs the out-of-tree `wl` driver, and gigabit Ethernet. The internet link is ~84 Mb/s, shared. The first flashed machines came up with the wired port disabled (fixed by the FIX stick, [set up the Mac minis](../operations/set-up-mac-minis.md)).
+The 33 Mac minis (numbered 0–32 on their Post-its) are flashed with a bare Ubuntu Server ([0011](./0011-autoinstall-sticks-for-mac-minis.md)), and Sprint 5 puts the orchestrator and distributed compute on them ([roadmap](../project/roadmap.md#sprint-5-plan)). The team wants them ready for distributed compute and the orchestrator stack, set up once and the same everywhere, with "more installed rather than less". Each machine has a 2-core i5-4278U, 16 GB RAM, a BCM4360 Wi-Fi card that needs the out-of-tree `wl` driver, and gigabit Ethernet. The internet link is ~84 Mb/s, shared. The first flashed machines came up with the wired port disabled (fixed by the FIX stick, [set up the Mac minis](../operations/set-up-mac-minis.md)).
 
 ## Options considered
 
@@ -31,7 +31,7 @@ Wi-Fi is the main link (route metric 100) and wired the backup (200), as the tea
 
 - Good: one source of truth for the baseline; new nodes or changes cost one run. Ray is checked on every node by the `ray_check` tag.
 - Good: NetBird joins with a setup key into `ocs-macminis`, so operators reach each node from anywhere ([network](../architecture/network.md#access-policies)).
-- Bad / accepted trade-off: Wi-Fi as the main link puts all 31 nodes' traffic on one 5 GHz channel, while each has gigabit Ethernet. Measure Ray throughput both ways before relying on it; flip the two metrics in `group_vars` to switch.
+- Bad / accepted trade-off: Wi-Fi as the main link puts all 33 nodes' traffic on one 5 GHz channel, while each has gigabit Ethernet. Measure Ray throughput both ways before relying on it; flip the two metrics in `group_vars` to switch.
 - Bad / accepted trade-off: the sudo password and Wi-Fi password sit in the operator's `.env`, and the NetBird setup key never expires. Sprint 6 (security) should move to SSH-only sudo rules or Ansible Vault, and rotate the weak `ocs` password.
 - Follow-up work: the orchestrator's own decision record (why the Mac minis, failure handling), a Ray head node and worker units, and a package cache on one node so 31 machines don't each download the same packages.
 
