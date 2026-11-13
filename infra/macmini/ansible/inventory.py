@@ -144,7 +144,13 @@ def discover() -> dict[str, dict]:
     ips = [str(h) for h in ipaddress.ip_network(LAN).hosts()]
     with ThreadPoolExecutor(64) as pool:
         open_ips = [ip for ip, ok in zip(ips, pool.map(ssh_open, ips)) if ok]
-        found = [h for h in pool.map(lambda ip: probe(ip, name_of_key), open_ips) if h]
+        results = dict(zip(open_ips, pool.map(lambda ip: probe(ip, name_of_key), open_ips)))
+    # Over Wi-Fi a probe sometimes times out; a machine missed here would silently
+    # drop out of the run, so try the misses twice more, one at a time.
+    for _ in range(2):
+        for ip in [ip for ip, h in results.items() if h is None]:
+            results[ip] = probe(ip, name_of_key)
+    found = [h for h in results.values() if h]
     hosts: dict[str, dict] = {}
     refused = []
     for h in found:  # a machine on wired and Wi-Fi answers twice; keep one
