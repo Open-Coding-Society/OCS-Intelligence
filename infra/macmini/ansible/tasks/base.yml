@@ -16,7 +16,7 @@
 - name: Install the baseline packages
   ansible.builtin.apt:
     lock_timeout: 1800   # unattended-upgrades often holds the lock on a fresh machine
-    name: "{{ ocs_apt_packages + ['linux-headers-' + ansible_kernel] }}"
+    name: "{{ ocs_apt_packages }}"   # linux-headers-generic: DKMS builds wl for the newest kernel
     state: present
 
 - name: Reboot if the upgrade asks for it (new kernel; DKMS has built wl for it)
@@ -44,6 +44,13 @@
       root hard nofile 65536
     mode: "0644"
 
+- name: Directory for systemd manager settings
+  ansible.builtin.file:
+    path: /etc/systemd/system.conf.d
+    state: directory
+    mode: "0755"
+
+# Takes effect at the next boot (or systemctl daemon-reexec).
 - name: Raise open-file limits for services
   ansible.builtin.copy:
     dest: /etc/systemd/system.conf.d/90-ocs.conf
@@ -51,7 +58,6 @@
       [Manager]
       DefaultLimitNOFILE=65536
     mode: "0644"
-  notify: Reload sysctl
 
 - name: Kernel settings for a cluster node
   ansible.builtin.copy:
@@ -124,3 +130,8 @@
     name: "{{ item }}"
     masked: true
   loop: [sleep.target, suspend.target, hibernate.target, hybrid-sleep.target]
+
+# Apply sysctl (ARP settings for two NICs on one subnet), zram and fan changes now,
+# before network.yml brings up Wi-Fi next to the wired port.
+- name: Apply changed settings now
+  ansible.builtin.meta: flush_handlers

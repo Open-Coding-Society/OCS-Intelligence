@@ -17,6 +17,40 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 ### Rigs and hardware
 
+#### 2026-11-13: First Mac mini fully set up by Ansible (`ocs-intelligence-macmini-25`), and the playbook hardened
+
+Follows the 2026-11-12 entry below.
+
+- **Done:** the playbook ran to the end on the silver Mac mini, now `ocs-intelligence-macmini-25` (Post-it 25): `ok=52 changed=26 failed=0`. Checked on the machine, not only in the log:
+  - default route over Wi-Fi (`wlp2s0`, metric 100), wired as the backup (metric 200)
+  - NetBird Management and Signal connected, `100.75.4.11`, in `ocs-macminis`
+  - uv 0.13.5, Python 3.12.15, Ray 2.60.0; the local Ray test returned 285
+  - mbpfan, the power-on service, chrony, avahi, node-exporter, docker, zram and netbird all active
+  - power-on register `0xa4` reads `08` (bit 0 clear: power on after an outage)
+  - sleep targets masked; 7.5 GB zram ahead of the swap file; open files 65536; the netplan with the Wi-Fi password readable by root only
+- **Wi-Fi alone works:** with the Ethernet cable unplugged, it stayed reachable on Wi-Fi, reached PyPI (HTTP 200, about 5 MB/s) and NetBird, and a full playbook rerun over Wi-Fi changed nothing (`changed=0 failed=0`). So the playbook is safe to rerun.
+- **Addresses change:** it came back from its kernel reboot at a new address (.156 → .155), Wi-Fi added another (.186), and switching the DHCP client ID to the MAC moved it again (.187). Fixes:
+  - The hand-written inventory is gone. [`inventory.py`](../infra/macmini/ansible/inventory.py) scans `192.168.8.0/24` for SSH at the start of each run and keeps machines that report `Macmini7,1` (about 5 s).
+  - Both netplans (the playbook's and the FIX stick's) set `dhcp-identifier: mac`, so the router should hand back the same address after a reboot. Not yet seen across a reboot.
+- **Bugs fixed:**
+  - Found by running: `/etc/systemd/system.conf.d` didn't exist.
+  - Found by an independent read-only review, each checked against the code:
+    - settings that take effect on a restart (ARP, zram, fan) were applied only at the end of the play, after the Wi-Fi switch, and never if a run failed
+    - headers for the pre-upgrade kernel were requested
+    - a netplan was put in place before validation, and the validation error could print the Wi-Fi password
+    - the Wi-Fi check was hard-coded to `192.168.`
+    - the NetBird apt cache was skipped after an interrupted run
+    - a race between loading `wl` and reading the interfaces
+    - the setup key was on the command line (now `--setup-key-file`, a root-only file that's deleted afterwards)
+    - `%` in a `.env` value would break the lookup
+- **Rename:** `macmini_number: 25`, then `--tags hostname`. cloud-init is disabled on the installed system (`/etc/cloud/cloud-init.disabled`), so it can't reset the name. NetBird keeps the name a peer joined with, so the peer was renamed through the API (`ocs-intelligence-macmini-25.netbird.cloud`). Machines named by the FIX stick before joining won't need that.
+- **Open:**
+  - reboot and power-cut tests with the cable out
+  - a Ray cluster (head node on the mastermac, `macmini-0`, plus worker services)
+  - wired vs Wi-Fi for Ray traffic
+  - an apt and Python package cache before the other 30 run
+  - a full-fleet run currently needs `--limit` per machine, because Claude Code's auto mode blocked an unlimited run
+
 #### 2026-11-12: Flashed Mac minis had no network; fixed with a stick, and an Ansible baseline started
 
 Feeds Sprint 5 (orchestrator on the Mac minis). Follows the 2026-10-29 entry below.

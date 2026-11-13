@@ -1,12 +1,15 @@
-# Set up every Mac mini the same way ("silver" = the first one, the reference).
+# Set up every Mac mini the same way. The first one set up (ocs-intelligence-macmini-25,
+# "silver") is the reference. inventory.py finds them on the LAN each run.
 #   cd infra/macmini/ansible
 #   uv run --group ansible ansible-playbook site.yml                 # all Mac minis
-#   uv run --group ansible ansible-playbook site.yml --limit silver  # one
+#   uv run --group ansible ansible-playbook site.yml --limit ocs-intelligence-macmini-7  # one
+#   ./inventory.py --table                                           # which ones it finds
 #   ... --tags ray_check                                             # just the Ray smoke test
 # Guide: docs/operations/set-up-mac-minis.md
 - name: Mac mini baseline
   hosts: macminis
   become: true
+  force_handlers: true   # a failed run still applies settings already written
   tasks:
     - name: Secrets are present
       ansible.builtin.assert:

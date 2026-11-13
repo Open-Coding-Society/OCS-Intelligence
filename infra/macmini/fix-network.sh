@@ -55,6 +55,7 @@ network:
   ethernets:
     $IF:
       dhcp4: true
+      dhcp-identifier: mac
       optional: true
 YAML
   chmod 600 "$R/etc/netplan/01-wired.yaml"

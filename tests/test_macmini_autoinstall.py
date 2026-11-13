@@ -98,3 +98,24 @@ def test_ansible_files_parse_and_ray_is_pinned():
     locked = (ans / "files" / "cluster-requirements.txt").read_text()
     assert "\nray==2.60.0" in locked
     assert "ray[default,data,train,tune,serve]==2.60.0" in (ans / "files" / "cluster-requirements.in").read_text()
+
+
+def test_inventory_names_hosts_and_reads_number_from_name():
+    import importlib.util
+    path = Path(__file__).resolve().parent.parent / "infra/macmini/ansible/inventory.py"
+    spec = importlib.util.spec_from_file_location("macmini_inventory", path)
+    inv = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(inv)
+    out = inv.inventory({
+        "ocs-intelligence-macmini-25": {"ansible_host": "192.168.8.10", "wired_ip": "192.168.8.10", "wifi_ip": "192.168.8.11"},
+        "ocs-intelligence-c07abc": {"ansible_host": "192.168.8.12", "wired_ip": None, "wifi_ip": "192.168.8.12"},
+    })
+    assert out["macminis"]["hosts"] == ["ocs-intelligence-c07abc", "ocs-intelligence-macmini-25"]
+    hv = out["_meta"]["hostvars"]
+    assert hv["ocs-intelligence-macmini-25"]["macmini_number"] == 25
+    assert "macmini_number" not in hv["ocs-intelligence-c07abc"]
+
+
+def test_netbird_setup_key_never_on_the_command_line():
+    text = (Path(__file__).resolve().parent.parent / "infra/macmini/ansible/tasks/netbird.yml").read_text()
+    assert "--setup-key {{" not in text and "--setup-key-file" in text

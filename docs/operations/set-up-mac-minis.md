@@ -7,7 +7,7 @@ last_verified: 2026-11-12
 
 By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS LAN over Wi-Fi with wired as backup, has joined NetBird, and runs the same baseline: build tools, Docker, uv, Python 3.12, and Ray 2.60.0. The same playbook sets them all up, so a change is made once, in [`infra/macmini/ansible/`](../../infra/macmini/ansible/), and rerun.
 
-**Draft:** the FIX stick was used on one Mac mini (`ocs-intelligence-c07rx0cwg1j1`, 192.168.8.156, the "silver" one), before its rename prompt existed. The playbook has only reached its first step there: SSH and sudo work, but both runs on 2026-11-12 stopped during the package upgrade (the first on the apt lock, the second when the operator laptop left the LAN). Nothing past that is tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
+**Draft:** tested on one Mac mini, `ocs-intelligence-macmini-25` ("silver"), on 2026-11-12/13. The playbook ran to the end. A rerun changed nothing, Wi-Fi alone worked with the cable unplugged, and NetBird and Ray were checked on the machine. The FIX stick's rename prompt and reboot or power-cut recovery aren't tested yet. See the [pending playbook](../../evidence/pending-playbook.md).
 
 ## Before you start
 
@@ -31,22 +31,25 @@ Machines flashed before 2026-11-12 came up with no network: the install ran with
 
 3. Type the number on the Post-it. It prints one line, for example `ocs-intelligence-macmini-7 (was ocs-intelligence-c07…)  enp3s0f0  carrier=1  ip=192.168.8.x/24`. Write the IP down. `carrier=0` means no link: check the cable and the port's light.
 
-### 2. Add them to the inventory
+### 2. Check Ansible finds them
 
-One line per Mac mini in [`inventory.ini`](../../infra/macmini/ansible/inventory.ini):
+There's no list of IPs to keep. [`inventory.py`](../../infra/macmini/ansible/inventory.py) runs at the start of every playbook run: it tries SSH on every address of `192.168.8.0/24` (set `OCS_LAN` for another range), logs in as `ocs` with your key, and keeps the machines that report `Macmini7,1`. Each one is named by its hostname, and Ansible uses its wired address when it has one, its Wi-Fi address otherwise. So addresses can change (they do, after a reboot or when Wi-Fi comes up) and the next run still finds them.
 
-```ini
-macmini-7 ansible_host=192.168.8.x macmini_number=7
+```bash
+cd infra/macmini/ansible
+./inventory.py --table     # about 5 s: one line per Mac mini, with its wired and Wi-Fi addresses
 ```
 
-`macmini_number` also makes Ansible set the name, so a machine skipped in step 1 still ends up named right.
+A machine named `ocs-intelligence-macmini-N` gets `macmini_number` from its name. To name one the FIX stick missed, create `host_vars/<its current hostname>.yml` with `macmini_number: 7`. Run `--tags hostname`, then delete that file (the new name carries the number). If it has already joined NetBird, rename its peer in the NetBird dashboard too: NetBird keeps the name a machine joined with.
+
+Both netplans use `dhcp-identifier: mac`, so the router sees the same client after a reboot and usually hands back the same address. It's still DHCP.
 
 ### 3. Run the playbook
 
 ```bash
 cd infra/macmini/ansible
-uv run --group ansible ansible-playbook site.yml --limit macmini-7   # one, to start
-uv run --group ansible ansible-playbook site.yml                     # all of them
+uv run --group ansible ansible-playbook site.yml --limit ocs-intelligence-macmini-7   # one, to start
+uv run --group ansible ansible-playbook site.yml                                      # all it finds
 ```
 
 It's safe to rerun. The first run on a machine takes a while (a full upgrade, a reboot into the new kernel, the Wi-Fi driver build, and the Python packages). The internet link is shared and slow (about 84 Mb/s, [network](../architecture/network.md#the-ocs-lan)), so run big batches with `--forks 5` or less.
@@ -82,7 +85,8 @@ To add a Python package for every node: edit `cluster-requirements.in`, re-lock 
 |---|---|---|
 | "No wl* interface" | The `wl` module didn't build for the running kernel | `dkms status`; `sudo apt install linux-headers-$(uname -r)`; reboot; rerun |
 | Wi-Fi task times out | Wrong SSID or password in `.env`, or the 5 GHz signal is weak in the corner | `sudo journalctl -u netplan-wpa-wlp2s0 -b`; fix `.env`; rerun `--tags network` |
-| Ansible loses the host after `network` | Its address changed | Find it again (`nmap -sn 192.168.8.0/24`, or `<hostname>.local`) and update the inventory |
-| Host unreachable mid-run | Your laptop left `OCS_Intel` (Windows may switch Wi-Fi networks), or the Mac mini rebooted | Rejoin `OCS_Intel` and rerun; the first task repairs an interrupted upgrade |
+| Ansible loses the host after `network` or a reboot | Its address changed mid-run | Rerun: `inventory.py` finds it at the new address |
+| Host unreachable mid-run | Your laptop left `OCS_Intel` (Windows may switch Wi-Fi networks) | Rejoin `OCS_Intel` and rerun; the first task repairs an interrupted upgrade |
+| A Mac mini is missing from `inventory.py --table` | It's off, has no network yet (FIX stick), or rejects your SSH key | `ssh ocs@<ip> hostname` to see which |
 | `sudo: a password is required` | `MACMINI_SUDO_PASSWORD` missing from `.env` | Add it |
 | NetBird join skipped | `NETBIRD_MACMINI_SETUP_KEY` empty | Create one (see above) and rerun `--tags netbird` |

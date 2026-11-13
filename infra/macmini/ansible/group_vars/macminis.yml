@@ -1,10 +1,10 @@
 # Settings for every Mac mini. Secrets are read from the repo-root .env (gitignored),
 # never written here.
 ocs_env_file: "{{ playbook_dir }}/../../../.env"
-ansible_become_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_SUDO_PASSWORD', type='properties', file=ocs_env_file, default='') }}"
-ocs_wifi_ssid: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_SSID', type='properties', file=ocs_env_file, default='') }}"
-ocs_wifi_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_PASSWORD', type='properties', file=ocs_env_file, default='') }}"
-ocs_netbird_setup_key: "{{ lookup('ansible.builtin.ini', 'NETBIRD_MACMINI_SETUP_KEY', type='properties', file=ocs_env_file, default='') }}"
+ansible_become_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_SUDO_PASSWORD', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
+ocs_wifi_ssid: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_SSID', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
+ocs_wifi_password: "{{ lookup('ansible.builtin.ini', 'MACMINI_WIFI_PASSWORD', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
+ocs_netbird_setup_key: "{{ lookup('ansible.builtin.ini', 'NETBIRD_MACMINI_SETUP_KEY', type='properties', file=ocs_env_file, default='', interpolation=false) }}"
 
 # Network: Wi-Fi is the main link (lower metric wins the default route); wired stays up as backup.
 ocs_wifi_metric: 100

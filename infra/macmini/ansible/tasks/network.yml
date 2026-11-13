@@ -2,6 +2,11 @@
   ansible.builtin.command: modprobe wl
   changed_when: false
 
+- name: Wait for the Wi-Fi interface to appear and get its final name
+  ansible.builtin.shell: udevadm settle; for i in $(seq 20); do ls /sys/class/net | grep -q '^wl' && exit 0; sleep 1; done; exit 1
+  changed_when: false
+  failed_when: false   # the assert below reports it
+
 - name: Find the wired and Wi-Fi interfaces
   ansible.builtin.setup: {gather_subset: [network]}
 
@@ -30,13 +35,25 @@
   no_log: true   # holds the Wi-Fi password
   register: netplan_file
 
-- name: Remove the stick's wired-only netplan (now in 01-ocs.yaml)
-  ansible.builtin.file: {path: /etc/netplan/01-wired.yaml, state: absent}
-  register: netplan_old
-
 - name: Check the netplan is valid
   ansible.builtin.command: netplan generate
   changed_when: false
+  no_log: true   # errors quote the offending line, which may be the password
+  register: netplan_check
+  ignore_errors: true
+
+- name: Invalid netplan, put the stick's wired-only one back in charge
+  when: netplan_check is failed
+  block:
+    - name: Remove the bad file
+      ansible.builtin.file: {path: /etc/netplan/01-ocs.yaml, state: absent}
+    - name: Stop
+      ansible.builtin.fail:
+        msg: "netplan generate rejected 01-ocs.yaml (removed; 01-wired.yaml kept). Check MACMINI_WIFI_* in .env, then run `sudo netplan generate` on the host with your own template."
+
+- name: Remove the stick's wired-only netplan (now in 01-ocs.yaml)
+  ansible.builtin.file: {path: /etc/netplan/01-wired.yaml, state: absent}
+  register: netplan_old
 
 - name: Apply it (in the background, so a blip on the wired link doesn't kill the session)
   ansible.builtin.shell: sleep 2 && netplan apply
@@ -51,7 +68,7 @@
 - name: Wi-Fi has an address
   ansible.builtin.command: ip -4 -br addr show {{ ocs_wifi_if }}
   register: wifi_addr
-  until: "'192.168.' in wifi_addr.stdout"
+  until: "' UP ' in wifi_addr.stdout and '/' in wifi_addr.stdout"
   retries: 20
   delay: 3
   changed_when: false

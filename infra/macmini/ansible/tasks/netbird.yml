@@ -20,7 +20,7 @@
   ansible.builtin.apt:
     lock_timeout: 1800   # unattended-upgrades often holds the lock on a fresh machine
     name: netbird
-    update_cache: "{{ nb_repo.changed }}"
+    update_cache: true   # always: a run that stopped after adding the repo must still see it
 
 - name: NetBird runs as a service
   ansible.builtin.command: netbird service install
@@ -35,13 +35,24 @@
   changed_when: false
   failed_when: false
 
+# The key goes through a root-only file, not the command line, so it isn't in `ps`.
 - name: Join with the Mac mini setup key (adds it to the ocs-macminis group)
-  ansible.builtin.command: netbird up --setup-key {{ ocs_netbird_setup_key }}
-  no_log: true
   when:
     - "'Management: Connected' not in nb_status.stdout"
     - ocs_netbird_setup_key | length > 0
-  changed_when: true
+  block:
+    - name: Setup key file
+      ansible.builtin.copy:
+        dest: /root/.netbird-setup-key
+        content: "{{ ocs_netbird_setup_key }}"
+        mode: "0600"
+      no_log: true
+    - name: netbird up
+      ansible.builtin.command: netbird up --setup-key-file /root/.netbird-setup-key
+      changed_when: true
+  always:
+    - name: Remove the setup key file
+      ansible.builtin.file: {path: /root/.netbird-setup-key, state: absent}
 
 - name: NetBird address
   ansible.builtin.shell: netbird status | grep -E 'Management:|NetBird IP:|FQDN:'

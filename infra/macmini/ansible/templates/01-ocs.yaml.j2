@@ -1,10 +1,13 @@
 # Managed by Ansible (infra/macmini/ansible). Wi-Fi is the main link; wired is the backup.
+# dhcp-identifier: mac makes the router see the same client after a reboot, so the
+# address usually stays the same. Still DHCP, not static.
 network:
   version: 2
   renderer: networkd
   ethernets:
     {{ ocs_wired_if }}:
       dhcp4: true
+      dhcp-identifier: mac
       optional: true
       dhcp4-overrides:
         route-metric: {{ ocs_wired_metric }}
@@ -12,6 +15,7 @@ network:
   wifis:
     {{ ocs_wifi_if }}:
       dhcp4: true
+      dhcp-identifier: mac
       optional: true
       regulatory-domain: {{ ocs_wifi_regdomain }}
       dhcp4-overrides:
