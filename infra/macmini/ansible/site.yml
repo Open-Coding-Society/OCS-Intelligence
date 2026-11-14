@@ -13,19 +13,24 @@
   tasks:
     - name: Secrets are present
       ansible.builtin.assert:
-        that: ansible_become_password | length > 0
+        that: (ansible_connection | default('ssh')) == 'local' or ansible_become_password | length > 0   # local (stick): already root
         fail_msg: "MACMINI_SUDO_PASSWORD is missing from {{ ocs_env_file }}"
       tags: always
     - ansible.builtin.import_tasks: tasks/base.yml
       tags: base
     - ansible.builtin.import_tasks: tasks/hostname.yml
       tags: hostname
-    - ansible.builtin.import_tasks: tasks/network.yml
-      tags: network
+    - ansible.builtin.import_tasks: tasks/cache_server.yml
+      when: ocs_cache_server | bool
+      tags: cache
+    # Before network: on a first run the machine is still wired-only, so the big
+    # downloads (from silver's cache) go over the cable, not Wi-Fi.
     - ansible.builtin.import_tasks: tasks/python.yml
       tags: python
     - ansible.builtin.import_tasks: tasks/netbird.yml
       tags: netbird
+    - ansible.builtin.import_tasks: tasks/network.yml
+      tags: network
     - ansible.builtin.import_tasks: tasks/ray_check.yml
       tags: ray_check
   handlers:

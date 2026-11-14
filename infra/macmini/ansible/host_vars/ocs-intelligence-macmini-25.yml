@@ -1,0 +1,2 @@
+# Silver: wired, holds the download cache for the others.
+ocs_cache_server: true

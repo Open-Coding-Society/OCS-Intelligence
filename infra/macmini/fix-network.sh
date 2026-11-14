@@ -64,4 +64,10 @@ while [ $i -lt 30 ]; do
 done
 C=$(cat "/sys/class/net/$IF/carrier" 2>/dev/null || echo ?)
 echo "$NAME  $IF  carrier=$C  ip=${A:-NONE}"
-[ -n "$A" ] || echo "No address: check the cable and link light (carrier=0 means no link)."
+[ -n "$A" ] || { echo "No address: check the cable and link light (carrier=0 means no link)."; exit 1; }
+
+# If the stick also carries the setup kit (make_stick.py), hand over to it: it
+# copies itself off the stick and runs the whole playbook here as a service.
+KIT="$(dirname "$0")/ocs"
+[ -f "$KIT/bootstrap.sh" ] && sh "$KIT/bootstrap.sh" "$KIT"
+exit 0

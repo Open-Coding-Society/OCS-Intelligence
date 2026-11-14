@@ -80,3 +80,13 @@ ocs_apt_packages:
   - bind9-dnsutils
   - net-tools
   - linux-tools-generic
+
+# Download cache (tasks/cache_server.yml) on silver, wired at its reserved address.
+# Clients use it when it answers, the internet otherwise.
+ocs_cache_server: false          # true only in host_vars of the cache host
+ocs_cache_host: 192.168.8.35
+ocs_cache_http_port: 8090
+ocs_cache_dir: /srv/ocs-cache
+
+# Where the FIX stick's kit lives when the playbook runs on the machine itself.
+ocs_bootstrap_dir: /root/ocs-bootstrap

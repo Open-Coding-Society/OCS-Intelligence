@@ -162,3 +162,47 @@ def test_reservations_layout_and_clash_detection():
     assert res.conflicts(es, current) == []           # our own section isn't a clash (re-apply is fine)
     clash = res.conflicts([{**es[0], "ip": "192.168.8.112"}], current)
     assert len(clash) == 1 and "192.168.8.112" in clash[0]
+
+
+def test_stick_bootstrap_copies_kit_finds_number_and_starts_service(tmp_path):
+    """bootstrap.sh with its test hooks: no root, no systemd."""
+    import subprocess
+    kit = tmp_path / "stick" / "ocs"
+    (kit / "ansible").mkdir(parents=True)
+    (kit / "ansible" / "site.yml").write_text("- hosts: all\n")
+    (kit / "secrets.env").write_text("MACMINI_WIFI_PASSWORD=x\n")
+    (kit / "macminis.csv").write_text("number,serial\n7,C07RX0ABG1J1\n")
+    for name in ("bootstrap.sh", "run.sh"):
+        (kit / name).write_text((KIT / "stick" / name).read_text())
+    (kit / "uv").write_text("#!/bin/sh\n")
+    (tmp_path / "serial").write_text("c07rx0abg1j1\n")
+    for d in ("root", "units", "bin"):
+        (tmp_path / d).mkdir()
+    calls = tmp_path / "systemctl.log"
+    fake = tmp_path / "systemctl"
+    fake.write_text(f'#!/bin/sh\necho "$@" >> {calls}\n')
+    fake.chmod(0o755)
+    env = {"PATH": "/usr/bin:/bin", "OCS_BOOTSTRAP_DIR": str(tmp_path / "root" / "ocs-bootstrap"),
+           "OCS_DMI_SERIAL": str(tmp_path / "serial"), "OCS_UNIT_DIR": str(tmp_path / "units"),
+           "OCS_BIN_DIR": str(tmp_path / "bin"), "OCS_SYSTEMCTL": str(fake)}
+    r = subprocess.run(["sh", str(kit / "bootstrap.sh"), str(kit)], env=env, capture_output=True, text=True, timeout=20)
+    assert r.returncode == 0, r.stderr
+    b = tmp_path / "root" / "ocs-bootstrap"
+    assert (b / "number").read_text().strip() == "7" and "#7" in r.stdout
+    assert (b / "secrets.env").exists() and (b / "ansible" / "site.yml").exists()
+    assert (b.stat().st_mode & 0o077) == 0                       # root-only
+    assert "ExecStart=" + str(b / "run.sh") in (tmp_path / "units" / "ocs-bootstrap.service").read_text()
+    assert "start --no-block ocs-bootstrap.service" in calls.read_text()
+    # unknown serial: still starts, says so
+    (tmp_path / "serial").write_text("C07UNKNOWN99\n")
+    r = subprocess.run(["sh", str(kit / "bootstrap.sh"), str(kit)], env=env, capture_output=True, text=True, timeout=20)
+    assert r.returncode == 0 and "#?" in r.stdout and "not in macminis.csv" in r.stdout
+
+
+def test_fix_stick_hands_over_to_the_kit_and_playbook_resumes_after_local_reboot():
+    f = (KIT / "fix-network.sh").read_text()
+    assert 'sh "$KIT/bootstrap.sh" "$KIT"' in f
+    base = (KIT / "ansible" / "tasks" / "base.yml").read_text()
+    assert "reboot-pending" in base and "meta: end_host" in base
+    run = (KIT / "stick" / "run.sh").read_text()
+    assert 'rm -f "$B/secrets.env"' in run and "reboot-pending" in run

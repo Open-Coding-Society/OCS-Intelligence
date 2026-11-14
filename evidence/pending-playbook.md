@@ -54,8 +54,22 @@ Follows the 2026-11-12 entry below.
 - **Moving to the reserved address:** `networkctl renew` wasn't enough. The router answered `DHCPNAK ... static lease available`, but networkd kept `.187` and didn't ask again. `networkctl reconfigure wlp2s0` moved it to `.75` within 30 s (it drops the address, so run it in the background). A reboot would do it too.
 - **Scan reliability:** the scan missed the machine once while it was up, which would have dropped it from that run. `inventory.py` now retries probes that got no answer, twice. A scan takes about 8 s.
 - **FIX stick asks nothing now:** with the serial table in place, the stick only turns on the wired port. The playbook renames each machine from its serial, before NetBird joins, so the peer gets the final name too. Wi-Fi still needs the first playbook run over the cable, because the `wl` driver is built on each machine from the internet.
+- **One command per machine (built, not yet run on a Mac mini):** the team wants to plug in the stick, run one command, and have the machine fully set up, so it's ready to run on Monday 2026-11-16. Pushing from the laptop, with a watcher, was considered and dropped: the stick is plugged in anyway, and running on the machine needs no laptop. Built:
+  - [`make_stick.py`](../infra/macmini/make_stick.py) builds the stick: `f`, plus a kit holding the playbook, the pinned `uv`, the serial table and `secrets.env`.
+  - `secrets.env` has only the Wi-Fi SSID and password and a NetBird setup key limited to 33 uses and 14 days, created 2026-11-13 (`NETBIRD_MACMINI_STICK_KEY`). The permanent key stays on the laptop.
+  - [`bootstrap.sh`](../infra/macmini/stick/bootstrap.sh) copies the kit off the stick (root-only), finds the Post-it number from the firmware serial, and starts `ocs-bootstrap.service`.
+  - [`run.sh`](../infra/macmini/stick/run.sh) runs the playbook locally with ansible-core 2.21.6 through `uvx`. It resumes after the new-kernel reboot, retries up to 5 times, and deletes the secrets when done.
+  - The playbook's reboot step now has a local path: mark the reboot, reboot 15 s later, end the run.
+  - Tested offline: the bootstrap with test hooks; the local inventory and secrets lookup with ansible-core 2.21.6 on Python 3.14 (Ubuntu 26.04's version).
+- **Download cache (started):** silver (`ocs_cache_server: true`) runs `apt-cacher-ng`, and serves the 89 locked wheels and the pinned `uv` on `:8090`. Clients use it when it answers, the internet otherwise.
+  - The first run on silver installed `apt-cacher-ng`, then stopped while it was downloading wheels, because the operator laptop left the LAN. The wheel download now resumes based on which wheels are missing, not on whether the requirements file changed.
+  - Python and NetBird now run before the Wi-Fi step, so a new machine's big downloads go over its cable.
+  - That the cache is faster is not measured yet (planned: `iperf3` silver → a wired Mac mini).
+  - Silver is wired again: reserved `.35`, 1 Gb/s full duplex.
+- **Cabling:** the Mac minis have no Ethernet yet. The team will connect them 7 at a time to a gigabit switch uplinked to the Flint (reported).
 - **Naming:** silver's Post-it is 25. The mastermac is a different machine, Post-it 0.
 - **Open:**
+  - Monday: finish silver's cache (rerun with `--limit ocs-intelligence-macmini-25`), measure it, build the stick into Downloads, try it on one Mac mini, then batches of 7
   - check the uncertain serials (#22 `406`, #27 `6ER`, #28, #32) against each machine's real hostname when it comes online
   - a Ray cluster (head node on the mastermac, `macmini-0`, plus worker services)
   - wired vs Wi-Fi for Ray traffic

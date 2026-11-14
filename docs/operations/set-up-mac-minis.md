@@ -18,20 +18,44 @@ By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS 
 
 ## Steps
 
-### 1. FIX stick: wired network, at each Mac mini (about 20 s each)
+### 1. The FIX stick sets each Mac mini up by itself (one command per machine)
 
-Machines flashed before 2026-11-12 came up with no network: the install ran with no cable, so the installer disabled the wired port. ISOs built from the current template don't have this problem. The stick asks nothing and leaves the name alone: Ansible names each machine from its serial (step 2).
+The stick turns on the wired port, then hands over to a setup kit that runs this same playbook **on the Mac mini itself**, as a service (`ocs-bootstrap`). Your laptop isn't needed, and the machines run in parallel.
 
-**Keep the Ethernet cable in for the first playbook run.** Wi-Fi can't work yet: the BCM4360 needs the `wl` driver, which a fresh install doesn't have. The playbook builds the driver on each machine (it needs the internet for its packages and kernel headers), then switches to Wi-Fi. After that the cable is optional.
+**Not tested on a real Mac mini yet** (built 2026-11-13). The pieces are tested offline. Try it on one machine first.
 
-1. Format a USB stick FAT32 with the label `FIX`. Copy [`infra/macmini/fix-network.sh`](../../infra/macmini/fix-network.sh) onto it as `f`.
-2. At the Mac mini, with a keyboard (a monitor helps for the first few), log in as `ocs`, then:
+**Build the stick (once, on the laptop):**
 
-   ```bash
-   sudo mount -L FIX /mnt; sudo sh /mnt/f
-   ```
+1. The repo `.env` needs `MACMINI_WIFI_SSID`, `MACMINI_WIFI_PASSWORD` and `NETBIRD_MACMINI_STICK_KEY`. The last is a setup key limited to 33 uses and 14 days: `python3 -c 'import sys; sys.path.insert(0,"infra/netbird"); import apply; print(apply.setup_key("ocs-macminis", days=14, uses=33))'`.
+2. `infra/macmini/macminis.csv` holds the Post-it table (`number,serial`). It's gitignored.
+3. `python3 infra/macmini/make_stick.py --out /mnt/c/Users/<you>/Downloads/ocs-macmini-stick` (the default `--out` is the gitignored `infra/macmini/build/stick`).
+4. Copy everything in that folder onto a FAT32 stick labeled `FIX`. The stick now holds the Wi-Fi password and the NetBird key. Keep it with the Mac minis, and wipe it when the batch is done.
 
-3. It prints one line, for example `ocs-intelligence-c07rx0xxxg1j1  enp3s0f0  carrier=1  ip=192.168.8.x/24`. Write the IP down. `carrier=0` means no link: check the cable and the port's light.
+**At each Mac mini** (Ethernet plugged in; a keyboard; a monitor for the first few), log in as `ocs`, then:
+
+```bash
+sudo mount -L FIX /mnt; sudo sh /mnt/f
+```
+
+It prints the network line, then `#7 (serial C07…): setup started. You can pull the stick.` Pull it and move to the next machine.
+
+- `#?` means the serial isn't in `macminis.csv`. The machine is still set up, but keeps its serial name. Fix the table, then rename it with `--tags hostname` from the laptop.
+- No address, or `carrier=0`: check the cable and the port's light.
+
+**What happens next, on its own** (about 20–30 minutes, with one reboot):
+
+- **Kit:** `bootstrap.sh` copies the kit to `/root/ocs-bootstrap/` (root-only) and installs the pinned `uv`. It reads the serial from the firmware and looks up the number.
+- **Service:** it starts `ocs-bootstrap.service`, which runs `run.sh`. That runs `uvx --from ansible-core==2.21.6 ansible-playbook` against `this-macmini` with a local connection.
+- **Reboot:** when the upgrade brings a new kernel, the playbook marks the reboot, reboots, and the service runs it again after boot. (Ansible can't reboot its own controller and carry on.)
+- **Failure:** it retries a minute later, up to 5 tries.
+- **Success:** it deletes `secrets.env`, disables itself, and prints `DONE` to the console.
+- **Watching:** `journalctl -fu ocs-bootstrap` on the machine shows progress, and `/var/log/ocs-bootstrap.log` holds the full log.
+
+**Keep the Ethernet cable in until it's done.** The Wi-Fi card (BCM4360) needs the `wl` driver, which a fresh install doesn't have. The playbook builds it from the internet over the cable, then switches to Wi-Fi. After that the cable is optional.
+
+**Afterwards, from the laptop** (on `OCS_Intel`): `infra/macmini/ansible/inventory.py --table` lists them, and `reservations.py --apply` gives each its fixed addresses.
+
+**Without the kit** (just the `f` file on the stick), the stick only turns on the wired port, and the playbook is run from the laptop (steps 2–3). Machines flashed before 2026-11-12 need the stick either way: the install ran with no cable, so the installer disabled the wired port.
 
 ### 2. Check Ansible finds them
 
@@ -60,8 +84,9 @@ It's safe to rerun. The first run on a machine takes a while (a full upgrade, a 
 
 | Part (tag) | What it does |
 |---|---|
-| `base` | Wait for unattended-upgrades, repair an interrupted install, upgrade, reboot if needed, the package list in [`group_vars/macminis.yml`](../../infra/macmini/ansible/group_vars/macminis.yml), `ocs` in the `docker` group, open-file limits, cluster sysctls, zram swap, `mbpfan` fan control, power-on after a power cut, never sleep |
+| `base` | Point apt at the cache when it answers, wait for unattended-upgrades, repair an interrupted install, upgrade, reboot if needed, the package list in [`group_vars/macminis.yml`](../../infra/macmini/ansible/group_vars/macminis.yml), `ocs` in the `docker` group, open-file limits, cluster sysctls, zram swap, `mbpfan` fan control, power-on after a power cut, never sleep |
 | `hostname` | `ocs-intelligence-macmini-N` when `macmini_number` is set |
+| `cache` | Only on the cache host (silver, `ocs_cache_server: true` in `host_vars`): `apt-cacher-ng` on `:3142`, plus the locked wheels and the pinned `uv` on `http://<host>:8090/`. The others use it when it answers, and the internet when it doesn't (apt through `Proxy-Auto-Detect`; https repos such as NetBird's always go direct). |
 | `network` | The `wl` Wi-Fi driver, then one netplan: Wi-Fi on `MACMINI_WIFI_SSID` (route metric 100, the main link) and wired DHCP (metric 200, the backup) |
 | `python` | uv from Astral's installer (pinned version, `/usr/local/bin`), Python 3.12 managed by uv, and `/opt/ocs/venv` synced to [`cluster-requirements.txt`](../../infra/macmini/ansible/files/cluster-requirements.txt) |
 | `netbird` | NetBird from its apt repo, as a service, joined with the setup key |

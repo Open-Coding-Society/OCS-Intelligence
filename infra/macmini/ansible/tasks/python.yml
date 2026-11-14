@@ -1,13 +1,36 @@
 - name: /opt/ocs belongs to ocs
   ansible.builtin.file: {path: "{{ ocs_root }}", state: directory, owner: ocs, group: ocs, mode: "0755"}
 
+- name: Is the download cache on silver answering?
+  ansible.builtin.uri:
+    url: "http://{{ ocs_cache_host }}:{{ ocs_cache_http_port }}/wheels/"
+    timeout: 3
+  register: ocs_cache
+  failed_when: false
+
 - name: Installed uv version
   ansible.builtin.command: /usr/local/bin/uv --version
   register: uv_have
   failed_when: false
   changed_when: false
 
-- name: Install uv with Astral's installer (pinned version, into /usr/local/bin)
+- name: uv from the cache
+  when:
+    - ocs_uv_version not in (uv_have.stdout | default(''))
+    - ocs_cache.status | default(0) == 200
+  ansible.builtin.get_url:
+    url: "http://{{ ocs_cache_host }}:{{ ocs_cache_http_port }}/uv/uv"
+    dest: /usr/local/bin/uv
+    mode: "0755"
+    force: true
+
+- name: Installed uv version, again
+  ansible.builtin.command: /usr/local/bin/uv --version
+  register: uv_have
+  failed_when: false
+  changed_when: false
+
+- name: Otherwise uv from Astral's installer (pinned version, into /usr/local/bin)
   when: ocs_uv_version not in (uv_have.stdout | default(''))
   block:
     - name: Download the installer
@@ -56,6 +79,8 @@
 - name: Install exactly the locked packages (uv pip sync)
   ansible.builtin.command: >-
     /usr/local/bin/uv pip sync {{ ocs_root }}/cluster-requirements.txt --python {{ ocs_venv }}/bin/python
+    {{ ('--no-index --find-links http://' ~ ocs_cache_host ~ ':' ~ ocs_cache_http_port ~ '/wheels/')
+       if ocs_cache.status | default(0) == 200 else '' }}
   become_user: ocs
   register: uv_sync
   changed_when: "'Installed' in uv_sync.stderr or 'Uninstalled' in uv_sync.stderr"

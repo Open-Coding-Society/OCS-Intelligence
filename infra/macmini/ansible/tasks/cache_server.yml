@@ -1,0 +1,80 @@
+# The download cache, on the one Mac mini with ocs_cache_server: true (silver, wired).
+# Each file then crosses the slow internet link once; the other Mac minis fetch it
+# over the LAN. Clients fall back to the internet when this host doesn't answer.
+#   apt:    apt-cacher-ng on :3142 (http repos only; https repos such as NetBird go direct)
+#   Python: http://<host>:8090/wheels/  the 89 locked wheels, built from cluster-requirements.txt
+#           http://<host>:8090/uv/uv    the pinned uv binary
+- name: apt-cacher-ng
+  ansible.builtin.apt:
+    lock_timeout: 1800
+    name: apt-cacher-ng
+    state: present
+
+- name: apt-cacher-ng runs
+  ansible.builtin.systemd_service: {name: apt-cacher-ng, enabled: true, state: started}
+
+- name: Cache directories
+  ansible.builtin.file: {path: "{{ item }}", state: directory, owner: ocs, group: ocs, mode: "0755"}
+  loop: ["{{ ocs_cache_dir }}", "{{ ocs_cache_dir }}/wheels", "{{ ocs_cache_dir }}/uv"]
+
+- name: Locked requirements for the wheelhouse
+  ansible.builtin.copy:
+    src: cluster-requirements.txt
+    dest: "{{ ocs_cache_dir }}/cluster-requirements.txt"
+    owner: ocs
+    group: ocs
+    mode: "0644"
+
+# Keyed on what's actually there, not on the copy above: a run cut off mid-download
+# must still finish the wheelhouse next time.
+- name: Wheels missing from the wheelhouse
+  ansible.builtin.shell: |
+    cd {{ ocs_cache_dir }}
+    grep -E '^[A-Za-z0-9]' cluster-requirements.txt | while IFS='=' read -r pkg _ ver; do
+      n=$(printf '%s' "$pkg" | tr 'A-Z-.' 'a-z__')
+      ls wheels/ | tr 'A-Z-.' 'a-z__' | grep -q "^${n}_${ver}" || echo "$pkg"
+    done
+  register: wheels_missing
+  changed_when: false
+
+- name: Download the missing locked wheels for Python {{ ocs_python_version }} (binary only, no resolving)
+  ansible.builtin.command: >-
+    python3 -m pip download --quiet --no-deps --only-binary=:all:
+    --python-version {{ ocs_python_version }}
+    -r {{ ocs_cache_dir }}/cluster-requirements.txt -d {{ ocs_cache_dir }}/wheels
+  become_user: ocs
+  when: wheels_missing.stdout | length > 0
+  changed_when: true
+
+- name: Wheelhouse has every locked package
+  ansible.builtin.shell: >-
+    test "$(ls {{ ocs_cache_dir }}/wheels/*.whl | wc -l)" -ge
+    "$(grep -cE '^[A-Za-z0-9]' {{ ocs_cache_dir }}/cluster-requirements.txt)"
+  changed_when: false
+
+- name: The pinned uv binary, for the others
+  ansible.builtin.copy:
+    src: /usr/local/bin/uv
+    remote_src: true
+    dest: "{{ ocs_cache_dir }}/uv/uv"
+    mode: "0755"
+
+- name: Serve the cache directory over HTTP (read-only files, LAN)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ocs-cache-http.service
+    content: |
+      [Unit]
+      Description=OCS Mac mini download cache (wheels, uv) on :{{ ocs_cache_http_port }}
+      After=network-online.target
+
+      [Service]
+      User=ocs
+      ExecStart=/usr/bin/python3 -m http.server {{ ocs_cache_http_port }} --directory {{ ocs_cache_dir }}
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: "0644"
+
+- name: The cache server runs
+  ansible.builtin.systemd_service: {name: ocs-cache-http, enabled: true, state: started, daemon_reload: true}
