@@ -1,12 +1,31 @@
 - name: /opt/ocs belongs to ocs
   ansible.builtin.file: {path: "{{ ocs_root }}", state: directory, owner: ocs, group: ocs, mode: "0755"}
 
-- name: Is the download cache on silver answering?
+- name: Copy the locked requirements
+  ansible.builtin.copy:
+    src: cluster-requirements.txt
+    dest: "{{ ocs_root }}/cluster-requirements.txt"
+    owner: ocs
+    group: ocs
+    mode: "0644"
+
+- name: Is the download cache on silver answering, with a complete wheelhouse for our lock?
   ansible.builtin.uri:
-    url: "http://{{ ocs_cache_host }}:{{ ocs_cache_http_port }}/wheels/"
+    url: "http://{{ ocs_cache_host }}:{{ ocs_cache_http_port }}/wheels/READY"
     timeout: 3
-  register: ocs_cache
+    return_content: true
+  register: ocs_cache_ready
   failed_when: false
+
+- name: Our lock's fingerprint (sha256 of the copied file, as the cache computes it)
+  ansible.builtin.stat:
+    path: "{{ ocs_root }}/cluster-requirements.txt"
+    checksum_algorithm: sha256
+  register: ocs_lock
+
+- name: Use the cache only if its wheelhouse was built from this exact lock
+  ansible.builtin.set_fact:
+    ocs_cache_ok: "{{ ocs_cache_ready.status | default(0) == 200 and (ocs_cache_ready.content | default('') | trim) == ocs_lock.stat.checksum }}"
 
 - name: Installed uv version
   ansible.builtin.command: /usr/local/bin/uv --version
@@ -17,7 +36,7 @@
 - name: uv from the cache
   when:
     - ocs_uv_version not in (uv_have.stdout | default(''))
-    - ocs_cache.status | default(0) == 200
+    - ocs_cache_ok | bool
   ansible.builtin.get_url:
     url: "http://{{ ocs_cache_host }}:{{ ocs_cache_http_port }}/uv/uv"
     dest: /usr/local/bin/uv
@@ -68,19 +87,11 @@
   become_user: ocs
   environment: {UV_PYTHON_INSTALL_DIR: "{{ ocs_root }}/python"}
 
-- name: Copy the locked requirements
-  ansible.builtin.copy:
-    src: cluster-requirements.txt
-    dest: "{{ ocs_root }}/cluster-requirements.txt"
-    owner: ocs
-    group: ocs
-    mode: "0644"
-
 - name: Install exactly the locked packages (uv pip sync)
   ansible.builtin.command: >-
     /usr/local/bin/uv pip sync {{ ocs_root }}/cluster-requirements.txt --python {{ ocs_venv }}/bin/python
     {{ ('--no-index --find-links http://' ~ ocs_cache_host ~ ':' ~ ocs_cache_http_port ~ '/wheels/')
-       if ocs_cache.status | default(0) == 200 else '' }}
+       if ocs_cache_ok | bool else '' }}
   become_user: ocs
   register: uv_sync
   changed_when: "'Installed' in uv_sync.stderr or 'Uninstalled' in uv_sync.stderr"

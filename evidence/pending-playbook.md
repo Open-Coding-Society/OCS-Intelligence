@@ -65,11 +65,21 @@ Follows the 2026-11-12 entry below.
   - The first run on silver installed `apt-cacher-ng`, then stopped while it was downloading wheels, because the operator laptop left the LAN. The wheel download now resumes based on which wheels are missing, not on whether the requirements file changed.
   - Python and NetBird now run before the Wi-Fi step, so a new machine's big downloads go over its cable.
   - That the cache is faster is not measured yet (planned: `iperf3` silver → a wired Mac mini).
+  - Fixed after a second review, before any client used the cache:
+    - Silver's wired link becomes its main link (`ocs_wired_metric: 100` in its `host_vars`). Otherwise the cache's replies would leave over Wi-Fi.
+    - Silver writes `wheels/READY` with the sha256 of the lock it built from, once every wheel is there. Clients use the cache only when that matches their own lock, and go to PyPI otherwise, so a half-built or stale wheelhouse can't fail every machine.
+    - The stick's reboot-and-resume stops after 3 reboots.
+    - Checked locally with ansible-core 2.21.6: `meta: end_host` inside a `when` block exits 0, skips the rest, and still runs pending handlers. `run.sh` relies on that.
   - Silver is wired again: reserved `.35`, 1 Gb/s full duplex.
 - **Cabling:** the Mac minis have no Ethernet yet. The team will connect them 7 at a time to a gigabit switch uplinked to the Flint (reported).
 - **Naming:** silver's Post-it is 25. The mastermac is a different machine, Post-it 0.
 - **Open:**
-  - Monday: finish silver's cache (rerun with `--limit ocs-intelligence-macmini-25`), measure it, build the stick into Downloads, try it on one Mac mini, then batches of 7
+  - Monday:
+    1. Rerun silver with `--limit ocs-intelligence-macmini-25` **before sticking anything**. That finishes the wheelhouse and the metric swap. `apt-cacher-ng` is already listening, so new machines' apt would go through it, and silver's own `apt update` through it is the check.
+    2. Measure the cache.
+    3. Rebuild the stick if anything changed. A build is in Downloads (`ocs-macmini-stick`, 2026-11-13); the old `ocs-macmini-netfix` is network-only.
+    4. Try one Mac mini with a monitor, watching `journalctl -fu ocs-bootstrap` through the reboot to `DONE`, then batches of 7.
+    5. `reservations.py --apply`, then reboot the machines or `networkctl reconfigure` them.
   - check the uncertain serials (#22 `406`, #27 `6ER`, #28, #32) against each machine's real hostname when it comes online
   - a Ray cluster (head node on the mastermac, `macmini-0`, plus worker services)
   - wired vs Wi-Fi for Ray traffic

@@ -52,6 +52,14 @@
     "$(grep -cE '^[A-Za-z0-9]' {{ ocs_cache_dir }}/cluster-requirements.txt)"
   changed_when: false
 
+# Clients use the wheelhouse only when this matches the sha256 of their own lock
+# file, so a half-built or out-of-date wheelhouse sends them to PyPI instead.
+- name: Mark the wheelhouse complete for this lock
+  ansible.builtin.shell: >-
+    sha256sum {{ ocs_cache_dir }}/cluster-requirements.txt | cut -d' ' -f1
+    > {{ ocs_cache_dir }}/wheels/READY.tmp && mv {{ ocs_cache_dir }}/wheels/READY.tmp {{ ocs_cache_dir }}/wheels/READY
+  changed_when: false
+
 - name: The pinned uv binary, for the others
   ansible.builtin.copy:
     src: /usr/local/bin/uv

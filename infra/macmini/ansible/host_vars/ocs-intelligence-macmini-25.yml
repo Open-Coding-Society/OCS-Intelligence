@@ -1,2 +1,6 @@
 # Silver: wired, holds the download cache for the others.
 ocs_cache_server: true
+# Wired is silver's main link, so the cache's replies leave over the cable. With
+# Wi-Fi at the lower metric, both /24 routes exist and replies would go out over Wi-Fi.
+ocs_wired_metric: 100
+ocs_wifi_metric: 200

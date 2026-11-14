@@ -31,7 +31,15 @@ HOME=/root /usr/local/bin/uvx --python /usr/bin/python3 --from "$ANSIBLE_CORE" \
 rc=$?
 
 if [ -e "$B/reboot-pending" ]; then
-    say "rebooting into the new kernel; setup carries on after boot"
+    reboots=$(( $(cat "$B/reboots" 2>/dev/null || echo 0) + 1 ))
+    echo "$reboots" > "$B/reboots"
+    if [ "$reboots" -gt 3 ]; then
+        # Something keeps asking for a reboot (e.g. unattended-upgrades): stop looping.
+        say "asked to reboot $reboots times; stopping. See $LOG. Rerun the stick to start over."
+        systemctl disable ocs-bootstrap.service
+        exit 0
+    fi
+    say "rebooting into the new kernel (reboot $reboots); setup carries on after boot"
     echo 0 > "$B/tries"
     exit 0
 fi
