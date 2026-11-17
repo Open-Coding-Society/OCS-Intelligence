@@ -3,3 +3,5 @@
 number,serial
 0,C07XXXXXXXX0
 25,C07XXXXXXX25
+# A number may have two rows when a label was hard to read; a serial that doesn't
+# exist matches nothing. Every Macmini7,1 serial here ends in G1J1 (the model code).

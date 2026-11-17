@@ -92,7 +92,9 @@ def main() -> None:
         "Eject the stick in Windows before pulling it: a half-written file stops the setup.\n"
         "ocs/secrets.env holds the Wi-Fi password and a NetBird key: keep this stick safe\n"
         "and wipe it when the batch is done.\n")
-    print(f"stick contents in {out}: {len(rows)} Mac minis in the table, uv {have_uv}")
+    numbers = {r.split(",")[0] for r in rows}
+    print(f"stick contents in {out}: {len(numbers)} Mac minis in the table "
+          f"({len(rows) - len(numbers)} with an alternate serial), uv {have_uv}")
 
 
 if __name__ == "__main__":
