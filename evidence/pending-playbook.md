@@ -44,3 +44,12 @@ Follows the 2026-11-13 entry below.
   - #28 `5CG` confirmed.
   - #24 is `NNG`.
   - Alternate rows were added where a reading is still unsure: #0 `DZ6`/`DZG`, #22 `406`/`40G`, #32 `CYG`/`LYG`. A serial that doesn't exist matches nothing.
+  - Re-read later that day: #0 is `DZG`. #22 is `90G` or `40G`, and #32 is `CYG` or `LYG`; both keep two rows until the machines show their real serials.
+- **Plan for the rest:** batches of 6 on the switch (1 port is the uplink, 1 spare). Per batch:
+  1. Re-copy the stick if it was rebuilt, and eject it properly.
+  2. Cable each machine to the switch, run the stick, and pull it.
+  3. Wait about 20–30 minutes.
+  4. `inventory.py --table` until every machine shows a number and Wi-Fi.
+  5. `reservations.py --apply`.
+  6. Move the batch to its reservations (reboot, or `networkctl reconfigure`).
+  7. Free the switch ports for the next batch.
