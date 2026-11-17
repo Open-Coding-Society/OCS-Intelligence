@@ -175,6 +175,13 @@ def test_stick_bootstrap_copies_kit_finds_number_and_starts_service(tmp_path):
     for name in ("bootstrap.sh", "run.sh"):
         (kit / name).write_text((KIT / "stick" / name).read_text())
     (kit / "uv").write_text("#!/bin/sh\n")
+    (kit / "uv").chmod(0o755)
+    import hashlib
+    def write_sums():
+        files = sorted(p for p in kit.rglob("*") if p.is_file() and p.name != "SHA256SUMS")
+        (kit / "SHA256SUMS").write_text("".join(
+            f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(kit).as_posix()}\n" for p in files))
+    write_sums()
     (tmp_path / "serial").write_text("c07rx0abg1j1\n")
     for d in ("root", "units", "bin"):
         (tmp_path / d).mkdir()
@@ -197,6 +204,10 @@ def test_stick_bootstrap_copies_kit_finds_number_and_starts_service(tmp_path):
     (tmp_path / "serial").write_text("C07UNKNOWN99\n")
     r = subprocess.run(["sh", str(kit / "bootstrap.sh"), str(kit)], env=env, capture_output=True, text=True, timeout=20)
     assert r.returncode == 0 and "#?" in r.stdout and "not in macminis.csv" in r.stdout
+    # a damaged file on the stick: stop before changing anything
+    (kit / "uv").write_text("#!/bin/sh\nexit 0  # corrupted\n")
+    r = subprocess.run(["sh", str(kit / "bootstrap.sh"), str(kit)], env=env, capture_output=True, text=True, timeout=20)
+    assert r.returncode == 1 and "damaged" in r.stdout
 
 
 def test_fix_stick_hands_over_to_the_kit_and_playbook_resumes_after_local_reboot():

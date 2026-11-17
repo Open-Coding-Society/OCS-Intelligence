@@ -16,6 +16,15 @@ BIN_DIR="${OCS_BIN_DIR:-/usr/local/bin}"
 SYSTEMCTL="${OCS_SYSTEMCTL:-systemctl}"
 umask 077
 
+# 0. Is the stick's copy intact? (2026-11-17: uv arrived corrupted, same size,
+#    different bytes, most likely from pulling the stick before Windows finished
+#    writing it.) make_stick.py lists every file's sha256 in SHA256SUMS.
+if ! (cd "$SRC" && sha256sum -c --quiet SHA256SUMS); then
+    echo "STOP: files on this stick are damaged (see FAILED above). Nothing was changed."
+    echo "  Re-copy the stick from make_stick.py's output, and eject it in Windows before pulling it."
+    exit 1
+fi
+
 # 1. The kit, off the stick (a second run of the stick starts fresh).
 rm -rf "$B.new"
 mkdir -p "$B.new"
@@ -24,6 +33,7 @@ rm -rf "$B"
 mv "$B.new" "$B"
 chmod 700 "$B" "$B/run.sh"
 install -m 0755 "$SRC/uv" "$BIN_DIR/uv"
+"$BIN_DIR/uv" --version >/dev/null || { echo "STOP: uv doesn't run on this machine."; exit 1; }
 
 # 2. This machine's Post-it number, from its own serial.
 SERIAL=$(tr -cd 'A-Za-z0-9' < "$DMI_SERIAL" | tr 'a-z' 'A-Z')

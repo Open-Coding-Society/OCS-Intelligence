@@ -26,7 +26,7 @@ set -- -i "$B/local.ini" site.yml -e "ocs_env_file=$B/secrets.env" -e "ocs_boots
 
 say "try $tries started $(date '+%F %T')"
 cd "$B/ansible" || exit 1
-HOME=/root /usr/local/bin/uvx --python /usr/bin/python3 --from "$ANSIBLE_CORE" \
+HOME=/root /usr/local/bin/uv tool run --python /usr/bin/python3 --from "$ANSIBLE_CORE" \
     ansible-playbook "$@" >> "$LOG" 2>&1
 rc=$?
 

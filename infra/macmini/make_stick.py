@@ -18,6 +18,7 @@ gitignored. Standard library only. Guide: docs/operations/set-up-mac-minis.md
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import shutil
 import subprocess
@@ -75,6 +76,12 @@ def main() -> None:
     shutil.copytree(HERE / "ansible", kit / "ansible",
                     ignore=shutil.ignore_patterns("__pycache__", "*.retry", "*.pyc"))
     (kit / "secrets.env").write_text("".join(f"{dst}={env[src]}\n" for dst, src in SECRETS.items()))
+    # bootstrap.sh checks these before doing anything: a stick pulled before Windows
+    # finished writing it has delivered a corrupted uv before (2026-11-17).
+    sums = []
+    for p in sorted(x for x in kit.rglob("*") if x.is_file()):
+        sums.append(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(kit).as_posix()}\n")
+    (kit / "SHA256SUMS").write_text("".join(sums))
     (out / "README.txt").write_text(
         "OCS Mac mini FIX stick. Copy everything here onto a FAT32 stick labeled FIX.\n"
         "At a freshly flashed Mac mini, Ethernet plugged in, log in as ocs and run:\n\n"
@@ -82,6 +89,7 @@ def main() -> None:
         "It prints the machine's number and 'setup started'; pull the stick and move on.\n"
         "Setup takes about 20-30 min and reboots once. Progress on that machine:\n"
         "    journalctl -fu ocs-bootstrap\n"
+        "Eject the stick in Windows before pulling it: a half-written file stops the setup.\n"
         "ocs/secrets.env holds the Wi-Fi password and a NetBird key: keep this stick safe\n"
         "and wipe it when the batch is done.\n")
     print(f"stick contents in {out}: {len(rows)} Mac minis in the table, uv {have_uv}")

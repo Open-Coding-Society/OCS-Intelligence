@@ -31,7 +31,10 @@ Follows the 2026-11-13 entry below.
   - from silver: 1.65 s (48 MB/s)
   - from PyPI: 8.09 s (9.8 MB/s)
   - About 5×, and silver's downloads stay off the shared internet link. A wired Mac mini should be faster still (not measured; needs a second wired machine).
-- **Open:** the stick's first real run on a Mac mini.
+- **First stick run (mac26, serial-named `…c07rx09wg1j1`, found as #26 from the table):** two bugs, both fixed:
+  - `run.sh` called `uvx`, but the stick carries only the `uv` binary (`uvx` is a separate file in uv's release). It now calls `uv tool run`, which does the same.
+  - The `uv` copied from the stick was corrupted: same size (37,597,160 bytes), different sha256 (`805df19e…` instead of `8a70db72…`), and it crashed with `Inconsistency detected by ld.so`. The other 18 kit files matched. The Downloads copy and silver's copy were fine, so the damage happened on the USB stick, most likely when it was pulled before Windows finished writing. Now `make_stick.py` writes `SHA256SUMS`, and `bootstrap.sh` checks it, and that `uv` runs, before changing anything. On a mismatch it stops and says to re-copy and eject properly.
+  - mac26 itself was fixed remotely: the fixed `run.sh` copied in, `uv` replaced from silver's cache (`/uv/uv`, hash matches), the service restarted. Its setup then ran on its own, with apt going through silver's cache.
 
 ## Week of 2026-11-09
 
