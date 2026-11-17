@@ -13,6 +13,26 @@ The week's work, logged by the people and agents who did it. Each entry is waiti
 
 **Sprint 4 was written up on 2026-10-23.** Its hardware and inference entries moved into [the hardware playbook](./sprint4/2026-10-19-rig-hardware-ninth-gpu-driver-580.md) and [the inference playbook](./sprint4/2026-10-15-inference-on-both-rigs.md). Everything below feeds Sprint 5 ([plan](../docs/project/roadmap.md#sprint-5-plan)).
 
+## Week of 2026-11-16
+
+### Rigs and hardware
+
+#### 2026-11-17: Download cache on silver finished and measured
+
+Follows the 2026-11-13 entry below.
+
+- **Silver rerun** (`--limit ocs-intelligence-macmini-25`): `ok=65 changed=6 failed=0`. Wired is now silver's main link (`default via ... enp3s0f0 ... metric 100`, Wi-Fi metric 200). Ray test still `result 285`.
+- **Cache contents, checked on silver:**
+  - all 89 locked wheels in `/srv/ocs-cache/wheels` (242 MB)
+  - `wheels/READY` equals the sha256 of `cluster-requirements.txt` (`ab44ae99…`)
+  - `apt-cacher-ng` and `ocs-cache-http` active
+  - `ocs-apt-proxy` returns `http://192.168.8.35:3142`, and silver's own upgrade went through it (8.7 MB cached so far, from `security.ubuntu.com`)
+- **Speed:** the Ray wheel (79 MB) downloaded to the operator laptop, which is on Wi-Fi:
+  - from silver: 1.65 s (48 MB/s)
+  - from PyPI: 8.09 s (9.8 MB/s)
+  - About 5×, and silver's downloads stay off the shared internet link. A wired Mac mini should be faster still (not measured; needs a second wired machine).
+- **Open:** the stick's first real run on a Mac mini.
+
 ## Week of 2026-11-09
 
 ### Rigs and hardware
@@ -64,7 +84,7 @@ Follows the 2026-11-12 entry below.
 - **Download cache (started):** silver (`ocs_cache_server: true`) runs `apt-cacher-ng`, and serves the 89 locked wheels and the pinned `uv` on `:8090`. Clients use it when it answers, the internet otherwise.
   - The first run on silver installed `apt-cacher-ng`, then stopped while it was downloading wheels, because the operator laptop left the LAN. The wheel download now resumes based on which wheels are missing, not on whether the requirements file changed.
   - Python and NetBird now run before the Wi-Fi step, so a new machine's big downloads go over its cable.
-  - That the cache is faster is not measured yet (planned: `iperf3` silver → a wired Mac mini).
+  - That the cache is faster is not measured yet (planned: `iperf3` silver → a wired Mac mini). Measured 2026-11-17: see that week's entry.
   - Fixed after a second review, before any client used the cache:
     - Silver's wired link becomes its main link (`ocs_wired_metric: 100` in its `host_vars`). Otherwise the cache's replies would leave over Wi-Fi.
     - Silver writes `wheels/READY` with the sha256 of the lock it built from, once every wheel is there. Clients use the cache only when that matches their own lock, and go to PyPI otherwise, so a half-built or stale wheelhouse can't fail every machine.
