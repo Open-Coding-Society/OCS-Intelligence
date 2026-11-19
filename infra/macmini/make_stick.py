@@ -2,9 +2,10 @@
 """Build the FIX stick's contents: plug it into a freshly flashed Mac mini, run one
 command, and it sets itself up (network, name, packages, Wi-Fi, Python, Ray, NetBird).
 
-  python3 infra/macmini/make_stick.py --out /mnt/c/Users/<you>/Downloads/ocs-macmini-stick
+  python3 infra/macmini/make_stick.py          # -> infra/macmini/build/stick (gitignored)
 
-Then copy everything in --out onto a FAT32 stick labeled FIX. At each Mac mini
+Then put it on a FAT32 USB stick with copy_to_stick.ps1. It labels the stick FIX, checks
+that it's a small removable USB stick, verifies every file and ejects. At each Mac mini
 (Ethernet plugged in), log in as ocs and run:
 
   sudo mount -L FIX /mnt; sudo sh /mnt/f

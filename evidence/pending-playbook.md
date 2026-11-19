@@ -65,3 +65,13 @@ Follows the 2026-11-13 entry below.
 - **Recovered:** the router and the Mac minis were power-cycled. mac25 came back at 10:24 and mac27 at 10:45, both on their own, through the power-on-after-outage setting. Both were back on Wi-Fi with NetBird connected. That makes mac27 the first stick-built machine to pass a power cut. Its health check: Ray 2.60.0 and Python 3.12.15 in `/opt/ocs/venv`; services active; 38 °C idle.
 - **#26 is dead hardware, not a stick problem.** NetBird last saw it 2026-11-18 19:01 UTC, a day before the power cut. Plugged into the switch, its wired port sent the router not one frame (no DHCP request, no bridge entry for `38:C9:86:56:ED:1A`), and the user found it doesn't boot and gives the monitor no signal. Evidence it isn't the stick: mac27 was built by the same stick the same day and came back after the power cut. Parked; to look at later. Its reservations (`.36` / `.76`) and NetBird peer are left in place.
 - **openipmi:** the one failed unit on both machines. `prometheus-node-exporter-collectors` pulls in `ipmitool`, which brings `openipmi`, which looks for server-board IPMI hardware a Mac mini doesn't have. `base.yml` now masks it. It was masked by hand on #25 and #27, and both now show 0 failed units.
+
+**2026-11-19: FIX sticks written by a script that can only touch a small USB stick; C: is off limits to the agent.**
+- **Script:** `infra/macmini/copy_to_stick.ps1` writes to one drive only, and only if Windows reports it as removable, on USB, not a boot or system disk, and 10 GB or smaller. It labels the drive `FIX`, deletes the stick's own files, copies the kit, checks every file's SHA256 and ejects. `-DryRun` checks and lists without changing anything. It reads the kit from the repo's `infra/macmini/build/stick`, never from C:.
+- **First two sticks:** two 7.5 GB "USB DISK 2.0" sticks (D: and E:). D: held the old 11/17 kit and E: was empty; Windows showed neither labelled FIX. Each got a dry run, then the real run: labelled, copied, 24 of 24 files verified, ejected (Windows shows "No Media").
+- **Agent guard:** a Claude Code PreToolUse hook (`~/.claude/hooks/guard-disks.py`, operator-local) blocks:
+  - formatting, partitioning and raw device writes
+  - any command naming C:
+  - writes to any other drive unless it passes the same USB-stick checks
+  It blocks if the hook itself crashes, and was tested with 19 cases. On the user's instruction (2026-11-19), the agent never touches the host disk.
+- **The old copy** of the kit in the user's Downloads folder is no longer updated; the user can delete it. The stick kit now lives only in `infra/macmini/build/stick`.

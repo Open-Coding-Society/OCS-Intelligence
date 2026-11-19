@@ -22,14 +22,21 @@ By the end, every Mac mini is named `ocs-intelligence-macmini-N`, is on the OCS 
 
 The stick turns on the wired port, then hands over to a setup kit that runs this same playbook **on the Mac mini itself**, as a service (`ocs-bootstrap`). Your laptop isn't needed, and the machines run in parallel.
 
-**Not tested on a real Mac mini yet** (built 2026-11-13). The pieces are tested offline. Try it on one machine first.
+Tested: #26 and #27 set themselves up from the stick alone on 2026-11-17 (about 20 min each). See the [pending playbook](../../evidence/pending-playbook.md).
 
 **Build the stick (once, on the laptop):**
 
 1. The repo `.env` needs `MACMINI_WIFI_SSID`, `MACMINI_WIFI_PASSWORD` and `NETBIRD_MACMINI_STICK_KEY`. The last is a setup key limited to 33 uses and 14 days: `python3 -c 'import sys; sys.path.insert(0,"infra/netbird"); import apply; print(apply.setup_key("ocs-macminis", days=14, uses=33))'`.
 2. `infra/macmini/macminis.csv` holds the Post-it table (`number,serial`). It's gitignored.
-3. `python3 infra/macmini/make_stick.py --out /mnt/c/Users/<you>/Downloads/ocs-macmini-stick` (the default `--out` is the gitignored `infra/macmini/build/stick`).
-4. Copy everything in that folder onto a FAT32 stick labeled `FIX`. The stick now holds the Wi-Fi password and the NetBird key. Keep it with the Mac minis, and wipe it when the batch is done.
+3. `python3 infra/macmini/make_stick.py`. It builds the stick's contents in the gitignored `infra/macmini/build/stick`.
+4. Plug in a FAT32 USB stick and put the contents on it with [`copy_to_stick.ps1`](../../infra/macmini/copy_to_stick.ps1). Run it from WSL, in the repo, with `D` replaced by the stick's drive letter, and add `-DryRun` first to see what it would do:
+
+   ```bash
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w infra/macmini/copy_to_stick.ps1)" \
+       -Source "$(wslpath -w infra/macmini/build/stick)" -Letter D
+   ```
+
+   It writes only to a drive that Windows reports as removable, on USB, not a boot or system disk, and 10 GB or smaller. It labels the stick `FIX`, deletes the stick's own files, copies the kit, checks every file's SHA256, and ejects the stick. Do one stick per run. The stick now holds the Wi-Fi password and the NetBird key, so keep it with the Mac minis and wipe it when the batch is done.
 
 **At each Mac mini** (Ethernet plugged in; a keyboard; a monitor for the first few), log in as `ocs`, then:
 
