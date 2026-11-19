@@ -54,3 +54,9 @@ Follows the 2026-11-13 entry below.
   5. `reservations.py --apply`.
   6. Move the batch to its reservations (reboot, or `networkctl reconfigure`).
   7. Free the switch ports for the next batch.
+
+**2026-11-19: Wi-Fi comes up right after the reboot, so the cable can come out early.**
+- **Why:** a fresh install has no Wi-Fi driver (mac27's dpkg log: kernel 7.0.0-30, and no `wpasupplicant`, `dkms`, `gcc` or `broadcom-sta-dkms` until the playbook installs them), so each machine needs Ethernet until Wi-Fi is up. Wi-Fi used to come up in the last step, which held a switch port for the whole ~17 min run. mac27's timeline: driver built 11:43, reboot ~11:45, `DONE` 11:50.
+- **Change:** `site.yml` now runs `network` right after `base` and `hostname`, before `cache`, `python` and `netbird`. `network.yml` pings the router over Wi-Fi. From the stick, it then prints `OCS setup #N: Wi-Fi is up (…). You can UNPLUG THE ETHERNET CABLE now` to the machine's screen.
+- **Tested:** the network step on mac27 (push mode, Wi-Fi only). The Wi-Fi ping passed and nothing changed. The screen message was rendered once on mac27. Not yet tested end to end on a fresh machine: the next batch is that test.
+- **New batch flow:** with 8 ports and ~12 min of cable per machine, it's a rolling swap. When a screen says unplug, pull that cable, and the port goes to the next machine.

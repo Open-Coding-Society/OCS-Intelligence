@@ -82,3 +82,24 @@
 - name: Show the result
   ansible.builtin.debug:
     msg: "{{ (wifi_addr.stdout | default('Wi-Fi off')) }} | {{ routes.stdout_lines | select('match', '^default') | list }}"
+
+# Before telling anyone to pull the cable: Wi-Fi must actually reach the router.
+- name: Wi-Fi reaches the router
+  ansible.builtin.shell: |
+    gw=$(ip -4 route show default dev {{ ocs_wifi_if }} | awk '{print $3; exit}')
+    [ -n "$gw" ] && ping -c 2 -W 2 -I {{ ocs_wifi_if }} "$gw"
+  register: wifi_ping
+  until: wifi_ping.rc == 0
+  retries: 10
+  delay: 3
+  changed_when: false
+  when: ocs_wifi_on | bool
+
+# Stick runs (ocs-bootstrap.service): on the machine's screen, like run.sh's messages.
+- name: Say the Ethernet cable can come out
+  ansible.builtin.shell: >-
+    echo "OCS setup #{{ macmini_number | default('?') }}: Wi-Fi is up ({{ wifi_addr.stdout.split()[2] }}).
+    You can UNPLUG THE ETHERNET CABLE now; setup carries on over Wi-Fi." | tee /dev/console
+  changed_when: false
+  failed_when: false
+  when: ocs_wifi_on | bool and (ansible_connection | default('ssh')) == 'local'

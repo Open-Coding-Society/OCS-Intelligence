@@ -101,6 +101,15 @@ def test_ansible_files_parse_and_ray_is_pinned():
     assert "ray[default,data,train,tune,serve]==2.60.0" in (ans / "files" / "cluster-requirements.in").read_text()
 
 
+def test_wifi_comes_up_right_after_base_so_the_cable_can_come_out_early():
+    play = yaml.safe_load((KIT / "ansible" / "site.yml").read_text())[0]
+    order = [t["ansible.builtin.import_tasks"].split("/")[-1] for t in play["tasks"] if "ansible.builtin.import_tasks" in t]
+    assert order.index("network.yml") == order.index("hostname.yml") + 1 == order.index("base.yml") + 2
+    assert order.index("network.yml") < min(order.index(t) for t in ("cache_server.yml", "python.yml", "netbird.yml"))
+    net = (KIT / "ansible" / "tasks" / "network.yml").read_text()
+    assert net.index("Wi-Fi reaches the router") < net.index("UNPLUG THE ETHERNET CABLE")
+
+
 def test_inventory_names_hosts_and_reads_number_from_name():
     import importlib.util
     path = Path(__file__).resolve().parent.parent / "infra/macmini/ansible/inventory.py"

@@ -20,17 +20,18 @@
       tags: base
     - ansible.builtin.import_tasks: tasks/hostname.yml
       tags: hostname
+    # Right after base (driver built, rebooted into the new kernel): Wi-Fi comes up
+    # here and the machine says the cable can come out, so on the 8-port switch each
+    # machine needs its port for ~12 min, not the whole run. The rest goes over Wi-Fi.
+    - ansible.builtin.import_tasks: tasks/network.yml
+      tags: network
     - ansible.builtin.import_tasks: tasks/cache_server.yml
       when: ocs_cache_server | bool
       tags: cache
-    # Before network: on a first run the machine is still wired-only, so the big
-    # downloads (from silver's cache) go over the cable, not Wi-Fi.
     - ansible.builtin.import_tasks: tasks/python.yml
       tags: python
     - ansible.builtin.import_tasks: tasks/netbird.yml
       tags: netbird
-    - ansible.builtin.import_tasks: tasks/network.yml
-      tags: network
     - ansible.builtin.import_tasks: tasks/ray_check.yml
       tags: ray_check
   handlers:

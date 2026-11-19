@@ -66,4 +66,5 @@ $SYSTEMCTL start --no-block ocs-bootstrap.service
 
 echo "#${N:-?} (serial $SERIAL): setup started. You can pull the stick."
 [ -n "$N" ] || echo "  Serial not in macminis.csv: it'll be set up, but keeps its serial name. Fix the table."
-echo "  Progress: journalctl -fu ocs-bootstrap   (about 20-30 min; it reboots once)"
+echo "  Keep the Ethernet cable in until the screen says to unplug it (about 12 min, after a reboot)."
+echo "  Progress: journalctl -fu ocs-bootstrap   (about 20 min in all)"

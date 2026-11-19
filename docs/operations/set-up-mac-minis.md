@@ -45,13 +45,13 @@ It prints the network line, then `#7 (serial C07…): setup started. You can pul
 **What happens next, on its own** (about 20–30 minutes, with one reboot):
 
 - **Kit:** `bootstrap.sh` copies the kit to `/root/ocs-bootstrap/` (root-only) and installs the pinned `uv`. It reads the serial from the firmware and looks up the number.
-- **Service:** it starts `ocs-bootstrap.service`, which runs `run.sh`. That runs `uvx --from ansible-core==2.21.6 ansible-playbook` against `this-macmini` with a local connection.
+- **Service:** it starts `ocs-bootstrap.service`, which runs `run.sh`. That runs `uv tool run --from ansible-core==2.21.6 ansible-playbook` against `this-macmini` with a local connection.
 - **Reboot:** when the upgrade brings a new kernel, the playbook marks the reboot, reboots, and the service runs it again after boot. (Ansible can't reboot its own controller and carry on.)
 - **Failure:** it retries a minute later, up to 5 tries.
 - **Success:** it deletes `secrets.env`, disables itself, and prints `DONE` to the console.
 - **Watching:** `journalctl -fu ocs-bootstrap` on the machine shows progress, and `/var/log/ocs-bootstrap.log` holds the full log.
 
-**Keep the Ethernet cable in until it's done.** The Wi-Fi card (BCM4360) needs the `wl` driver, which a fresh install doesn't have. The playbook builds it from the internet over the cable, then switches to Wi-Fi. After that the cable is optional.
+**Keep the Ethernet cable in until the machine says to unplug it.** The Wi-Fi card (BCM4360) needs the `wl` driver, which a fresh install doesn't have. The playbook downloads and builds it over the cable, reboots, and brings Wi-Fi up right after. Once Wi-Fi reaches the router, the screen shows `OCS setup #N: Wi-Fi is up (…). You can UNPLUG THE ETHERNET CABLE now`, about 12 minutes in. The rest (Python, NetBird, the Ray check) goes over Wi-Fi. On the 8-port switch, pull that cable and start the next machine in its port: the switch only has to hold the machines still on their first ~12 minutes.
 
 **Afterwards, from the laptop** (on `OCS_Intel`): `infra/macmini/ansible/inventory.py --table` lists them, and `reservations.py --apply` gives each its fixed addresses.
 
@@ -86,8 +86,8 @@ It's safe to rerun. The first run on a machine takes a while (a full upgrade, a 
 |---|---|
 | `base` | Point apt at the cache when it answers, wait for unattended-upgrades, repair an interrupted install, upgrade, reboot if needed, the package list in [`group_vars/macminis.yml`](../../infra/macmini/ansible/group_vars/macminis.yml), `ocs` in the `docker` group, open-file limits, cluster sysctls, zram swap, `mbpfan` fan control, power-on after a power cut, never sleep |
 | `hostname` | `ocs-intelligence-macmini-N` when `macmini_number` is set |
+| `network` | Right after `hostname`, so the cable can come out early: loads the `wl` Wi-Fi driver (built in `base`), then one netplan: Wi-Fi on `MACMINI_WIFI_SSID` (route metric 100, the main link) and wired DHCP (metric 200, the backup). Checks Wi-Fi reaches the router; from the stick, then says the cable can come out |
 | `cache` | Only on the cache host (silver, `ocs_cache_server: true` in `host_vars`): `apt-cacher-ng` on `:3142`, plus the locked wheels and the pinned `uv` on `http://<host>:8090/`. The others use it when it answers, and the internet when it doesn't (apt through `Proxy-Auto-Detect`; https repos such as NetBird's always go direct). |
-| `network` | The `wl` Wi-Fi driver, then one netplan: Wi-Fi on `MACMINI_WIFI_SSID` (route metric 100, the main link) and wired DHCP (metric 200, the backup) |
 | `python` | uv from Astral's installer (pinned version, `/usr/local/bin`), Python 3.12 managed by uv, and `/opt/ocs/venv` synced to [`cluster-requirements.txt`](../../infra/macmini/ansible/files/cluster-requirements.txt) |
 | `netbird` | NetBird from its apt repo, as a service, joined with the setup key |
 | `ray_check` | Starts a throwaway local Ray, runs 10 tasks, prints the versions |
