@@ -155,6 +155,16 @@
     daemon_reload: true
   loop: [macmini-autoresume, mbpfan, chrony, avahi-daemon, prometheus-node-exporter, docker, zramswap]
 
+# ipmitool (pulled in by prometheus-node-exporter-collectors) brings openipmi, which
+# looks for server-board IPMI hardware a Mac mini doesn't have and fails every boot.
+- name: No IPMI on a Mac mini (openipmi off)
+  ansible.builtin.systemd_service: {name: openipmi, masked: true}
+
+- name: Clear its failed state from boots before the mask
+  ansible.builtin.command: systemctl reset-failed openipmi.service
+  changed_when: false
+  failed_when: false
+
 - name: Never sleep (headless node)
   ansible.builtin.systemd_service:
     name: "{{ item }}"
