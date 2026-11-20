@@ -93,8 +93,10 @@ Write-Host "Verified: all $($files.Count) files match."
 # stick pulled early delivered a corrupted uv).
 (New-Object -ComObject Shell.Application).Namespace(17).ParseName("$($s.Letter):").InvokeVerb("Eject")
 # Once ejected, the letter can linger in Get-Volume, but the root is gone ("No Media").
-for ($i = 0; $i -lt 20 -and (Test-Path -LiteralPath $root); $i++) { Start-Sleep -Milliseconds 500 }
-if (Test-Path -LiteralPath $root) {
+# Mid-eject, the root can answer "access denied": count that as not gone yet.
+function Test-Mounted { try { Test-Path -LiteralPath $root -ErrorAction Stop } catch { $true } }
+for ($i = 0; $i -lt 20 -and (Test-Mounted); $i++) { Start-Sleep -Milliseconds 500 }
+if (Test-Mounted) {
     Write-Host "Copied and verified, but Windows didn't eject it: eject $($s.Letter): yourself before pulling it."
 } else {
     Write-Host "Ejected. Safe to pull the stick."
